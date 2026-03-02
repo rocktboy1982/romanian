@@ -7,10 +7,6 @@ function norm(s: string): string {
     .replace(/\s+/g, ' ')
     .trim()
 }
-// In-memory shopping lists store (mirrors the mock in /api/shopping-lists)
-// We read from the same in-memory map by importing it — but since that module
-// exports nothing useful for cross-checking, we'll simply return the patch
-// commands and let the client call /api/shopping-lists/:id/items PATCH.
 
 /** POST /api/vision/reconcile-list
  *  Body: { session_id: string, list_id: string }
@@ -35,9 +31,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
+    // Forward the mock user header so internal fetches are authenticated
+    const mockUserId = req.headers.get('x-mock-user-id') ?? 'a0000000-0000-0000-0000-000000000001'
+    const origin = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+
     // Fetch the shopping list items from the internal API
-    const origin = process.env.NEXTAUTH_URL ?? 'http://localhost:3001'
-    const itemsRes = await fetch(`${origin}/api/shopping-lists/${list_id}/items`)
+    const itemsRes = await fetch(`${origin}/api/shopping-lists/${list_id}/items`, {
+      headers: { 'x-mock-user-id': mockUserId },
+    })
     if (!itemsRes.ok) {
       return NextResponse.json(
         { error: 'Could not fetch shopping list items' },
@@ -46,8 +47,6 @@ export async function POST(req: Request) {
     }
     const listItems: Array<{ id: string; name: string; checked: boolean }> =
       await itemsRes.json()
-
-
 
     const matched: Array<{ item_id: string; item_name: string; ingredient: string }> = []
     const unmatchedIngredients: string[] = []
@@ -71,7 +70,10 @@ export async function POST(req: Request) {
       matched.map(m =>
         fetch(`${origin}/api/shopping-lists/${list_id}/items`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mock-user-id': mockUserId,
+          },
           body: JSON.stringify({ item_id: m.item_id, checked: true }),
         }),
       ),
