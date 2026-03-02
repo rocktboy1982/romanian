@@ -69,6 +69,272 @@ function getMockPrintDetail(slug: string) {
   }
 }
 
+const PRINT_STYLES = `
+  /* ── Screen styles ── */
+  @media screen {
+    html, body { background: #fff !important; color: #111 !important; }
+    .print-page { background: #fff; color: #111; }
+    .no-print-btn { position: fixed; bottom: 24px; right: 24px; z-index: 50; }
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    nav, footer, header[data-nav], .no-print { display: none !important; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-size: 13pt;
+      line-height: 1.6;
+      color: #000;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @page {
+      size: A4;
+      margin: 1.8cm 2.2cm;
+    }
+
+    /* Make page fill full print width */
+    .print-page {
+      max-width: 100% !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    h1 { font-size: 24pt !important; margin-bottom: 6pt !important; }
+    h2 { font-size: 16pt !important; margin-bottom: 8pt !important; }
+    h3 { font-size: 12pt !important; }
+
+    .recipe-meta { font-size: 11pt; }
+    .ingredient-item { font-size: 12pt; line-height: 1.7; }
+    .step-text { font-size: 12pt; line-height: 1.7; }
+
+    .print-cols {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2cm;
+    }
+
+    .step-block { break-inside: avoid; margin-bottom: 10pt; }
+    .section-break { break-before: auto; }
+
+    a { text-decoration: none; color: #000; }
+    img { max-width: 100%; height: auto; }
+
+    .divider { border-color: #999 !important; }
+  }
+
+  /* ── Screen layout (generous, readable) ── */
+  @media screen {
+    .print-page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 48px 80px;
+    }
+
+    h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px; line-height: 1.2; }
+    h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 12px; }
+    h3 { font-size: 0.95rem; font-weight: 700; margin: 0 0 6px; }
+
+    .recipe-meta { font-size: 0.95rem; color: #555; }
+    .ingredient-item { font-size: 1rem; line-height: 1.7; }
+    .step-text { font-size: 1rem; line-height: 1.7; }
+
+    .print-cols {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 48px;
+      margin-top: 32px;
+    }
+
+    .step-block { margin-bottom: 16px; }
+    .divider { border-color: #ddd !important; }
+  }
+
+  @media screen and (max-width: 680px) {
+    .print-page { padding: 24px 20px 80px; }
+    .print-cols { grid-template-columns: 1fr; gap: 32px; }
+  }
+`
+
+function RecipeBody({
+  title, region, creatorName, creatorHandle,
+  totalTime, prepTime, cookTime, servings, dietTags,
+  ingredientSections, steps, nutrition, notes, tools, drinkPairings,
+  slug,
+}: {
+  title: string
+  region?: string
+  creatorName?: string
+  creatorHandle?: string
+  totalTime?: string | null
+  prepTime?: string | null
+  cookTime?: string | null
+  servings: number
+  dietTags?: string[]
+  ingredientSections: IngredientSection[]
+  steps: string[]
+  nutrition?: { calories?: number; protein?: number; carbs?: number; fat?: number } | null
+  notes?: string | null
+  tools?: string[] | null
+  drinkPairings?: string[] | null
+  slug: string
+}) {
+  const metaParts = [
+    region,
+    totalTime && `Total: ${totalTime}`,
+    prepTime && `Prep: ${prepTime}`,
+    cookTime && `Cook: ${cookTime}`,
+    `${servings} servings`,
+    ...(dietTags ?? []),
+  ].filter(Boolean) as string[]
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: PRINT_STYLES }} />
+
+      <main className="print-page">
+        <PrintButtonClient />
+
+        {/* Back link — screen only */}
+        <div className="no-print" style={{ marginBottom: 24 }}>
+          <a
+            href={`/recipes/${slug}`}
+            style={{ fontSize: '0.875rem', color: '#666', textDecoration: 'none' }}
+          >
+            ← Back to recipe
+          </a>
+        </div>
+
+        {/* Header */}
+        <header style={{ marginBottom: 24 }}>
+          <h1>{title}</h1>
+
+          {metaParts.length > 0 && (
+            <p className="recipe-meta" style={{ margin: '0 0 6px' }}>
+              {metaParts.join(' · ')}
+            </p>
+          )}
+
+          {creatorName && (
+            <p style={{ fontSize: '0.85rem', color: '#888', margin: 0 }}>
+              By {creatorName}{creatorHandle ? ` (@${creatorHandle})` : ''}
+            </p>
+          )}
+
+          <hr className="divider" style={{ marginTop: 16, border: 'none', borderTop: '1.5px solid #ddd' }} />
+        </header>
+
+        {/* Two-column body */}
+        <div className="print-cols">
+          {/* Ingredients */}
+          <section>
+            <h2>Ingredients</h2>
+            {ingredientSections.map((section, sIdx) => (
+              <div key={sIdx} style={sIdx > 0 ? { marginTop: 20 } : {}}>
+                {section.title && (
+                  <h3 style={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: '#666', fontSize: '0.8rem', marginBottom: 6 }}>
+                    {section.title}
+                  </h3>
+                )}
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {section.ingredients.map((ing, iIdx) => (
+                    <li key={iIdx} className="ingredient-item" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingBottom: 4 }}>
+                      <span style={{
+                        flexShrink: 0,
+                        display: 'inline-block',
+                        width: 14,
+                        height: 14,
+                        marginTop: 4,
+                        border: '1.5px solid #aaa',
+                        borderRadius: 3,
+                      }} />
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+
+          {/* Directions */}
+          <section className="section-break">
+            <h2>Directions</h2>
+            <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {steps.map((step, idx) => (
+                <li key={idx} className="step-block" style={{ display: 'flex', gap: 14 }}>
+                  <span style={{
+                    flexShrink: 0,
+                    fontWeight: 800,
+                    fontSize: '1.1rem',
+                    color: '#bbb',
+                    width: 28,
+                    paddingTop: 1,
+                    textAlign: 'right',
+                    lineHeight: 1.6,
+                  }}>
+                    {idx + 1}
+                  </span>
+                  <span className="step-text">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+
+        {/* Optional extras */}
+        {(nutrition || notes || tools || drinkPairings) && (
+          <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1.5px solid #ddd' }}>
+            {nutrition && (nutrition.calories || nutrition.protein) && (
+              <div style={{ marginBottom: 16 }}>
+                <h3>Nutrition per serving</h3>
+                <p style={{ fontSize: '0.95rem', color: '#555', margin: 0 }}>
+                  {[
+                    nutrition.calories && `${nutrition.calories} kcal`,
+                    nutrition.protein && `${nutrition.protein}g protein`,
+                    nutrition.carbs && `${nutrition.carbs}g carbs`,
+                    nutrition.fat && `${nutrition.fat}g fat`,
+                  ].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            )}
+
+            {tools && tools.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <h3>Tools needed</h3>
+                <p style={{ fontSize: '0.95rem', color: '#555', margin: 0 }}>{tools.join(', ')}</p>
+              </div>
+            )}
+
+            {drinkPairings && drinkPairings.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <h3>Drink pairings</h3>
+                <p style={{ fontSize: '0.95rem', color: '#555', margin: 0 }}>{drinkPairings.join(', ')}</p>
+              </div>
+            )}
+
+            {notes && (
+              <div style={{ marginBottom: 16 }}>
+                <h3>Notes</h3>
+                <p style={{ fontSize: '0.95rem', color: '#555', margin: 0 }}>{notes}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer style={{ marginTop: 40, paddingTop: 16, borderTop: '1px solid #eee', fontSize: '0.75rem', color: '#aaa' }}>
+          <p style={{ margin: 0 }}>Printed from Food Glam Platform — foodglam.com/recipes/{slug}</p>
+        </footer>
+      </main>
+    </>
+  )
+}
+
 export default async function PrintRecipePage({ params }: PrintPageProps) {
   const { slug } = await params
   const supabase = await createServerSupabaseClient()
@@ -90,111 +356,28 @@ export default async function PrintRecipePage({ params }: PrintPageProps) {
     if (!mockRecipe) notFound()
 
     const detail = getMockPrintDetail(slug)
-    const ingredientSections: IngredientSection[] = [{ ingredients: detail.ingredients }]
 
     return (
-      <>
-        <style>{`
-          @media screen {
-            body { background: #fff !important; color: #111 !important; }
-            .print-container { background: #fff; color: #111; }
-            .print-trigger { position: fixed; bottom: 24px; right: 24px; z-index: 50; }
-            a { color: #555; }
-            h1, h2, h3 { color: #111; }
-            .text-muted-foreground { color: #666 !important; }
-            .border-b { border-color: #e5e7eb !important; }
-            .bg-stone-50 { background: #f9fafb !important; }
-          }
-          @media print {
-            nav, footer, .no-print { display: none !important; }
-            body { margin: 0; padding: 0; font-size: 11pt; line-height: 1.5; color: #000; background: #fff; }
-            @page { margin: 1.5cm 2cm; }
-            .print-container { max-width: 100% !important; padding: 0 !important; }
-            h1 { font-size: 20pt !important; }
-            h2 { font-size: 14pt !important; }
-            .print-meta { border-bottom: 1px solid #ccc; padding-bottom: 8pt; margin-bottom: 12pt; }
-            .print-columns { columns: 2; column-gap: 24pt; }
-            .print-step { break-inside: avoid; }
-            a { text-decoration: none; color: #000; }
-            img { max-width: 100%; height: auto; }
-          }
-        `}</style>
-
-        <main className="print-container max-w-2xl mx-auto px-6 py-8">
-          <PrintButtonClient />
-
-          <div className="no-print mb-6">
-            <a href={`/recipes/${slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              &larr; Back to recipe
-            </a>
-          </div>
-
-          <header className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">{mockRecipe!.title}</h1>
-            <div className="print-meta flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground border-b pb-3">
-              <span>{mockRecipe!.region}</span>
-              <span>Total: {detail.total_time}</span>
-              <span>Prep: {detail.prep_time}</span>
-              <span>Cook: {detail.cook_time}</span>
-              <span>{detail.servings} servings</span>
-              {mockRecipe!.dietTags?.length > 0 && <span>{mockRecipe!.dietTags.join(', ')}</span>}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              By {mockRecipe!.created_by.display_name} (@{mockRecipe!.created_by.handle})
-            </p>
-          </header>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-1">
-              <h2 className="text-lg font-bold mb-3 border-b pb-1">Ingredients</h2>
-              {ingredientSections.map((section, sIdx) => (
-                <div key={sIdx} className={sIdx > 0 ? "mt-4" : ""}>
-                  {section.title && (
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{section.title}</h3>
-                  )}
-                  <ul className="space-y-1">
-                    {section.ingredients.map((ing, iIdx) => (
-                      <li key={iIdx} className="text-sm flex items-start gap-2">
-                        <span className="inline-block w-3 h-3 mt-1 border border-muted-foreground/40 rounded-sm flex-shrink-0" />
-                        {ing}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="md:col-span-2">
-              <h2 className="text-lg font-bold mb-3 border-b pb-1">Directions</h2>
-              <ol className="space-y-4">
-                {detail.steps.map((step, idx) => (
-                  <li key={idx} className="print-step flex gap-3 text-sm">
-                    <span className="flex-shrink-0 font-bold text-muted-foreground w-6 text-right">{idx + 1}.</span>
-                    <span className="leading-relaxed">{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t">
-            <h3 className="text-sm font-bold mb-1">Nutrition (per serving)</h3>
-            <p className="text-sm text-muted-foreground">
-              {detail.nutrition.calories} kcal · {detail.nutrition.protein}g protein · {detail.nutrition.carbs}g carbs · {detail.nutrition.fat}g fat
-            </p>
-          </div>
-
-          <footer className="mt-8 pt-4 border-t text-xs text-muted-foreground">
-            <p>Printed from Food Glam Platform &mdash; foodglam.com/recipes/{slug}</p>
-          </footer>
-        </main>
-      </>
+      <RecipeBody
+        title={mockRecipe!.title}
+        region={mockRecipe!.region}
+        creatorName={mockRecipe!.created_by.display_name}
+        creatorHandle={mockRecipe!.created_by.handle}
+        totalTime={detail.total_time}
+        prepTime={detail.prep_time}
+        cookTime={detail.cook_time}
+        servings={detail.servings}
+        dietTags={mockRecipe!.dietTags}
+        ingredientSections={[{ ingredients: detail.ingredients }]}
+        steps={detail.steps}
+        nutrition={detail.nutrition}
+        slug={slug}
+      />
     )
   }
 
   const recipeData = (post.recipe_json || {}) as RecipeJson
 
-  // Normalize
   const ingredientSections: IngredientSection[] = recipeData.ingredient_sections
     ? recipeData.ingredient_sections
     : recipeData.recipeIngredient
@@ -211,162 +394,24 @@ export default async function PrintRecipePage({ params }: PrintPageProps) {
     ? (post.profiles as Array<{ display_name: string; handle: string }>)[0]
     : (post.profiles as { display_name: string; handle: string } | null)
 
-  const servings = recipeData.servings || 4
-  const totalTime = recipeData.total_time || null
-  const prepTime = recipeData.prep_time || null
-  const cookTime = recipeData.cook_time || null
-  const dietTags = post.diet_tags || []
-  const nutrition = recipeData.nutrition_per_serving
-  const notes = recipeData.notes
-  const tools = recipeData.tools
-  const drinkPairings = recipeData.drink_pairings
-
   return (
-    <>
-      <style>{`
-        @media screen {
-          body { background: #fff !important; color: #111 !important; }
-          .print-container { background: #fff; color: #111; }
-          .print-trigger { position: fixed; bottom: 24px; right: 24px; z-index: 50; }
-          a { color: #555; }
-          h1, h2, h3 { color: #111; }
-          .text-muted-foreground { color: #666 !important; }
-          .border-b { border-color: #e5e7eb !important; }
-          .bg-stone-50 { background: #f9fafb !important; }
-        }
-        @media print {
-          nav, footer, .no-print { display: none !important; }
-          body { margin: 0; padding: 0; font-size: 11pt; line-height: 1.5; color: #000; background: #fff; }
-          @page { margin: 1.5cm 2cm; }
-          .print-container { max-width: 100% !important; padding: 0 !important; }
-          h1 { font-size: 20pt !important; }
-          h2 { font-size: 14pt !important; }
-          .print-meta { border-bottom: 1px solid #ccc; padding-bottom: 8pt; margin-bottom: 12pt; }
-          .print-columns { columns: 2; column-gap: 24pt; }
-          .print-step { break-inside: avoid; }
-          a { text-decoration: none; color: #000; }
-          img { max-width: 100%; height: auto; }
-        }
-      `}</style>
-
-      <main className="print-container max-w-2xl mx-auto px-6 py-8">
-        {/* Print button (screen only) */}
-        <PrintButtonClient />
-
-        {/* Back link (screen only) */}
-        <div className="no-print mb-6">
-          <a
-            href={`/recipes/${slug}`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            &larr; Back to recipe
-          </a>
-        </div>
-
-        {/* Header */}
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">{post.title}</h1>
-
-          <div className="print-meta flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground border-b pb-3">
-            {approach && <span>{approach.name}</span>}
-            {totalTime && <span>Total: {totalTime}</span>}
-            {prepTime && <span>Prep: {prepTime}</span>}
-            {cookTime && <span>Cook: {cookTime}</span>}
-            <span>{servings} servings</span>
-            {dietTags.length > 0 && <span>{dietTags.join(', ')}</span>}
-          </div>
-
-          {creator && (
-            <p className="text-xs text-muted-foreground mt-2">
-              By {creator.display_name} (@{creator.handle})
-            </p>
-          )}
-        </header>
-
-        {/* Two column layout for ingredients + steps */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-          {/* Ingredients */}
-          <div className="md:col-span-1">
-            <h2 className="text-lg font-bold mb-3 border-b pb-1">Ingredients</h2>
-            {ingredientSections.map((section, sIdx) => (
-              <div key={sIdx} className={sIdx > 0 ? "mt-4" : ""}>
-                {section.title && (
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                    {section.title}
-                  </h3>
-                )}
-                <ul className="space-y-1">
-                  {section.ingredients.map((ing, iIdx) => (
-                    <li key={iIdx} className="text-sm flex items-start gap-2">
-                      <span className="inline-block w-3 h-3 mt-1 border border-muted-foreground/40 rounded-sm flex-shrink-0" />
-                      {ing}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Steps */}
-          <div className="md:col-span-2">
-            <h2 className="text-lg font-bold mb-3 border-b pb-1">Directions</h2>
-            <ol className="space-y-4">
-              {steps.map((step, idx) => (
-                <li key={idx} className="print-step flex gap-3 text-sm">
-                  <span className="flex-shrink-0 font-bold text-muted-foreground w-6 text-right">
-                    {idx + 1}.
-                  </span>
-                  <span className="leading-relaxed">{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        {/* Optional advanced sections (only if present) */}
-        {(nutrition || notes || tools || drinkPairings) && (
-          <div className="mt-8 pt-6 border-t">
-            {nutrition && (nutrition.calories || nutrition.protein) && (
-              <div className="mb-4">
-                <h3 className="text-sm font-bold mb-1">Nutrition (per serving)</h3>
-                <p className="text-sm text-muted-foreground">
-                  {nutrition.calories && `${nutrition.calories} kcal`}
-                  {nutrition.protein && ` · ${nutrition.protein}g protein`}
-                  {nutrition.carbs && ` · ${nutrition.carbs}g carbs`}
-                  {nutrition.fat && ` · ${nutrition.fat}g fat`}
-                </p>
-              </div>
-            )}
-
-            {tools && tools.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-bold mb-1">Tools needed</h3>
-                <p className="text-sm text-muted-foreground">{tools.join(', ')}</p>
-              </div>
-            )}
-
-            {drinkPairings && drinkPairings.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-bold mb-1">Drink pairings</h3>
-                <p className="text-sm text-muted-foreground">{drinkPairings.join(', ')}</p>
-              </div>
-            )}
-
-            {notes && (
-              <div className="mb-4">
-                <h3 className="text-sm font-bold mb-1">Notes</h3>
-                <p className="text-sm text-muted-foreground">{notes}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
-        <footer className="mt-8 pt-4 border-t text-xs text-muted-foreground">
-          <p>Printed from Food Glam Platform &mdash; foodglam.com/recipes/{slug}</p>
-        </footer>
-      </main>
-    </>
+    <RecipeBody
+      title={post.title}
+      region={approach?.name}
+      creatorName={creator?.display_name}
+      creatorHandle={creator?.handle}
+      totalTime={recipeData.total_time}
+      prepTime={recipeData.prep_time}
+      cookTime={recipeData.cook_time}
+      servings={recipeData.servings ?? 4}
+      dietTags={post.diet_tags ?? []}
+      ingredientSections={ingredientSections}
+      steps={steps}
+      nutrition={recipeData.nutrition_per_serving}
+      notes={recipeData.notes}
+      tools={recipeData.tools}
+      drinkPairings={recipeData.drink_pairings}
+      slug={slug}
+    />
   )
 }
