@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LatestChefVlogs from '@/components/LatestChefVlogs'
 import TrendingSection from '@/components/TrendingSection'
+import { AdBanner } from '@/components/ads/ad-placements'
 import { REGION_META } from '@/lib/recipe-taxonomy'
 import { MOCK_RECIPES } from '@/lib/mock-data'
 import { MOCK_CHEF_POSTS, MOCK_CHEF_PROFILES } from '@/lib/mock-chef-data'
@@ -390,6 +391,13 @@ export default function Home() {
             })}
           </div>
         </section>
+
+        {/* ════════════════════════════════════════════════════════
+            AD PLACEMENT
+        ════════════════════════════════════════════════════════ */}
+        <div className="px-4 pb-8">
+          <AdBanner placement="homepage-banner" />
+        </div>
 
         {/* ════════════════════════════════════════════════════════
             4-COLUMN GRID LAYOUT  (desktop responsive)

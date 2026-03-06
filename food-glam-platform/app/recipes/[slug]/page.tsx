@@ -13,6 +13,7 @@ import { MOCK_RECIPES } from '@/lib/mock-data'
 import { normalizeToEmbed } from '@/lib/embed'
 import FollowChefButton from '@/components/pages/follow-chef-button'
 import RecipeRating, { StarDisplay } from '@/components/RecipeRating'
+import { AdInArticle, AdSidebar } from '@/components/ads/ad-placements'
 
 // Rich mock recipe details keyed by slug
 const MOCK_RECIPE_DETAILS: Record<string, {
@@ -377,14 +378,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   </svg>
                   <StarDisplay votes={votes} size={14} showCount={true} />
                 </span>
-              </div>
-            </div>
-          </div>
+             </div>
+           </div>
+         </div>
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto max-w-4xl px-4 md:px-6 -mt-6 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+       <div className="container mx-auto max-w-4xl px-4 md:px-6 -mt-6 relative z-10">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* Summary */}
               {mockRecipe.summary && (
@@ -418,23 +419,26 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 </CardContent>
               </Card>
 
-              {/* Ingredients */}
-              <Card className="shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
-                      <path d="M6 9.01V9"/>
-                    </svg>
-                    Ingredients
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RecipeIngredientsClient sections={ingredientSections} showCalories />
-                </CardContent>
-              </Card>
+               {/* Ingredients */}
+               <Card className="shadow-sm">
+                 <CardHeader className="pb-3">
+                   <CardTitle className="flex items-center gap-2 text-lg">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                       <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
+                       <path d="M6 9.01V9"/>
+                     </svg>
+                     Ingredients
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <RecipeIngredientsClient sections={ingredientSections} showCalories />
+                 </CardContent>
+               </Card>
 
-              {/* Photo Gallery */}
+               {/* Ad: In-article between ingredients and directions */}
+               <AdInArticle placement="recipe-between-ingredients-directions" />
+
+               {/* Photo Gallery */}
               {(detail as { photoGallery?: string[] }).photoGallery && (detail as { photoGallery?: string[] }).photoGallery!.length > 0 && (
                 <Card className="shadow-sm">
                   <CardHeader className="pb-3">
@@ -539,27 +543,31 @@ export default async function RecipePage({ params }: RecipePageProps) {
               </Card>
 
               {/* Nutrition */}
-              {detailNutrition && (
-                <Card className="shadow-sm">
-                  <CardContent className="p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutrition per serving</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {([
-                        { label: 'Calories', value: detailNutrition.calories, unit: 'kcal' },
-                        { label: 'Protein',  value: detailNutrition.protein,  unit: 'g' },
-                        { label: 'Carbs',    value: detailNutrition.carbs,    unit: 'g' },
-                        { label: 'Fat',      value: detailNutrition.fat,      unit: 'g' },
-                      ] as const).map(({ label, value, unit }) => (
-                        <div key={label} className="bg-stone-50 rounded-lg p-2.5 text-center">
-                          <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-                          <p className="text-sm font-bold">{value}<span className="text-[10px] font-normal ml-0.5">{unit}</span></p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {/* Back to browse */}
+               {detailNutrition && (
+                 <Card className="shadow-sm">
+                   <CardContent className="p-4">
+                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutrition per serving</p>
+                     <div className="grid grid-cols-2 gap-2">
+                       {([
+                         { label: 'Calories', value: detailNutrition.calories, unit: 'kcal' },
+                         { label: 'Protein',  value: detailNutrition.protein,  unit: 'g' },
+                         { label: 'Carbs',    value: detailNutrition.carbs,    unit: 'g' },
+                         { label: 'Fat',      value: detailNutrition.fat,      unit: 'g' },
+                       ] as const).map(({ label, value, unit }) => (
+                         <div key={label} className="bg-stone-50 rounded-lg p-2.5 text-center">
+                           <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+                           <p className="text-sm font-bold">{value}<span className="text-[10px] font-normal ml-0.5">{unit}</span></p>
+                         </div>
+                       ))}
+                     </div>
+                   </CardContent>
+                 </Card>
+               )}
+
+               {/* Ad: Sidebar */}
+               <AdSidebar placement="recipe-sidebar" />
+
+               {/* Back to browse */}
               <Link href="/search">
                 <Button variant="outline" className="w-full">Browse more recipes</Button>
               </Link>
@@ -581,14 +589,24 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const recipeData = (post.recipe_json || {}) as RecipeJson
 
   // Normalize ingredients into sections
+  // Supports: ingredient_sections, recipeIngredient, or ingredients (our seeded format)
+  const rawIngredients: string[] =
+    recipeData.recipeIngredient ||
+    (recipeData as unknown as { ingredients?: string[] }).ingredients ||
+    []
   const ingredientSections: IngredientSection[] = recipeData.ingredient_sections
     ? recipeData.ingredient_sections
-    : recipeData.recipeIngredient
-      ? [{ ingredients: recipeData.recipeIngredient }]
+    : rawIngredients.length > 0
+      ? [{ ingredients: rawIngredients }]
       : []
 
   // Normalize steps
-  const steps: string[] = recipeData.steps || recipeData.recipeInstructions || []
+  // Supports: steps, recipeInstructions, or instructions (our seeded format)
+  const steps: string[] =
+    recipeData.steps ||
+    recipeData.recipeInstructions ||
+    (recipeData as unknown as { instructions?: string[] }).instructions ||
+    []
 
   // Approach info
   const approach = Array.isArray(post.approaches)
@@ -602,12 +620,17 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   const heroImage = post.hero_image_url || `https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=600&fit=crop`
   const servings = recipeData.servings || 4
-  const totalTime = recipeData.total_time || null
-  const prepTime = recipeData.prep_time || null
-  const cookTime = recipeData.cook_time || null
+  // Support both string times ("45 min") and numeric minutes (45)
+  const seededData = recipeData as unknown as { prep_time_minutes?: number; cook_time_minutes?: number }
+  const formatMin = (m: number) => m >= 60 ? `${Math.floor(m / 60)} hr${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`
+  const prepTime = recipeData.prep_time || (seededData.prep_time_minutes ? formatMin(seededData.prep_time_minutes) : null)
+  const cookTime = recipeData.cook_time || (seededData.cook_time_minutes ? formatMin(seededData.cook_time_minutes) : null)
+  const totalTime = recipeData.total_time || (seededData.prep_time_minutes && seededData.cook_time_minutes
+    ? formatMin(seededData.prep_time_minutes + seededData.cook_time_minutes) : null)
   const votes = voteCount || 0
   const dietTags = post.diet_tags || []
   const isTested = post.is_tested
+  const sourceUrl = (post as Record<string, unknown>).source_url as string | null
 
   return (
     <main className="min-h-screen pb-24 md:pb-8">
@@ -685,14 +708,34 @@ export default async function RecipePage({ params }: RecipePageProps) {
             </div>
           </div>
         </div>
-      </div>
+       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto max-w-4xl px-4 md:px-6 -mt-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+       {/* View Original Recipe Button */}
+       {sourceUrl && (
+         <div className="container mx-auto max-w-4xl px-4 md:px-6 -mt-4 relative z-10 mb-4">
+           <a
+             href={sourceUrl}
+             target="_blank"
+             rel="noopener noreferrer"
+             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm transition-colors"
+           >
+             View Original Recipe
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+               <polyline points="15 3 21 3 21 9"/>
+               <line x1="10" y1="14" x2="21" y2="3"/>
+             </svg>
+             {new URL(sourceUrl).hostname.replace('www.', '')}
+           </a>
+         </div>
+       )}
 
-          {/* Left Column - Recipe Content */}
-          <div className="lg:col-span-2 space-y-6">
+       {/* Main Content */}
+       <div className="container mx-auto max-w-4xl px-4 md:px-6 -mt-6 relative z-10">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+           {/* Left Column - Recipe Content */}
+           <div className="lg:col-span-2 space-y-6">
 
             {/* Action bar card */}
             <Card className="shadow-lg border-0 bg-card/95 backdrop-blur-sm">
@@ -734,27 +777,30 @@ export default async function RecipePage({ params }: RecipePageProps) {
               </Card>
             )}
 
-            {/* Ingredients */}
-            <Card className="shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
-                    <path d="M6 9.01V9"/>
-                  </svg>
-                  Ingredients
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {ingredientSections.length > 0 ? (
-                  <RecipeIngredientsClient sections={ingredientSections} showCalories />
-                ) : (
-                  <p className="text-sm text-muted-foreground">No ingredients listed.</p>
-                )}
-              </CardContent>
-            </Card>
+             {/* Ingredients */}
+             <Card className="shadow-sm">
+               <CardHeader className="pb-3">
+                 <CardTitle className="flex items-center gap-2 text-lg">
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
+                     <path d="M6 9.01V9"/>
+                   </svg>
+                   Ingredients
+                 </CardTitle>
+               </CardHeader>
+               <CardContent>
+                 {ingredientSections.length > 0 ? (
+                   <RecipeIngredientsClient sections={ingredientSections} showCalories />
+                 ) : (
+                   <p className="text-sm text-muted-foreground">No ingredients listed.</p>
+                 )}
+               </CardContent>
+             </Card>
 
-            {/* Photo Gallery */}
+             {/* Ad: In-article between ingredients and directions */}
+             <AdInArticle placement="recipe-between-ingredients-directions" />
+
+             {/* Photo Gallery */}
             {recipeData.photoGallery && recipeData.photoGallery.length > 0 && (
               <Card className="shadow-sm">
                 <CardHeader className="pb-3">
@@ -850,6 +896,56 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     </div>
                   </div>
                   <FollowChefButton handle={creator.handle} displayName={creator.display_name} />
+                </CardContent>
+              </Card>
+            )}
+
+             {/* Quick Nutrition */}
+             {recipeData.nutrition_per_serving && (
+               <Card className="shadow-sm">
+                 <CardContent className="p-4">
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutrition per serving</p>
+                   <div className="grid grid-cols-2 gap-3">
+                     {[
+                       { label: 'Calories', value: (recipeData.nutrition_per_serving as Record<string, number>).calories, unit: 'kcal' },
+                       { label: 'Protein', value: (recipeData.nutrition_per_serving as Record<string, number>).protein, unit: 'g' },
+                       { label: 'Carbs', value: (recipeData.nutrition_per_serving as Record<string, number>).carbs, unit: 'g' },
+                       { label: 'Fat', value: (recipeData.nutrition_per_serving as Record<string, number>).fat, unit: 'g' },
+                     ].map((item) => (
+                       <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
+                         <p className="text-lg font-bold">{item.value ?? '—'}</p>
+                         <p className="text-[10px] text-muted-foreground">{item.unit} {item.label.toLowerCase()}</p>
+                       </div>
+                     ))}
+                   </div>
+                   <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                     Per serving ({servings} servings total)
+                   </p>
+                 </CardContent>
+               </Card>
+             )}
+
+             {/* Ad: Sidebar */}
+             <AdSidebar placement="recipe-sidebar" />
+
+             {/* Source link */}
+            {sourceUrl && (
+              <Card className="shadow-sm">
+                <CardContent className="p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Original Recipe</p>
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 hover:underline transition-colors break-all"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    {new URL(sourceUrl).hostname.replace('www.', '')}
+                  </a>
                 </CardContent>
               </Card>
             )}

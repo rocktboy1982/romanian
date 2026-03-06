@@ -7,6 +7,7 @@ import { MOCK_COCKTAILS } from '@/lib/mock-data'
 import type { MockCocktail } from '@/lib/mock-data'
 import ReportButton from '@/components/ReportButton'
 import RecipeRating from '@/components/RecipeRating'
+import { AdInArticle, AdSidebar } from '@/components/ads/ad-placements'
 
 /* ── Extended cocktail with full recipe fields ─────────────────────────── */
 interface CocktailDetail extends MockCocktail {
@@ -174,21 +175,24 @@ export default function CocktailDetailPage() {
           {/* ── LEFT: Recipe content ── */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: 'Serves', value: cocktail.serves },
-                { label: 'Difficulty', value: cocktail.difficulty },
-                { label: 'Votes', value: `♥ ${cocktail.votes.toLocaleString()}` },
-              ].map(stat => (
-                <div key={stat.label} className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.08)' }}>
-                  <p className="text-xl font-bold capitalize" style={{ color: '#7c3aed' }}>{stat.value}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#888' }}>{stat.label}</p>
-                </div>
-              ))}
-            </div>
+             {/* Quick stats */}
+             <div className="grid grid-cols-3 gap-3">
+               {[
+                 { label: 'Serves', value: cocktail.serves },
+                 { label: 'Difficulty', value: cocktail.difficulty },
+                 { label: 'Votes', value: `♥ ${cocktail.votes.toLocaleString()}` },
+               ].map(stat => (
+                 <div key={stat.label} className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.08)' }}>
+                   <p className="text-xl font-bold capitalize" style={{ color: '#7c3aed' }}>{stat.value}</p>
+                   <p className="text-xs mt-0.5" style={{ color: '#888' }}>{stat.label}</p>
+                 </div>
+               ))}
+             </div>
 
-            {/* Glassware / Garnish */}
+             {/* Ad: In-article between stats and ingredients */}
+             <AdInArticle placement="cocktail-between-stats-ingredients" />
+
+             {/* Glassware / Garnish */}
             {(cocktail.glassware || cocktail.garnish) && (
             <div className="flex flex-wrap gap-4 text-sm" style={{ color: '#555' }}>
                 {cocktail.glassware && (
@@ -267,15 +271,18 @@ export default function CocktailDetailPage() {
           {/* ── RIGHT: Sidebar ── */}
           <div className="space-y-5">
 
-            {/* Added by */}
-            <div className="rounded-2xl p-5 space-y-3" style={{ background: '#f9f5ff', border: '1px solid rgba(124,58,237,0.15)' }}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#7c3aed' }}>
-                Added by
-              </h3>
-              <ChefCard chef={cocktail.created_by} />
-            </div>
+             {/* Added by */}
+             <div className="rounded-2xl p-5 space-y-3" style={{ background: '#f9f5ff', border: '1px solid rgba(124,58,237,0.15)' }}>
+               <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#7c3aed' }}>
+                 Added by
+               </h3>
+               <ChefCard chef={cocktail.created_by} />
+             </div>
 
-            {/* Community rating */}
+             {/* Ad: Sidebar */}
+             <AdSidebar placement="cocktail-sidebar" />
+
+             {/* Community rating */}
             <RecipeRating
               recipeId={cocktail.id}
               initialVotes={cocktail.votes}

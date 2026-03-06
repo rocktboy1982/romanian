@@ -15,6 +15,7 @@ import {
   SearchX,
 } from 'lucide-react'
 import RecipeCard from '@/components/RecipeCard'
+import { AdInFeed } from '@/components/ads/ad-placements'
 import { REGION_META } from '@/lib/recipe-taxonomy'
 import type { MockCocktail } from '@/lib/mock-data'
 
@@ -1027,6 +1028,13 @@ function SearchDiscoveryPageClientContent() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* ====== AD PLACEMENT ====== */}
+            {mode === 'recipes' && !loading && recipes.length > 0 && (
+              <div className="mb-8">
+                <AdInFeed placement="search-infeed" />
               </div>
             )}
 

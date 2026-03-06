@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AdBanner } from '@/components/ads/ad-placements'
 import { MOCK_RECIPES, MOCK_TRENDING } from '@/lib/mock-data'
 
 export default function FeedPage() {
@@ -59,6 +60,11 @@ export default function FeedPage() {
           </div>
         </section>
       )}
+
+      {/* AD PLACEMENT */}
+      <div className="mb-10">
+        <AdBanner placement="feed-infeed" />
+      </div>
 
       {/* Main feed — recipe grid */}
       <section>
