@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     const isLocalSupabase = supabaseUrl?.includes('127.0.0.1') || supabaseUrl?.includes('localhost')
     if (isLocalSupabase) {
       try {
-        const healthCheck = await fetch(`${supabaseUrl}/health`, { signal: AbortSignal.timeout(2000) })
+        const healthCheck = await fetch(`${supabaseUrl}/rest/v1/`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }, signal: AbortSignal.timeout(2000) })
         if (!healthCheck.ok) {
           console.log('Local Supabase not responding, using mock search results')
           const { MOCK_RECIPES } = await import('@/lib/mock-data')

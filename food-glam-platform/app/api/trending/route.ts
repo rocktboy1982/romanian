@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   
   if (isLocalSupabase) {
     try {
-      const healthCheck = await fetch(`${supabaseUrl}/health`, { signal: AbortSignal.timeout(2000) })
+      const healthCheck = await fetch(`${supabaseUrl}/rest/v1/`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }, signal: AbortSignal.timeout(2000) })
       if (!healthCheck.ok) {
         console.log('Local Supabase not responding, using mock data')
         const { MOCK_TRENDING } = await import('@/lib/mock-data')

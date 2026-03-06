@@ -13,7 +13,7 @@ export async function GET() {
   
   if (isLocalSupabase) {
     try {
-      const healthCheck = await fetch(`${supabaseUrl}/health`, { signal: AbortSignal.timeout(2000) })
+      const healthCheck = await fetch(`${supabaseUrl}/rest/v1/`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }, signal: AbortSignal.timeout(2000) })
       if (!healthCheck.ok) throw new Error('not ok')
     } catch {
       const { MOCK_RECIPES } = await import('@/lib/mock-data')
@@ -69,8 +69,7 @@ export async function GET() {
         summary,
         hero_image_url,
         approach_id,
-        cook_time_minutes,
-        servings,
+        recipe_json,
         type,
         status,
         approaches:approaches(id, name)
@@ -141,20 +140,23 @@ export async function GET() {
     }
 
     // 6. Build candidates
-    const candidates: RecommendationCandidate[] = posts.map((p) => ({
-      id: p.id,
-      title: p.title,
-      slug: p.slug,
-      summary: p.summary,
-      hero_image_url: p.hero_image_url,
-      approach_name: (p.approaches as any)?.name || null,
-      approach_id: p.approach_id,
-      cook_time_minutes: p.cook_time_minutes ?? null,
-      servings: p.servings ?? null,
-      net_votes: voteMap.get(p.id) || 0,
-      recent_votes: recentVoteMap.get(p.id) || 0,
-      is_saved: savedPostIds.has(p.id),
-    }))
+    const candidates: RecommendationCandidate[] = posts.map((p) => {
+      const rj = (p.recipe_json || {}) as Record<string, unknown>
+      return {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        summary: p.summary,
+        hero_image_url: p.hero_image_url,
+        approach_name: (p.approaches as any)?.name || null,
+        approach_id: p.approach_id,
+        cook_time_minutes: (rj.cook_time_minutes as number) ?? (rj.cookTime as number) ?? null,
+        servings: (rj.servings as number) ?? null,
+        net_votes: voteMap.get(p.id) || 0,
+        recent_votes: recentVoteMap.get(p.id) || 0,
+        is_saved: savedPostIds.has(p.id),
+      }
+    })
 
     // 7. Rank
     let recommendations = rankRecommendations(
