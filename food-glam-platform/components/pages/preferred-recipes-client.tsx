@@ -55,19 +55,19 @@ function AddFromSearch({
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="font-semibold text-sm mb-3">Add from recipe library</h3>
+      <h3 className="font-semibold text-sm mb-3">Adaugă din biblioteca de rețete</h3>
       <input
         ref={inputRef}
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by title, region, diet, chef…"
+        placeholder="Caută după titlu, regiune, dietă, chef…"
         className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
         autoFocus
       />
 
-      {results.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-6">No recipes found</p>
+       {results.length === 0 ? (
+         <p className="text-sm text-muted-foreground text-center py-6">Nicio rețetă găsită</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto pr-1">
           {results.map((recipe) => {
@@ -98,7 +98,7 @@ function AddFromSearch({
                       ? "bg-amber-400 text-white cursor-default"
                       : "bg-white/90 text-amber-600 hover:bg-amber-500 hover:text-white"
                   }`}
-                  title={isIn ? "Already in Preferred" : "Add to Preferred"}
+                   title={isIn ? "Deja în Preferate" : "Adaugă în Preferate"}
                 >
                   {isIn ? "✓" : "+"}
                 </button>
@@ -117,20 +117,20 @@ function AddFromSearch({
         const allIn = sameChef.every((r) => existing.has(r.id))
         return (
           <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {sameChef.length} recipes by <strong>{chef.display_name}</strong>
-            </span>
-            <button
-              onClick={() => sameChef.filter((r) => !existing.has(r.id)).forEach((r) => onAdd(r as RecipeInput))}
-              disabled={allIn}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
-                allIn
-                  ? "border-amber-300 text-amber-400 cursor-default"
-                  : "border-amber-400 text-amber-600 hover:bg-amber-50"
-              }`}
-            >
-              {allIn ? "All added ✓" : `+ Add all ${sameChef.length}`}
-            </button>
+             <span className="text-xs text-muted-foreground">
+               {sameChef.length} rețete de <strong>{chef.display_name}</strong>
+             </span>
+             <button
+               onClick={() => sameChef.filter((r) => !existing.has(r.id)).forEach((r) => onAdd(r as RecipeInput))}
+               disabled={allIn}
+               className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
+                 allIn
+                   ? "border-amber-300 text-amber-400 cursor-default"
+                   : "border-amber-400 text-amber-600 hover:bg-amber-50"
+               }`}
+             >
+               {allIn ? "Toate adăugate ✓" : `+ Adaugă toate ${sameChef.length}`}
+             </button>
           </div>
         )
       })()}
@@ -201,38 +201,38 @@ export default function PreferredRecipesClient() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            ⭐ Preferred Recipes
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {preferred.length} recipe{preferred.length !== 1 ? "s" : ""} · your meal-planning shortlist
-          </p>
+           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+             ⭐ Rețete preferate
+           </h1>
+           <p className="text-muted-foreground text-sm mt-1">
+             {preferred.length} rețet{preferred.length !== 1 ? "e" : "ă"} · lista ta de scurtătură pentru planificarea meselor
+           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* View toggle */}
           <div className="flex rounded-lg border border-border overflow-hidden text-sm">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 font-medium transition-colors ${viewMode === "list" ? "bg-foreground text-background" : "hover:bg-muted"}`}
-            >
-              List
-            </button>
-            <button
-              onClick={() => setViewMode("chef")}
-              className={`px-3 py-1.5 font-medium border-l border-border transition-colors ${viewMode === "chef" ? "bg-foreground text-background" : "hover:bg-muted"}`}
-            >
-              By Chef
-            </button>
+             <button
+               onClick={() => setViewMode("list")}
+               className={`px-3 py-1.5 font-medium transition-colors ${viewMode === "list" ? "bg-foreground text-background" : "hover:bg-muted"}`}
+             >
+               Listă
+             </button>
+             <button
+               onClick={() => setViewMode("chef")}
+               className={`px-3 py-1.5 font-medium border-l border-border transition-colors ${viewMode === "chef" ? "bg-foreground text-background" : "hover:bg-muted"}`}
+             >
+               După Chef
+             </button>
           </div>
 
-          <button
-            onClick={() => setShowAdd((v) => !v)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors border ${
-              showAdd ? "bg-amber-500 text-white border-amber-500" : "border-amber-400 text-amber-600 hover:bg-amber-50"
-            }`}
-          >
-            {showAdd ? "× Close" : "+ Add Recipes"}
-          </button>
+           <button
+             onClick={() => setShowAdd((v) => !v)}
+             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors border ${
+               showAdd ? "bg-amber-500 text-white border-amber-500" : "border-amber-400 text-amber-600 hover:bg-amber-50"
+             }`}
+           >
+             {showAdd ? "× Închide" : "+ Adaugă rețete"}
+           </button>
         </div>
       </div>
 
@@ -244,8 +244,8 @@ export default function PreferredRecipesClient() {
             onAdd={(recipe) => addRecipe(recipe, "manual")}
           />
           {/* Bulk-add by chef from mock data */}
-          <div className="mt-4 rounded-2xl border border-border bg-card p-5">
-            <h3 className="font-semibold text-sm mb-3">Add all recipes by a chef</h3>
+           <div className="mt-4 rounded-2xl border border-border bg-card p-5">
+             <h3 className="font-semibold text-sm mb-3">Adaugă toate rețetele unui chef</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {Array.from(new Map(MOCK_RECIPES.map((r) => [r.created_by.id, r.created_by])).values()).map((chef) => {
                 const chefRecipes = MOCK_RECIPES.filter((r) => r.created_by.id === chef.id)
@@ -255,26 +255,26 @@ export default function PreferredRecipesClient() {
                   <div key={chef.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={chef.avatar_url} alt={chef.display_name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold line-clamp-1">{chef.display_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{chef.handle} · {chefRecipes.length} recipe{chefRecipes.length !== 1 ? "s" : ""}</p>
-                      {someIn && !allIn && (
-                        <p className="text-[10px] text-amber-600">{chefRecipes.filter((r) => preferredIds.has(r.id)).length} already added</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => allIn
-                        ? removeByChef(chef.id)
-                        : addByChef(chefRecipes as RecipeInput[], chef)
-                      }
-                      className={`shrink-0 text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
-                        allIn
-                          ? "border-red-200 text-red-400 hover:bg-red-50"
-                          : "border-amber-400 text-amber-600 hover:bg-amber-50"
-                      }`}
-                    >
-                      {allIn ? "Remove all" : someIn ? "Add rest" : "Add all"}
-                    </button>
+                     <div className="flex-1 min-w-0">
+                       <p className="text-xs font-semibold line-clamp-1">{chef.display_name}</p>
+                       <p className="text-[10px] text-muted-foreground">{chef.handle} · {chefRecipes.length} rețet{chefRecipes.length !== 1 ? "e" : "ă"}</p>
+                       {someIn && !allIn && (
+                         <p className="text-[10px] text-amber-600">{chefRecipes.filter((r) => preferredIds.has(r.id)).length} deja adăugate</p>
+                       )}
+                     </div>
+                     <button
+                       onClick={() => allIn
+                         ? removeByChef(chef.id)
+                         : addByChef(chefRecipes as RecipeInput[], chef)
+                       }
+                       className={`shrink-0 text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                         allIn
+                           ? "border-red-200 text-red-400 hover:bg-red-50"
+                           : "border-amber-400 text-amber-600 hover:bg-amber-50"
+                       }`}
+                     >
+                       {allIn ? "Elimină toate" : someIn ? "Adaugă restul" : "Adaugă toate"}
+                     </button>
                   </div>
                 )
               })}
@@ -290,7 +290,7 @@ export default function PreferredRecipesClient() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search preferred…"
+             placeholder="Caută preferate…"
             className="border border-input rounded-xl px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 min-w-[200px]"
           />
 
@@ -300,7 +300,7 @@ export default function PreferredRecipesClient() {
               onChange={(e) => setFilterChef(e.target.value)}
               className="text-sm border border-input rounded-xl px-3 py-1.5 bg-background focus:outline-none"
             >
-              <option value="">All chefs</option>
+               <option value="">Toți chefii</option>
               {allChefs.map((c) => (
                 <option key={c.chefId} value={c.chefId}>{c.chefName} ({c.count})</option>
               ))}
@@ -313,7 +313,7 @@ export default function PreferredRecipesClient() {
               onChange={(e) => setFilterRegion(e.target.value)}
               className="text-sm border border-input rounded-xl px-3 py-1.5 bg-background focus:outline-none"
             >
-              <option value="">All regions</option>
+               <option value="">Toate regiunile</option>
               {allRegions.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           )}
@@ -324,7 +324,7 @@ export default function PreferredRecipesClient() {
               onChange={(e) => setFilterDiet(e.target.value)}
               className="text-sm border border-input rounded-xl px-3 py-1.5 bg-background focus:outline-none"
             >
-              <option value="">All diets</option>
+               <option value="">Toate dietele</option>
               {allDiets.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           )}
@@ -334,10 +334,10 @@ export default function PreferredRecipesClient() {
             onChange={(e) => setFilterSource(e.target.value as typeof filterSource)}
             className="text-sm border border-input rounded-xl px-3 py-1.5 bg-background focus:outline-none"
           >
-            <option value="">All sources</option>
-            <option value="manual">Added manually</option>
-            <option value="chef">From chef</option>
-            <option value="cookbook">From cookbook</option>
+             <option value="">Toate sursele</option>
+             <option value="manual">Adăugate manual</option>
+             <option value="chef">De la chef</option>
+             <option value="cookbook">Din carte de rețete</option>
           </select>
 
           {hasFilters && (
@@ -345,7 +345,7 @@ export default function PreferredRecipesClient() {
               onClick={() => { setSearch(""); setFilterChef(""); setFilterRegion(""); setFilterDiet(""); setFilterSource("") }}
               className="text-xs text-muted-foreground hover:text-foreground underline"
             >
-              Clear filters
+               Șterge filtrele
             </button>
           )}
         </div>
@@ -354,25 +354,25 @@ export default function PreferredRecipesClient() {
       {/* ══════════════════ LIST VIEW ══════════════════ */}
       {viewMode === "list" && (
         <>
-          {preferred.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-5xl mb-4">⭐</p>
-              <h2 className="text-xl font-semibold mb-2">No preferred recipes yet</h2>
-              <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Add recipes here to use them in your Meal Planner. You can add individually, bulk-add by chef, or import from your Cookbook.
-              </p>
-              <button
-                onClick={() => setShowAdd(true)}
-                className="px-5 py-2.5 bg-amber-500 text-white rounded-xl font-semibold text-sm hover:bg-amber-600 transition-colors"
-              >
-                + Add Recipes
-              </button>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No recipes match your filters.</p>
-              <button onClick={() => { setSearch(""); setFilterChef(""); setFilterRegion(""); setFilterDiet(""); setFilterSource("") }} className="text-sm underline mt-2">Clear filters</button>
-            </div>
+           {preferred.length === 0 ? (
+             <div className="text-center py-20">
+               <p className="text-5xl mb-4">⭐</p>
+               <h2 className="text-xl font-semibold mb-2">Nicio rețetă preferată deocamdată</h2>
+               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                 Adaugă rețete aici pentru a le folosi în Planificatorul de mese. Poți adăuga individual, în masă după chef, sau importa din Cartea ta de rețete.
+               </p>
+               <button
+                 onClick={() => setShowAdd(true)}
+                 className="px-5 py-2.5 bg-amber-500 text-white rounded-xl font-semibold text-sm hover:bg-amber-600 transition-colors"
+               >
+                 + Adaugă rețete
+               </button>
+             </div>
+           ) : filtered.length === 0 ? (
+             <div className="text-center py-12 text-muted-foreground">
+               <p>Nicio rețetă nu se potrivește cu filtrele tale.</p>
+               <button onClick={() => { setSearch(""); setFilterChef(""); setFilterRegion(""); setFilterDiet(""); setFilterSource("") }} className="text-sm underline mt-2">Șterge filtrele</button>
+             </div>
           ) : (
             <div className="space-y-2">
               {filtered.map((recipe) => (
@@ -402,13 +402,13 @@ export default function PreferredRecipesClient() {
                           {recipe.dietTags[0]}
                         </span>
                       )}
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
-                        recipe.source === "chef" ? "bg-blue-50 text-blue-600 border-blue-200" :
-                        recipe.source === "cookbook" ? "bg-amber-50 text-amber-600 border-amber-200" :
-                        "bg-stone-50 text-stone-500 border-stone-200"
-                      }`}>
-                        {recipe.source === "chef" ? "🍴 chef" : recipe.source === "cookbook" ? "📖 cookbook" : "✓ manual"}
-                      </span>
+                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
+                         recipe.source === "chef" ? "bg-blue-50 text-blue-600 border-blue-200" :
+                         recipe.source === "cookbook" ? "bg-amber-50 text-amber-600 border-amber-200" :
+                         "bg-stone-50 text-stone-500 border-stone-200"
+                       }`}>
+                         {recipe.source === "chef" ? "🍴 chef" : recipe.source === "cookbook" ? "📖 carte" : "✓ manual"}
+                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -416,14 +416,14 @@ export default function PreferredRecipesClient() {
                       href={`/recipes/${recipe.slug}`}
                       className="text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1"
                     >
-                      View
+                       Vezi
                     </Link>
                     <button
                       onClick={() => removeRecipe(recipe.id)}
                       className="text-xs text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 rounded-lg px-2.5 py-1 transition-colors"
                       title="Remove from Preferred"
                     >
-                      Remove
+                       Elimină
                     </button>
                   </div>
                 </div>
@@ -436,10 +436,10 @@ export default function PreferredRecipesClient() {
       {/* ══════════════════ BY CHEF VIEW ══════════════════ */}
       {viewMode === "chef" && (
         <>
-          {allChefs.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No recipes with chef info yet.</p>
-            </div>
+           {allChefs.length === 0 ? (
+             <div className="text-center py-12 text-muted-foreground">
+               <p>Nicio rețetă cu informații de chef deocamdată.</p>
+             </div>
           ) : (
             <div className="space-y-4">
               {allChefs.map((chef) => (
@@ -454,13 +454,13 @@ export default function PreferredRecipesClient() {
                         <p className="text-sm font-semibold">{chef.chefName}</p>
                         {chef.chefHandle && <p className="text-[11px] text-muted-foreground">{chef.chefHandle}</p>}
                       </div>
-                      <span className="ml-2 text-xs text-muted-foreground">{chef.count} recipe{chef.count !== 1 ? "s" : ""}</span>
+                       <span className="ml-2 text-xs text-muted-foreground">{chef.count} rețet{chef.count !== 1 ? "e" : "ă"}</span>
                     </div>
                     <button
                       onClick={() => removeByChef(chef.chefId)}
                       className="text-xs text-red-400 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg px-3 py-1 transition-colors"
                     >
-                      Remove all
+                       Elimină toate
                     </button>
                   </div>
                   {/* Recipes */}
@@ -494,21 +494,21 @@ export default function PreferredRecipesClient() {
       {/* ── Footer actions ── */}
       {preferred.length > 0 && (
         <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{preferred.length} recipe{preferred.length !== 1 ? "s" : ""} in your shortlist</p>
-          {confirmClear ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Are you sure?</span>
-              <button onClick={() => { clearAll(); setConfirmClear(false) }} className="text-sm text-red-500 font-semibold hover:text-red-700">Yes, clear all</button>
-              <button onClick={() => setConfirmClear(false)} className="text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmClear(true)}
-              className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
-            >
-              Clear all preferred
-            </button>
-          )}
+           <p className="text-sm text-muted-foreground">{preferred.length} rețet{preferred.length !== 1 ? "e" : "ă"} în lista ta de scurtătură</p>
+           {confirmClear ? (
+             <div className="flex items-center gap-2">
+               <span className="text-sm text-muted-foreground">Ești sigur?</span>
+               <button onClick={() => { clearAll(); setConfirmClear(false) }} className="text-sm text-red-500 font-semibold hover:text-red-700">Da, șterge toate</button>
+               <button onClick={() => setConfirmClear(false)} className="text-sm text-muted-foreground hover:text-foreground">Anulează</button>
+             </div>
+           ) : (
+             <button
+               onClick={() => setConfirmClear(true)}
+               className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+             >
+               Șterge toate preferatele
+             </button>
+           )}
         </div>
       )}
     </div></main>

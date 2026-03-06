@@ -134,14 +134,14 @@ function TopRecipesTab() {
               ))}
             </div>
             <div className="flex items-center gap-3 mt-1">
-              {recipe.is_tested && (
-                <span className="text-xs font-semibold" style={{ color: '#4ade80' }}>
-                  ✓ Tested
-                </span>
-              )}
-              <span className="text-xs" style={{ color: '#999' }}>
-                {recipe.comments} comments
-              </span>
+               {recipe.is_tested && (
+                 <span className="text-xs font-semibold" style={{ color: '#4ade80' }}>
+                   ✓ Testat
+                 </span>
+               )}
+               <span className="text-xs" style={{ color: '#999' }}>
+                 {recipe.comments} comentarii
+               </span>
             </div>
           </div>
 
@@ -153,7 +153,7 @@ function TopRecipesTab() {
             >
               {recipe.votes.toLocaleString()}
             </span>
-            <span className="text-xs" style={{ color: '#999' }}>votes</span>
+               <span className="text-xs" style={{ color: '#999' }}>voturi</span>
           </div>
         </Link>
       ))}
@@ -221,12 +221,12 @@ function TopChefsTab() {
                 {chef.bio}
               </p>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs font-semibold" style={{ color: '#ff9500' }}>
-                  {formatFollowers(chef.follower_count)} followers
-                </span>
-                <span className="text-xs" style={{ color: '#aaa' }}>
-                  {chef.post_count} posts
-                </span>
+               <span className="text-xs font-semibold" style={{ color: '#ff9500' }}>
+                   {formatFollowers(chef.follower_count)} urmăritori
+                 </span>
+                 <span className="text-xs" style={{ color: '#aaa' }}>
+                   {chef.post_count} postări
+                 </span>
               </div>
             </div>
 
@@ -247,7 +247,7 @@ function TopChefsTab() {
                     }
               }
             >
-              {isFollowing ? 'Following' : 'Follow'}
+               {isFollowing ? 'Urmăresc' : 'Urmărește'}
             </button>
           </div>
         )
@@ -259,11 +259,11 @@ function TopChefsTab() {
 function RisingTab() {
   return (
     <div>
-      <div className="px-4 py-2.5" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-        <p className="text-[11px]" style={{ color: '#999' }}>
-          Ranked by quality score — highly-rated recipes that may have fewer votes yet.
-        </p>
-      </div>
+       <div className="px-4 py-2.5" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+         <p className="text-[11px]" style={{ color: '#999' }}>
+           Clasificate după scor de calitate — rețete cu evaluări înalte care pot avea mai puține voturi deocamdată.
+         </p>
+       </div>
       {RISING_RECIPES.map((recipe, i) => {
         const stars = Math.round(recipe.quality_score)
         return (
@@ -334,7 +334,7 @@ function RisingTab() {
               >
                 {recipe.votes}
               </span>
-              <span className="text-xs" style={{ color: '#999' }}>votes</span>
+              <span className="text-xs" style={{ color: '#999' }}>voturi</span>
             </div>
           </Link>
         )
@@ -426,11 +426,11 @@ function ByCuisineTab() {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const TABS: { id: Tab; label: string; icon: string; description: string }[] = [
-  { id: 'recipes', label: 'Top Recipes',  icon: '🏆', description: 'Most voted' },
-  { id: 'chefs',   label: 'Top Chefs',    icon: '👨‍🍳', description: 'Most followed' },
-  { id: 'rising',  label: 'Rising',       icon: '⭐', description: 'Highest rated' },
-  { id: 'cuisine',   label: 'By Cuisine', icon: '🌍', description: 'Per region' },
-  { id: 'community', label: 'Community',  icon: '💬', description: 'Latest discussions' },
+  { id: 'recipes', label: 'Rețete de top',  icon: '🏆', description: 'Cele mai votate' },
+  { id: 'chefs',   label: 'Chefii de top',    icon: '👨‍🍳', description: 'Cei mai urmăriți' },
+  { id: 'rising',  label: 'În creștere',       icon: '⭐', description: 'Cel mai bine evaluate' },
+  { id: 'cuisine',   label: 'După bucătărie', icon: '🌍', description: 'Pe regiune' },
+  { id: 'community', label: 'Comunitate',  icon: '💬', description: 'Discuții recente' },
 ]
 
 export default function RankingsPage() {
@@ -448,20 +448,20 @@ export default function RankingsPage() {
         className="px-4 py-8 text-center"
         style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
       >
-        <h1
-          className="text-3xl font-extrabold tracking-tight mb-1"
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          🏆 Rankings
-        </h1>
-        <p className="text-sm" style={{ color: '#888' }}>
-          The community&apos;s most voted recipes, top chefs, and hidden gems
-        </p>
+         <h1
+           className="text-3xl font-extrabold tracking-tight mb-1"
+           style={{
+             fontFamily: "'Syne', sans-serif",
+             background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
+             WebkitBackgroundClip: 'text',
+             WebkitTextFillColor: 'transparent',
+           }}
+         >
+           🏆 Clasament
+         </h1>
+         <p className="text-sm" style={{ color: '#888' }}>
+           Rețetele cu cele mai multe voturi ale comunității, chefii de top și gemele ascunse
+         </p>
       </div>
 
       {/* ── Tab bar ── */}
@@ -543,9 +543,9 @@ export default function RankingsPage() {
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-[11px] mt-4" style={{ color: '#bbb' }}>
-          Rankings update in real-time as the community votes · Data shown is live
-        </p>
+         <p className="text-center text-[11px] mt-4" style={{ color: '#bbb' }}>
+           Clasamentele se actualizează în timp real pe măsură ce comunitatea votează · Datele afișate sunt în direct
+         </p>
       </div>
     </main>
   )

@@ -7,24 +7,24 @@ import { useEffect, useState, useRef } from 'react'
 /* ─── nav items ──────────────────────────────────────────────────────────── */
 
 const NAV_ITEMS = [
-  { href: '/',              label: 'Explore',    icon: '🏠' },
-  { href: '/cookbooks',     label: 'Cookbooks',  icon: '📖' },
-  { href: '/cocktailbooks', label: 'Cocktails',  icon: '🍹' },
-  { href: '/plan',          label: 'Meal Plan',  icon: '📅' },
-  { href: '/me/preferred',  label: '⭐ Preferred', icon: '⭐' },
-  { href: '/me/cookbook',   label: 'My Cookbook', icon: '🍴' },
+  { href: '/',              label: 'Explorează',    icon: '🏠' },
+  { href: '/cookbooks',     label: 'Cărți de bucate',  icon: '📖' },
+  { href: '/cocktailbooks', label: 'Cocktailuri',  icon: '🍹' },
+  { href: '/plan',          label: 'Plan de masă',  icon: '📅' },
+  { href: '/me/preferred',  label: '⭐ Preferate', icon: '⭐' },
+  { href: '/me/cookbook',   label: 'Cartea mea', icon: '🍴' },
 
-  { href: '/chefs/me/new-post', label: '+ Chef Post',   icon: '✍️' },
-  { href: '/submit/recipe',    label: '+ Add Recipe',   icon: '🍽️' },
-  { href: '/submit/cocktail',   label: '+ Add Beverage', icon: '🍹' },
+  { href: '/chefs/me/new-post', label: '+ Postare Chef',   icon: '✍️' },
+  { href: '/submit/recipe',    label: '+ Adaugă rețetă',   icon: '🍽️' },
+  { href: '/submit/cocktail',   label: '+ Adaugă băutură', icon: '🍹' },
 ]
 
 const MOBILE_TABS = [
-  { href: '/',                 icon: '🏠', label: 'Home'     },
-  { href: '/search',           icon: '🔍', label: 'Explore'  },
-  { href: '/me/scan',          icon: '📷', label: 'Scan'     },
-  { href: '/me/grocery',       icon: '🛒', label: 'Shop'     },
-  { href: '/me',               icon: '👤', label: 'Profile'  },
+  { href: '/',                 icon: '🏠', label: 'Acasă'     },
+  { href: '/search',           icon: '🔍', label: 'Explorează'  },
+  { href: '/me/scan',          icon: '📷', label: 'Scanează'     },
+  { href: '/me/grocery',       icon: '🛒', label: 'Cumpărături'     },
+  { href: '/me',               icon: '👤', label: 'Profil'  },
 ]
 
 /* ─── mock-user helper (localStorage, no Supabase required) ─────────────── */
@@ -111,7 +111,7 @@ export function Navigation() {
         className="hidden text-xs text-center py-1.5 px-4"
         style={{ background: '#1a1a2e', color: '#a0aec0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
-        🌍 Use your browser&apos;s built-in translate feature to read this site in your language.
+        🌍 Acest site este disponibil în limba română.
         <button
           className="ml-2 underline opacity-70 hover:opacity-100"
           onClick={() => {
@@ -119,7 +119,7 @@ export function Navigation() {
             if (el) { el.style.display = 'none'; sessionStorage.setItem('translate-hint-dismissed', '1') }
           }}
         >
-          Dismiss
+          Închide
         </button>
       </div>
 
@@ -160,7 +160,7 @@ export function Navigation() {
                 type="text"
                 value={searchVal}
                 onChange={e => setSearchVal(e.target.value)}
-                placeholder="Search dishes, chefs, cuisines…"
+                placeholder="Caută preparate, bucătari, bucătării..."
                 className="flex-1 bg-transparent text-sm outline-none"
                 style={{ color: '#f0f0f0' }}
               />
@@ -197,23 +197,23 @@ export function Navigation() {
                   )}
                   <span className="hidden lg:inline">{user.display_name ?? 'User'}</span>
                 </Link>
-                <button
-                  onClick={signOut}
-                  className="text-xs px-3 py-1.5 rounded-full transition-all"
-                  style={{ background: 'rgba(255,255,255,0.07)', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}
-                >
-                  Sign out
-                </button>
+                 <button
+                   onClick={signOut}
+                   className="text-xs px-3 py-1.5 rounded-full transition-all"
+                   style={{ background: 'rgba(255,255,255,0.07)', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}
+                 >
+                   Deconectare
+                 </button>
               </>
             ) : (
               hydrated && (
-                <Link
-                  href="/auth/signin"
-                  className="text-sm font-semibold px-4 py-2 rounded-full transition-all"
-                  style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-                >
-                  Sign in
-                </Link>
+               <Link
+                   href="/auth/signin"
+                   className="text-sm font-semibold px-4 py-2 rounded-full transition-all"
+                   style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+                 >
+                   Autentificare
+                 </Link>
               )
             )}
           </div>
@@ -244,9 +244,9 @@ export function Navigation() {
           {/* spacer */}
           <div className="flex-1" />
 
-          {/* secondary links */}
-          <Link href="/search" className="text-xs px-2 py-1" style={{ color: '#555' }}>All recipes</Link>
-          <Link href="/rankings" className="text-xs px-2 py-1" style={{ color: '#555' }}>Rankings</Link>
+           {/* secondary links */}
+           <Link href="/search" className="text-xs px-2 py-1" style={{ color: '#555' }}>Toate rețetele</Link>
+           <Link href="/rankings" className="text-xs px-2 py-1" style={{ color: '#555' }}>Clasament</Link>
         </div>
       </header>
 
@@ -283,14 +283,14 @@ export function Navigation() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
-            <input
-              type="text"
-              value={searchVal}
-              onChange={e => setSearchVal(e.target.value)}
-              placeholder="Search…"
-              className="flex-1 bg-transparent text-sm outline-none min-w-0"
-              style={{ color: '#f0f0f0' }}
-            />
+             <input
+               type="text"
+               value={searchVal}
+               onChange={e => setSearchVal(e.target.value)}
+               placeholder="Caută..."
+               className="flex-1 bg-transparent text-sm outline-none min-w-0"
+               style={{ color: '#f0f0f0' }}
+             />
           </div>
         </form>
 
@@ -328,19 +328,19 @@ export function Navigation() {
           ))}
           <div className="px-5 pt-3 mt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             {hydrated && user ? (
-              <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: '#888' }}>{user.display_name}</span>
-                <button onClick={signOut} className="text-xs" style={{ color: '#ff4d6d' }}>Sign out</button>
-              </div>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="block text-center py-2 rounded-xl text-sm font-semibold"
-                style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-              >
-                Sign in
-              </Link>
-            )}
+               <div className="flex items-center justify-between">
+                 <span className="text-sm" style={{ color: '#888' }}>{user.display_name}</span>
+                 <button onClick={signOut} className="text-xs" style={{ color: '#ff4d6d' }}>Deconectare</button>
+               </div>
+             ) : (
+               <Link
+                 href="/auth/signin"
+                 className="block text-center py-2 rounded-xl text-sm font-semibold"
+                 style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+               >
+                 Autentificare
+               </Link>
+             )}
           </div>
         </div>
       )}

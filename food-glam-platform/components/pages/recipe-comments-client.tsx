@@ -144,23 +144,23 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
 
   if (!mockUser) {
     return (
-      <div id="comments" className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-        <p className="ff-display text-lg font-bold mb-4">Comments</p>
-        <div className="rounded-2xl p-6 flex flex-col items-center gap-4" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/>
-          </svg>
-          <p className="text-center text-sm" style={{ color: '#888' }}>Sign in to read and post comments</p>
-          <Link
-            href={`/auth/signin?redirect=/recipes/${slug}`}
-            className="px-6 py-2 rounded-full text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)' }}
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
+       <div id="comments" className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+         <p className="ff-display text-lg font-bold mb-4">Comentarii</p>
+         <div className="rounded-2xl p-6 flex flex-col items-center gap-4" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }}>
+           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+             <path d="M7 11V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/>
+           </svg>
+           <p className="text-center text-sm" style={{ color: '#888' }}>Conectează-te pentru a citi și posta comentarii</p>
+           <Link
+             href={`/auth/signin?redirect=/recipes/${slug}`}
+             className="px-6 py-2 rounded-full text-sm font-semibold text-white"
+             style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)' }}
+           >
+             Conectează-te
+           </Link>
+         </div>
+       </div>
     )
   }
 
@@ -244,8 +244,8 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
   /* ── render ───────────────────────────────────────────────────────────── */
 
   return (
-    <div id="comments" className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-      <p className="ff-display text-lg font-bold mb-4">Comments ({comments.length})</p>
+     <div id="comments" className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+       <p className="ff-display text-lg font-bold mb-4">Comentarii ({comments.length})</p>
 
       {/* Comments list */}
       <div className="space-y-4 mb-6">
@@ -295,10 +295,10 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
           style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0 }}
         />
 
-        <textarea
-          value={newComment}
-          onChange={e => setNewComment(e.target.value)}
-          placeholder="Add a comment…"
+         <textarea
+           value={newComment}
+           onChange={e => setNewComment(e.target.value)}
+           placeholder="Adaugă un comentariu..."
           className="w-full px-4 py-3 rounded-lg text-sm resize-none mb-3 focus:outline-none"
           style={{
             background: 'rgba(0,0,0,0.05)',
@@ -314,16 +314,16 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
             className="mb-3 rounded-xl p-4"
             style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)' }}
           >
-            {challenge.type === 'math' && (
-              <div>
-                <p className="text-xs font-semibold mb-2" style={{ color: '#555' }}>
-                  Quick check — what is {challenge.a} {challenge.op} {challenge.b}?
-                </p>
+             {challenge.type === 'math' && (
+               <div>
+                 <p className="text-xs font-semibold mb-2" style={{ color: '#555' }}>
+                   Verificare rapidă — cât este {challenge.a} {challenge.op} {challenge.b}?
+                 </p>
                 <input
                   type="number"
                   value={mathInput}
                   onChange={e => { setMathInput(e.target.value); setCaptchaError('') }}
-                  placeholder="Your answer"
+                   placeholder="Răspunsul tău"
                   className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
                   style={{
                     background: '#fff',
@@ -352,7 +352,7 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
                     </svg>
                   )}
                 </div>
-                <span className="text-sm" style={{ color: '#444' }}>I am not a robot</span>
+                 <span className="text-sm" style={{ color: '#444' }}>Nu sunt robot</span>
                 <span className="ml-auto text-[10px] font-mono" style={{ color: '#bbb' }}>🛡 protected</span>
               </label>
             )}
@@ -364,14 +364,14 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
         )}
 
         <div className="flex justify-end">
-          <button
-            onClick={handlePostComment}
-            disabled={!newComment.trim()}
-            className="px-5 py-2 rounded-full text-sm font-semibold text-white transition-opacity disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)' }}
-          >
-            {challenge && !captchaPassed ? 'Verify & Post' : 'Post'}
-          </button>
+           <button
+             onClick={handlePostComment}
+             disabled={!newComment.trim()}
+             className="px-5 py-2 rounded-full text-sm font-semibold text-white transition-opacity disabled:opacity-50"
+             style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)' }}
+           >
+             {challenge && !captchaPassed ? 'Verifică și publică' : 'Publică'}
+           </button>
         </div>
       </div>
     </div>

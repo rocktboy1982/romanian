@@ -92,7 +92,7 @@ export function StarDisplay({
       </span>
       {showCount && (
         <span className="text-xs font-medium" style={{ color: "#92400e" }}>
-          {votes.toLocaleString()} vote{votes !== 1 ? "s" : ""}
+          {votes.toLocaleString()} {votes !== 1 ? "voturi" : "vot"}
         </span>
       )}
     </span>
@@ -184,14 +184,14 @@ export default function RecipeRating({
   };
 
   const stars = votesToStars(votes);
-  const starLabels = ["", "Getting started", "Gaining fans", "Community pick", "Fan favourite", "Hall of fame"];
+  const starLabels = ["", "Începând", "Câștigând fani", "Alegerea comunității", "Favorit al fanilor", "Sala faimei"];
 
   return (
     <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.08)" }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#555" }}>
-          Community Rating
+          Evaluare comunitate
         </h3>
         <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#fef3c7", color: "#92400e" }}>
           {qualityScore.toFixed(1)} / 5.0
@@ -206,7 +206,7 @@ export default function RecipeRating({
           ))}
         </div>
         <span className="text-xs font-medium" style={{ color: "#92400e" }}>
-          {stars > 0 ? starLabels[stars] : "Be the first to vote!"}
+          {stars > 0 ? starLabels[stars] : "Fii primul care votează!"}
         </span>
       </div>
 
@@ -216,7 +216,7 @@ export default function RecipeRating({
           {votes.toLocaleString()}
         </span>
         <span className="text-sm ml-1.5" style={{ color: "#888" }}>
-          vote{votes !== 1 ? "s" : ""}
+          vot{votes !== 1 ? "uri" : ""}
         </span>
       </div>
 
@@ -238,7 +238,7 @@ export default function RecipeRating({
             <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/>
             <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
           </svg>
-          {userVote === "up" ? "Liked!" : "Like"}
+          {userVote === "up" ? "Apreciat!" : "Apreciază"}
         </button>
 
         <button
@@ -257,7 +257,7 @@ export default function RecipeRating({
             <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/>
             <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
           </svg>
-          {userVote === "down" ? "Disliked" : "Dislike"}
+          {userVote === "down" ? "Neapreciat" : "Nu apreciez"}
         </button>
       </div>
 
@@ -265,8 +265,8 @@ export default function RecipeRating({
       {stars < 5 && (
         <div>
           <div className="flex justify-between text-[10px] mb-1" style={{ color: "#aaa" }}>
-            <span>★ {stars} stars</span>
-            <span>Next: ★ {stars + 1}</span>
+            <span>★ {stars} stele</span>
+            <span>Următoarele: ★ {stars + 1}</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.08)" }}>
             <div

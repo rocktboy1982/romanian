@@ -38,9 +38,9 @@ export default function SignInPage() {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Food Glam</h1>
-            <p className="text-gray-600">Sign in to save recipes, plan meals, and more</p>
-          </div>
+             <h1 className="text-3xl font-bold text-gray-900 mb-2">Bine ai venit la Food Glam</h1>
+             <p className="text-gray-600">Autentifică-te pentru a salva rețete, planifica mese și multe altele</p>
+           </div>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -72,13 +72,13 @@ export default function SignInPage() {
               />
             </svg>
             <span className="font-medium text-gray-700">
-              {loading ? 'Signing in...' : 'Continue with Google'}
-            </span>
+               {loading ? 'Se autentifică...' : 'Continuă cu Google'}
+             </span>
           </button>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
+           <p className="mt-6 text-center text-sm text-gray-500">
+             Prin autentificare, ești de acord cu Termenii și Condițiile și Politica de Confidențialitate
+           </p>
         </div>
       </div>
     </div>

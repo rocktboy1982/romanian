@@ -13,8 +13,8 @@ import { ADSENSE_PUB_ID, ADS_ENABLED } from '@/lib/adsense-config'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Food Glam Platform',
-  description: 'An elegant, simple food platform where people can discover recipes by Approach/Region.',
+  title: 'Food Glam - Platformă Culinară',
+  description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea.',
 }
 
 export default function RootLayout({

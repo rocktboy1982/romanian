@@ -121,17 +121,17 @@ export default function ModerationClient() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Moderation</h1>
+      <h1 className="text-2xl font-bold mb-6">Moderare</h1>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
-        <button className={tabCls('queue')} onClick={() => setTab('queue')}>
-          Pending Queue {items.length > 0 && <span className="ml-1 text-xs opacity-70">({items.length})</span>}
-        </button>
-        <button className={tabCls('reports')} onClick={() => setTab('reports')}>
-          Reports {reports.length > 0 && <span className="ml-1 text-xs opacity-70">({reports.length})</span>}
-        </button>
-      </div>
+         <button className={tabCls('queue')} onClick={() => setTab('queue')}>
+           Coadă în așteptare {items.length > 0 && <span className="ml-1 text-xs opacity-70">({items.length})</span>}
+         </button>
+         <button className={tabCls('reports')} onClick={() => setTab('reports')}>
+           Rapoarte {reports.length > 0 && <span className="ml-1 text-xs opacity-70">({reports.length})</span>}
+         </button>
+       </div>
 
       {loading && (
         <div className="flex items-center justify-center py-20">
@@ -142,19 +142,19 @@ export default function ModerationClient() {
       {/* Queue tab */}
       {!loading && tab === 'queue' && (
         <div>
-          {items.length > 0 && (
-            <div className="mb-4 flex gap-2">
-              <Button size="sm" onClick={() => bulkAct('active')}>Approve selected</Button>
-              <Button size="sm" variant="destructive" onClick={() => bulkAct('rejected')}>Reject selected</Button>
-            </div>
-          )}
+           {items.length > 0 && (
+             <div className="mb-4 flex gap-2">
+               <Button size="sm" onClick={() => bulkAct('active')}>Aprobă selectate</Button>
+               <Button size="sm" variant="destructive" onClick={() => bulkAct('rejected')}>Respinge selectate</Button>
+             </div>
+           )}
 
-          {items.length === 0 && (
-            <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg font-medium mb-1">All clear</p>
-              <p className="text-sm">No posts pending review right now.</p>
-            </div>
-          )}
+           {items.length === 0 && (
+             <div className="text-center py-16 text-muted-foreground">
+               <p className="text-lg font-medium mb-1">Totul e clar</p>
+               <p className="text-sm">Nicio postare în așteptare de revizuire acum.</p>
+             </div>
+           )}
 
           <ul className="space-y-3">
             {items.map((it) => (
@@ -167,13 +167,13 @@ export default function ModerationClient() {
                     className="mt-1"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm">{it.title || 'Untitled'}</span>
-                      <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{it.type}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      by {it.created_by} · {it.created_at ? new Date(it.created_at).toLocaleString() : ''}
-                    </p>
+                     <div className="flex items-center gap-2 flex-wrap">
+                       <span className="font-medium text-sm">{it.title || 'Fără titlu'}</span>
+                       <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{it.type}</span>
+                     </div>
+                     <p className="text-xs text-muted-foreground mt-0.5">
+                       de {it.created_by} · {it.created_at ? new Date(it.created_at).toLocaleString() : ''}
+                     </p>
 
                     {/* Preview content */}
                     {previewId === it.id && (
@@ -187,35 +187,35 @@ export default function ModerationClient() {
                       </div>
                     )}
 
-                    {/* Reject reason input */}
-                    {rejectReasonId === it.id && (
-                      <div className="mt-3 flex gap-2 items-center">
-                        <input
-                          type="text"
-                          value={rejectReason}
-                          onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder="Reason for rejection (optional)"
-                          className="flex-1 rounded-lg border px-3 py-1.5 text-sm"
-                        />
-                        <Button size="sm" variant="destructive" onClick={() => act(it.id, 'rejected', rejectReason)}>
-                          Confirm Reject
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => { setRejectReasonId(null); setRejectReason('') }}>
-                          Cancel
-                        </Button>
-                      </div>
-                    )}
+                     {/* Reject reason input */}
+                     {rejectReasonId === it.id && (
+                       <div className="mt-3 flex gap-2 items-center">
+                         <input
+                           type="text"
+                           value={rejectReason}
+                           onChange={(e) => setRejectReason(e.target.value)}
+                           placeholder="Motiv pentru respingere (opțional)"
+                           className="flex-1 rounded-lg border px-3 py-1.5 text-sm"
+                         />
+                         <Button size="sm" variant="destructive" onClick={() => act(it.id, 'rejected', rejectReason)}>
+                           Confirmă respingere
+                         </Button>
+                         <Button size="sm" variant="ghost" onClick={() => { setRejectReasonId(null); setRejectReason('') }}>
+                           Anulează
+                         </Button>
+                       </div>
+                     )}
                   </div>
 
-                  <div className="flex gap-1.5 shrink-0">
-                    <Button size="sm" variant="outline" onClick={() => act(it.id, 'active')}>Approve</Button>
-                    <Button size="sm" variant="destructive" onClick={() => setRejectReasonId(p => p === it.id ? null : it.id)}>
-                      Reject
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setPreviewId(p => p === it.id ? null : it.id)}>
-                      {previewId === it.id ? 'Hide' : 'Preview'}
-                    </Button>
-                  </div>
+                   <div className="flex gap-1.5 shrink-0">
+                     <Button size="sm" variant="outline" onClick={() => act(it.id, 'active')}>Aprobă</Button>
+                     <Button size="sm" variant="destructive" onClick={() => setRejectReasonId(p => p === it.id ? null : it.id)}>
+                       Respinge
+                     </Button>
+                     <Button size="sm" variant="ghost" onClick={() => setPreviewId(p => p === it.id ? null : it.id)}>
+                       {previewId === it.id ? 'Ascunde' : 'Previzualizare'}
+                     </Button>
+                   </div>
                 </div>
               </li>
             ))}
@@ -226,12 +226,12 @@ export default function ModerationClient() {
       {/* Reports tab */}
       {!loading && tab === 'reports' && (
         <div>
-          {reports.length === 0 && (
-            <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg font-medium mb-1">No open reports</p>
-              <p className="text-sm">All reports have been resolved.</p>
-            </div>
-          )}
+           {reports.length === 0 && (
+             <div className="text-center py-16 text-muted-foreground">
+               <p className="text-lg font-medium mb-1">Niciun raport deschis</p>
+               <p className="text-sm">Toate rapoartele au fost rezolvate.</p>
+             </div>
+           )}
 
           <ul className="space-y-3">
             {reports.map((r) => (
@@ -252,9 +252,9 @@ export default function ModerationClient() {
                       Reported by {r.reporter_id} · {new Date(r.created_at).toLocaleString()}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => closeReport(r.id)}>
-                    Close
-                  </Button>
+                   <Button size="sm" variant="outline" onClick={() => closeReport(r.id)}>
+                     Închide
+                   </Button>
                 </div>
               </li>
             ))}

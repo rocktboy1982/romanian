@@ -5,12 +5,12 @@ import { useState, useEffect, useRef } from 'react'
 const REPORT_THRESHOLD = 20
 
 const REASONS = [
-  { id: 'incorrect',    label: 'Incorrect / misleading information' },
-  { id: 'harmful',      label: 'Harmful or dangerous content' },
-  { id: 'spam',         label: 'Spam or self-promotion' },
-  { id: 'plagiarism',   label: 'Plagiarism / stolen recipe' },
-  { id: 'offensive',    label: 'Offensive or inappropriate' },
-  { id: 'other',        label: 'Other' },
+  { id: 'incorrect',    label: 'Informații incorecte / înșelătoare' },
+  { id: 'harmful',      label: 'Conținut dăunător sau periculos' },
+  { id: 'spam',         label: 'Spam sau auto-promovare' },
+  { id: 'plagiarism',   label: 'Plagiat / rețetă furată' },
+  { id: 'offensive',    label: 'Ofensator sau nepotrivit' },
+  { id: 'other',        label: 'Altceva' },
 ]
 
 interface ReportButtonProps {
@@ -142,14 +142,14 @@ export default function ReportButton({
     return (
       <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium"
         style={{ background: 'rgba(239,68,68,0.1)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        Content removed — too many reports
-      </div>
-    )
-  }
+         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+           <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+         </svg>
+         Conținut eliminat — prea multe rapoarte
+       </div>
+     )
+   }
 
   return (
     <>
@@ -160,13 +160,13 @@ export default function ReportButton({
         className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
         style={{ color: hasReported ? '#ef4444' : '#888' }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill={hasReported ? '#ef4444' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-          <line x1="4" y1="22" x2="4" y2="15"/>
-        </svg>
-        {variant === 'full' && (
-          <span className="text-xs font-medium">{hasReported ? 'Reported' : 'Report'}</span>
-        )}
+         <svg width="15" height="15" viewBox="0 0 24 24" fill={hasReported ? '#ef4444' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+           <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+           <line x1="4" y1="22" x2="4" y2="15"/>
+         </svg>
+         {variant === 'full' && (
+           <span className="text-xs font-medium">{hasReported ? 'Raportată' : 'Raportează'}</span>
+         )}
       </button>
 
       {/* ── Modal overlay ── */}
@@ -188,7 +188,7 @@ export default function ReportButton({
                   <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
                   <line x1="4" y1="22" x2="4" y2="15"/>
                 </svg>
-                <span className="font-bold text-sm">Report Content</span>
+                <span className="font-bold text-sm">Raportează conținut</span>
               </div>
               <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
             </div>
@@ -199,108 +199,108 @@ export default function ReportButton({
               {/* ── step: pick reason ── */}
               {step === 'pick' && (
                 <>
-                  <p className="text-xs text-gray-500 mb-1 truncate">
-                    Reporting: <span className="font-semibold text-gray-700">{contentTitle}</span>
-                  </p>
-                  <p className="text-sm font-semibold mb-3">Why are you reporting this?</p>
-                  <div className="space-y-1.5 mb-4">
-                    {REASONS.map(r => (
-                      <label key={r.id}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all"
-                        style={{
-                          background: reason === r.id ? 'rgba(239,68,68,0.08)' : 'rgba(0,0,0,0.03)',
-                          border: reason === r.id ? '1.5px solid rgba(239,68,68,0.4)' : '1.5px solid transparent',
-                        }}
-                      >
-                        <input type="radio" name="reason" value={r.id}
-                          checked={reason === r.id}
-                          onChange={() => setReason(r.id)}
-                          className="sr-only" />
-                        <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
-                          style={{ borderColor: reason === r.id ? '#ef4444' : '#ccc' }}>
-                          {reason === r.id && <div className="w-2 h-2 rounded-full bg-red-500" />}
-                        </div>
-                        <span className="text-sm">{r.label}</span>
-                      </label>
-                    ))}
-                  </div>
+                   <p className="text-xs text-gray-500 mb-1 truncate">
+                     Raportare: <span className="font-semibold text-gray-700">{contentTitle}</span>
+                   </p>
+                   <p className="text-sm font-semibold mb-3">De ce raportezi asta?</p>
+                   <div className="space-y-1.5 mb-4">
+                     {REASONS.map(r => (
+                       <label key={r.id}
+                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all"
+                         style={{
+                           background: reason === r.id ? 'rgba(239,68,68,0.08)' : 'rgba(0,0,0,0.03)',
+                           border: reason === r.id ? '1.5px solid rgba(239,68,68,0.4)' : '1.5px solid transparent',
+                         }}
+                       >
+                         <input type="radio" name="reason" value={r.id}
+                           checked={reason === r.id}
+                           onChange={() => setReason(r.id)}
+                           className="sr-only" />
+                         <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
+                           style={{ borderColor: reason === r.id ? '#ef4444' : '#ccc' }}>
+                           {reason === r.id && <div className="w-2 h-2 rounded-full bg-red-500" />}
+                         </div>
+                         <span className="text-sm">{r.label}</span>
+                       </label>
+                     ))}
+                   </div>
 
-                  {reason && (
-                    <textarea
-                      value={detail}
-                      onChange={e => setDetail(e.target.value)}
-                      placeholder="Optional: add more detail…"
-                      rows={2}
-                      maxLength={280}
-                      className="w-full px-3 py-2 rounded-lg text-sm resize-none focus:outline-none mb-4"
-                      style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.12)', color: '#111' }}
-                    />
-                  )}
+                   {reason && (
+                     <textarea
+                       value={detail}
+                       onChange={e => setDetail(e.target.value)}
+                       placeholder="Opțional: adaugă mai multe detalii…"
+                       rows={2}
+                       maxLength={280}
+                       className="w-full px-3 py-2 rounded-lg text-sm resize-none focus:outline-none mb-4"
+                       style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.12)', color: '#111' }}
+                     />
+                   )}
 
-                  <div className="flex gap-2">
-                    <button onClick={handleClose}
-                      className="flex-1 py-2.5 rounded-full text-sm font-semibold"
-                      style={{ background: 'rgba(0,0,0,0.06)', color: '#555' }}>
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSubmit}
-                      disabled={!reason || submitting}
-                      className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white disabled:opacity-50 transition-opacity"
-                      style={{ background: '#ef4444' }}
-                    >
-                      {submitting ? 'Submitting…' : 'Submit Report'}
-                    </button>
-                  </div>
+                   <div className="flex gap-2">
+                     <button onClick={handleClose}
+                       className="flex-1 py-2.5 rounded-full text-sm font-semibold"
+                       style={{ background: 'rgba(0,0,0,0.06)', color: '#555' }}>
+                       Anulează
+                     </button>
+                     <button
+                       onClick={handleSubmit}
+                       disabled={!reason || submitting}
+                       className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white disabled:opacity-50 transition-opacity"
+                       style={{ background: '#ef4444' }}
+                     >
+                       {submitting ? 'Se trimite…' : 'Trimite raportul'}
+                     </button>
+                   </div>
                 </>
               )}
 
-              {/* ── step: done ── */}
-              {step === 'done' && (
-                <div className="text-center py-4">
-                  <div className="text-4xl mb-3">✅</div>
-                  <p className="font-bold text-base mb-1">Report submitted</p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Thank you. Our team will review this content.
-                    {reportCount > 1 && ` (${reportCount} reports so far)`}
-                  </p>
-                  <button onClick={handleClose}
-                    className="px-6 py-2 rounded-full text-sm font-semibold text-white"
-                    style={{ background: '#ef4444' }}>
-                    Done
-                  </button>
-                </div>
-              )}
+               {/* ── step: done ── */}
+               {step === 'done' && (
+                 <div className="text-center py-4">
+                   <div className="text-4xl mb-3">✅</div>
+                   <p className="font-bold text-base mb-1">Raport trimis</p>
+                   <p className="text-sm text-gray-500 mb-4">
+                     Mulțumim. Echipa noastră va revizui acest conținut.
+                     {reportCount > 1 && ` (${reportCount} rapoarte până acum)`}
+                   </p>
+                   <button onClick={handleClose}
+                     className="px-6 py-2 rounded-full text-sm font-semibold text-white"
+                     style={{ background: '#ef4444' }}>
+                     Gata
+                   </button>
+                 </div>
+               )}
 
-              {/* ── step: deactivated (threshold hit) ── */}
-              {step === 'deactivated' && (
-                <div className="text-center py-4">
-                  <div className="text-4xl mb-3">🚫</div>
-                  <p className="font-bold text-base mb-1">Content removed</p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    This {contentType} has reached {REPORT_THRESHOLD} reports and has been deactivated pending review.
-                  </p>
-                  <button onClick={handleClose}
-                    className="px-6 py-2 rounded-full text-sm font-semibold text-white"
-                    style={{ background: '#ef4444' }}>
-                    Close
-                  </button>
-                </div>
-              )}
+               {/* ── step: deactivated (threshold hit) ── */}
+               {step === 'deactivated' && (
+                 <div className="text-center py-4">
+                   <div className="text-4xl mb-3">🚫</div>
+                   <p className="font-bold text-base mb-1">Conținut eliminat</p>
+                   <p className="text-sm text-gray-500 mb-4">
+                     Această {contentType} a atins {REPORT_THRESHOLD} rapoarte și a fost dezactivată în așteptarea revizuirii.
+                   </p>
+                   <button onClick={handleClose}
+                     className="px-6 py-2 rounded-full text-sm font-semibold text-white"
+                     style={{ background: '#ef4444' }}>
+                     Închide
+                   </button>
+                 </div>
+               )}
 
-              {/* ── step: already reported ── */}
-              {step === 'already' && (
-                <div className="text-center py-4">
-                  <div className="text-4xl mb-3">🚩</div>
-                  <p className="font-bold text-base mb-1">Already reported</p>
-                  <p className="text-sm text-gray-500 mb-4">You&apos;ve already reported this content. We&apos;re reviewing it.</p>
-                  <button onClick={handleClose}
-                    className="px-6 py-2 rounded-full text-sm font-semibold"
-                    style={{ background: 'rgba(0,0,0,0.06)', color: '#555' }}>
-                    Close
-                  </button>
-                </div>
-              )}
+               {/* ── step: already reported ── */}
+               {step === 'already' && (
+                 <div className="text-center py-4">
+                   <div className="text-4xl mb-3">🚩</div>
+                   <p className="font-bold text-base mb-1">Deja raportată</p>
+                   <p className="text-sm text-gray-500 mb-4">Ai deja raportată această conținut. O revizuim.</p>
+                   <button onClick={handleClose}
+                     className="px-6 py-2 rounded-full text-sm font-semibold"
+                     style={{ background: 'rgba(0,0,0,0.06)', color: '#555' }}>
+                     Închide
+                   </button>
+                 </div>
+               )}
             </div>
           </div>
         </div>

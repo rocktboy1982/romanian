@@ -51,19 +51,19 @@ export default function CookieConsent() {
               <span className="text-xl flex-shrink-0 mt-0.5">🍪</span>
               <div>
                 <p className="text-sm font-semibold mb-0.5" style={{ color: '#f0f0f0' }}>
-                  We use cookies
-                </p>
-                <p className="text-xs leading-relaxed" style={{ color: '#888' }}>
-                  We use essential cookies to make this site work. We&apos;d also like to set optional analytics cookies to understand how you use it.
+                   Folosim cookie-uri
+                 </p>
+                 <p className="text-xs leading-relaxed" style={{ color: '#888' }}>
+                   Folosim cookie-uri esențiale pentru funcționarea site-ului. De asemenea, dorim să setăm cookie-uri opționale de analiză pentru a înțelege cum utilizați site-ul.
                   {' '}
                   {!expanded && (
                     <button
                       onClick={() => setExpanded(true)}
-                      className="underline transition-opacity hover:opacity-100 opacity-70"
-                      style={{ color: '#ff9500' }}
-                    >
-                      Learn more
-                    </button>
+                       className="underline transition-opacity hover:opacity-100 opacity-70"
+                       style={{ color: '#ff9500' }}
+                     >
+                       Află mai multe
+                     </button>
                   )}
                 </p>
 
@@ -73,25 +73,25 @@ export default function CookieConsent() {
                     <div className="flex items-start gap-2">
                       <span style={{ color: '#22c55e' }}>✓</span>
                       <div>
-                        <span className="font-semibold" style={{ color: '#ccc' }}>Essential cookies</span>
-                        {' '}— required for the site to function (session, preferences). Cannot be disabled.
+                       <span className="font-semibold" style={{ color: '#ccc' }}>Cookie-uri esențiale</span>
+                         {' '}— necesare pentru funcționarea site-ului (sesiune, preferințe). Nu pot fi dezactivate.
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <span style={{ color: '#ff9500' }}>○</span>
                       <div>
-                        <span className="font-semibold" style={{ color: '#ccc' }}>Analytics cookies</span>
-                        {' '}— help us understand which pages are popular and how visitors navigate. No personal data is sold.
+                       <span className="font-semibold" style={{ color: '#ccc' }}>Cookie-uri de analiză</span>
+                         {' '}— ne ajută să înțelegem care pagini sunt populare și cum navigheaza vizitatorii. Nu se vinde nicio informație personală.
                       </div>
                     </div>
                     <p className="pt-1">
-                      Declining analytics cookies will not affect your experience on this site.
-                      See our{' '}
-                      <Link href="/privacy" className="underline" style={{ color: '#ff9500' }}>
-                        Privacy Policy
-                      </Link>{' '}
-                      for more.
-                    </p>
+                       Refuzarea cookie-urilor de analiză nu va afecta experiența ta pe acest site.
+                       Consultă{' '}
+                       <Link href="/privacy" className="underline" style={{ color: '#ff9500' }}>
+                         Politica de confidențialitate
+                       </Link>{' '}
+                       pentru mai multe informații.
+                     </p>
                   </div>
                 )}
               </div>
@@ -100,27 +100,27 @@ export default function CookieConsent() {
 
           {/* Buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => decide('declined')}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                color: '#aaa',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              Decline optional
-            </button>
-            <button
-              onClick={() => decide('accepted')}
-              className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
-              style={{
-                background: 'linear-gradient(135deg,#ff4d6d,#ff9500)',
-                color: '#fff',
-              }}
-            >
-              Accept all
-            </button>
+             <button
+               onClick={() => decide('declined')}
+               className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+               style={{
+                 background: 'rgba(255,255,255,0.06)',
+                 color: '#aaa',
+                 border: '1px solid rgba(255,255,255,0.12)',
+               }}
+             >
+               Refuză opționalele
+             </button>
+             <button
+               onClick={() => decide('accepted')}
+               className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+               style={{
+                 background: 'linear-gradient(135deg,#ff4d6d,#ff9500)',
+                 color: '#fff',
+               }}
+             >
+               Acceptă tot
+             </button>
           </div>
 
         </div>

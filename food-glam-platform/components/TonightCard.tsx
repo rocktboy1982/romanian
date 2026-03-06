@@ -52,7 +52,7 @@ export default function TonightCard() {
   /* timezone-aware label */
   const hour = typeof window !== 'undefined' ? new Date().getHours() : 12
   const isTonight = hour >= 18
-  const label  = isTonight ? "Tonight's Picks" : "Today's Picks"
+  const label  = isTonight ? "Alegerile diseară" : "Alegerile astazi"
   const emoji  = isTonight ? '🌙' : '🍽️'
 
   useEffect(() => {
@@ -81,32 +81,32 @@ export default function TonightCard() {
             {label}
           </span>
         </div>
-        <span className="text-[10px]" style={{ color: '#444' }}>
-          {isTonight ? 'For dinner tonight' : 'Meal ideas for today'}
-        </span>
-      </div>
+         <span className="text-[10px]" style={{ color: '#444' }}>
+           {isTonight ? 'Pentru cina diseară' : 'Idei de mâncare pentru astazi'}
+         </span>
+       </div>
 
-      {/* ── Loading skeleton ── */}
-      {loading && (
-        <div className="p-3 space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex gap-3 p-2 items-center">
-              <div className="w-14 h-14 rounded-xl animate-pulse flex-shrink-0" style={{ background: '#222' }} />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 rounded animate-pulse" style={{ background: '#222', width: '80%' }} />
-                <div className="h-2.5 rounded animate-pulse" style={{ background: '#222', width: '50%' }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+       {/* ── Loading skeleton ── */}
+       {loading && (
+         <div className="p-3 space-y-2">
+           {Array.from({ length: 5 }).map((_, i) => (
+             <div key={i} className="flex gap-3 p-2 items-center">
+               <div className="w-14 h-14 rounded-xl animate-pulse flex-shrink-0" style={{ background: '#222' }} />
+               <div className="flex-1 space-y-2">
+                 <div className="h-3 rounded animate-pulse" style={{ background: '#222', width: '80%' }} />
+                 <div className="h-2.5 rounded animate-pulse" style={{ background: '#222', width: '50%' }} />
+               </div>
+             </div>
+           ))}
+         </div>
+       )}
 
-      {/* ── Empty ── */}
-      {!loading && recs.length === 0 && (
-        <p className="px-4 py-10 text-sm text-center" style={{ color: '#444' }}>
-          No picks for now — check back later
-        </p>
-      )}
+       {/* ── Empty ── */}
+       {!loading && recs.length === 0 && (
+         <p className="px-4 py-10 text-sm text-center" style={{ color: '#444' }}>
+           Nicio alegere deocamdată — revino mai târziu
+         </p>
+       )}
 
       {/* ── Vertical list ── */}
       {!loading && recs.length > 0 && (
@@ -150,42 +150,42 @@ export default function TonightCard() {
                 </div>
               </div>
 
-              {/* Cook CTA */}
-              <button
-                onClick={e => { e.stopPropagation(); router.push(`/recipes/${rec.slug}?cook=true`) }}
-                className="flex-shrink-0 self-center px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                style={{
-                  background: 'rgba(255,149,0,0.12)',
-                  color: '#ff9500',
-                  border: '1px solid rgba(255,149,0,0.2)',
-                }}
-              >
-                Cook
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+               {/* Cook CTA */}
+               <button
+                 onClick={e => { e.stopPropagation(); router.push(`/recipes/${rec.slug}?cook=true`) }}
+                 className="flex-shrink-0 self-center px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
+                 style={{
+                   background: 'rgba(255,149,0,0.12)',
+                   color: '#ff9500',
+                   border: '1px solid rgba(255,149,0,0.2)',
+                 }}
+               >
+                 Gătește
+               </button>
+             </div>
+           ))}
+         </div>
+       )}
 
-      {/* ── Footer ── */}
-      {!loading && recs.length > 0 && (
-        <div
-          className="px-4 py-2.5"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-        >
-          <button
-            onClick={() => router.push('/tonight-recommendations')}
-            className="w-full text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
-            style={{
-              background: isTonight ? 'rgba(255,149,0,0.08)' : 'rgba(96,165,250,0.08)',
-              color: isTonight ? '#ff9500' : '#60a5fa',
-              border: `1px solid ${isTonight ? 'rgba(255,149,0,0.15)' : 'rgba(96,165,250,0.15)'}`,
-            }}
-          >
-            {isTonight ? 'More tonight picks →' : 'More today picks →'}
-          </button>
-        </div>
-      )}
+       {/* ── Footer ── */}
+       {!loading && recs.length > 0 && (
+         <div
+           className="px-4 py-2.5"
+           style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+         >
+           <button
+             onClick={() => router.push('/tonight-recommendations')}
+             className="w-full text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
+             style={{
+               background: isTonight ? 'rgba(255,149,0,0.08)' : 'rgba(96,165,250,0.08)',
+               color: isTonight ? '#ff9500' : '#60a5fa',
+               border: `1px solid ${isTonight ? 'rgba(255,149,0,0.15)' : 'rgba(96,165,250,0.15)'}`,
+             }}
+           >
+             {isTonight ? 'Mai multe alegeri pentru diseară →' : 'Mai multe alegeri pentru astazi →'}
+           </button>
+         </div>
+       )}
     </div>
   )
 }

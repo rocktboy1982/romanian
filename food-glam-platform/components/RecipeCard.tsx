@@ -146,11 +146,11 @@ export default function RecipeCard({
           </span>
         )}
         {/* Tested badge top-right */}
-        {is_tested && (
-          <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow">
-            Tested ✓
-          </span>
-        )}
+         {is_tested && (
+           <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow">
+             Testat ✓
+           </span>
+         )}
         {/* Calorie badge bottom-right */}
         {calories && (
           <span className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm">
@@ -229,12 +229,12 @@ export default function RecipeCard({
 
         {/* Actions */}
         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-          <button
-            onClick={() => router.push(`/recipes/${slug}`)}
-            className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-600 transition-colors"
-          >
-            View Recipe
-          </button>
+           <button
+             onClick={() => router.push(`/recipes/${slug}`)}
+             className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-600 transition-colors"
+           >
+             Vezi rețeta
+           </button>
           <button
             onClick={handleSave}
             className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 font-medium transition-colors ${
@@ -242,24 +242,24 @@ export default function RecipeCard({
             }`}
           >
             <Bookmark size={12} className={isSaved ? 'fill-current' : ''} />
-            {isSaved ? 'Saved' : 'Save'}
-          </button>
-          <button
-            onClick={() => handleVote(1)}
-            className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 font-medium transition-colors ${
-              userVote === 1 ? 'bg-rose-100 text-rose-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            <Heart size={12} className={userVote === 1 ? 'fill-current' : ''} />
-            {voteCount}
-          </button>
-          <button
-            onClick={handleShare}
-            className="bg-muted text-muted-foreground px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 hover:bg-muted/80 transition-colors"
-          >
-            <Share2 size={12} />
-            Share
-          </button>
+             {isSaved ? 'Salvat' : 'Salvează'}
+           </button>
+           <button
+             onClick={() => handleVote(1)}
+             className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 font-medium transition-colors ${
+               userVote === 1 ? 'bg-rose-100 text-rose-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+             }`}
+           >
+             <Heart size={12} className={userVote === 1 ? 'fill-current' : ''} />
+             {voteCount}
+           </button>
+           <button
+             onClick={handleShare}
+             className="bg-muted text-muted-foreground px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 hover:bg-muted/80 transition-colors"
+           >
+             <Share2 size={12} />
+             Distribuie
+           </button>
           <button
             onClick={() => router.push(`/recipes/${slug}#comments`)}
             className="bg-muted text-muted-foreground px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 hover:bg-muted/80 transition-colors"

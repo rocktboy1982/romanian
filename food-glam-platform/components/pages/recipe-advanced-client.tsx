@@ -57,11 +57,11 @@ export default function RecipeAdvancedClient({
     return (
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Advanced Nutrition</CardTitle>
+          <CardTitle>Nutriție avansată</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Turn on Health Mode to see calories, macros, fasting, and food logging features.
+            Activează Modul Sănătate pentru a vedea calorii, macronutrienți, post și funcții de jurnal alimentar.
           </p>
         </CardContent>
       </Card>
@@ -85,33 +85,33 @@ export default function RecipeAdvancedClient({
     <Card className="mt-6">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          🔥 Nutrition <span className="text-xs font-normal text-muted-foreground">per serving</span>
+          🔥 Nutriție <span className="text-xs font-normal text-muted-foreground">per porție</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {/* ── Macro summary (from recipe_json.nutrition_per_serving) ── */}
         {!hasData ? (
-          <p className="text-sm text-muted-foreground">Nutrition data not available for this recipe.</p>
+          <p className="text-sm text-muted-foreground">Datele nutriționale nu sunt disponibile pentru această rețetă.</p>
         ) : (
           <div className="space-y-4">
             {/* Calorie highlight */}
             <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
               <div>
                 <p className="text-2xl font-bold text-amber-700">{calories}</p>
-                <p className="text-xs text-amber-600">kcal / serving</p>
+                <p className="text-xs text-amber-600">kcal / porție</p>
               </div>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
                   <p className="text-sm font-semibold text-red-600">{protein}g</p>
-                  <p className="text-[10px] text-muted-foreground">Protein</p>
+                  <p className="text-[10px] text-muted-foreground">Proteine</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-amber-600">{carbs}g</p>
-                  <p className="text-[10px] text-muted-foreground">Carbs</p>
+                  <p className="text-[10px] text-muted-foreground">Carbohidrați</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-yellow-700">{fat}g</p>
-                  <p className="text-[10px] text-muted-foreground">Fat</p>
+                  <p className="text-[10px] text-muted-foreground">Grăsimi</p>
                 </div>
               </div>
             </div>
@@ -120,11 +120,11 @@ export default function RecipeAdvancedClient({
             {totalMacroG > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Macro breakdown
+                  Distribuție macronutrienți
                 </p>
-                <MacroBar label="Protein" value={protein} total={totalMacroG} color="bg-red-400" />
-                <MacroBar label="Carbs"   value={carbs}   total={totalMacroG} color="bg-amber-400" />
-                <MacroBar label="Fat"     value={fat}     total={totalMacroG} color="bg-yellow-400" />
+                <MacroBar label="Proteine" value={protein} total={totalMacroG} color="bg-red-400" />
+                <MacroBar label="Carbo"   value={carbs}   total={totalMacroG} color="bg-amber-400" />
+                <MacroBar label="Grăsimi"     value={fat}     total={totalMacroG} color="bg-yellow-400" />
               </div>
             )}
 
@@ -133,13 +133,13 @@ export default function RecipeAdvancedClient({
               <div className="border-t border-border pt-3 space-y-1 text-sm text-muted-foreground">
                 {fasting && (
                   <div>
-                    ⏱ Fasting window:{" "}
+                    ⏱ Fereastră de post:{" "}
                     <span className="text-foreground font-medium">{fasting}</span>
                   </div>
                 )}
                 {foodLog && (
                   <div>
-                    📓 Food logging: <span className="text-foreground font-medium">Enabled</span>
+                    📓 Jurnal alimentar: <span className="text-foreground font-medium">Activat</span>
                   </div>
                 )}
               </div>
@@ -152,16 +152,16 @@ export default function RecipeAdvancedClient({
           <div className="mt-5 border-t border-border pt-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Calories by ingredient
+                Calorii per ingredient
               </p>
               <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
                 ~{computedTotal.toLocaleString()} kcal total
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground mb-3">
-              USDA estimates based on quantity &amp; unit.{" "}
+              Estimări USDA bazate pe cantitate și unitate.{" "}
               {knownCount < ingredientList.length && (
-                <>{ingredientList.length - knownCount} ingredient(s) not matched.</>
+                <>{ingredientList.length - knownCount} ingredient(e) neidentificate.</>
               )}
             </p>
             <div className="space-y-1.5">
@@ -195,7 +195,7 @@ export default function RecipeAdvancedClient({
                       </>
                     ) : (
                       <span className="flex-shrink-0 text-[11px] text-muted-foreground/50 w-[calc(5rem+4rem+0.5rem)] text-right">
-                        unknown
+                        necunoscut
                       </span>
                     )}
                   </div>

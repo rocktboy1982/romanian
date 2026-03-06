@@ -23,8 +23,8 @@ interface Recipe {
   foodTags: string[]
 }
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const
-const MEALS = ["Breakfast", "Lunch", "Dinner"] as const
+const DAYS = ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"] as const
+const MEALS = ["Mic dejun", "Prânz", "Cină"] as const
 // ─── Calendar: all Mon-starting weeks that touch the current year ─────────────
 function buildYearWeeks(year: number) {
   const weeks: { weekIndex: number; monday: Date; sunday: Date; month: number }[] = []
@@ -52,7 +52,7 @@ function buildYearWeeks(year: number) {
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_WEEKS = buildYearWeeks(CURRENT_YEAR)
 const TOTAL_WEEKS = YEAR_WEEKS.length
-const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+const MONTH_NAMES = ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"]
 type DayKey = typeof DAYS[number]
 type MealKey = typeof MEALS[number]
 type DishEntry = {
@@ -265,7 +265,7 @@ function WeekNav({
           onClick={onClear}
           className="ml-auto text-xs text-destructive border border-destructive/30 px-3 py-1.5 rounded-lg hover:bg-destructive/5 transition-colors"
         >
-          Clear week
+          Golește săptămâna
         </button>
       </div>
     </div>
@@ -659,37 +659,37 @@ export default function PlanClient() {
     <main className="min-h-screen" style={{ background: '#dde3ee', color: '#111' }}><div className="container mx-auto px-4 py-8 max-w-7xl">
 
       {/* ── Top bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Meal Planner</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {totalDishes} dish{totalDishes !== 1 ? "es" : ""} planned this week ·{" "}
-            Planning {CURRENT_YEAR}
-          </p>
-        </div>
+       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+         <div>
+           <h1 className="text-3xl font-bold tracking-tight">Planificator de mese</h1>
+           <p className="text-muted-foreground mt-1 text-sm">
+             {totalDishes} fel{totalDishes !== 1 ? "uri" : ""} planificat{totalDishes !== 1 ? "e" : ""} săptămâna aceasta ·{" "}
+             Planificare {CURRENT_YEAR}
+           </p>
+         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setView("planner")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              view === "planner" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
-            }`}
-          >
-            📅 Planner
-          </button>
-          <button
-            onClick={() => { setView("shopping"); setShopGenerated(false); setMatchStep('generate'); setSavedListId(null); setMatchResults([]); setMatchTotal(null) }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              view === "shopping" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
-            }`}
-          >
-            🛒 Shopping List
-          </button>
-          <Link
-            href="/me/shopping-lists"
-            className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors"
-          >
-            📋 Saved Lists
-          </Link>
+           <button
+             onClick={() => setView("planner")}
+             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+               view === "planner" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
+             }`}
+           >
+             📅 Planificator
+           </button>
+           <button
+             onClick={() => { setView("shopping"); setShopGenerated(false); setMatchStep('generate'); setSavedListId(null); setMatchResults([]); setMatchTotal(null) }}
+             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+               view === "shopping" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
+             }`}
+           >
+             🛒 Lista de cumpărături
+           </button>
+           <Link
+             href="/me/shopping-lists"
+             className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors"
+           >
+             📋 Liste salvate
+           </Link>
         </div>
       </div>
 
@@ -710,17 +710,17 @@ export default function PlanClient() {
           {healthMode && weekNutrition.calories > 0 && (
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold">🔥 Weekly Nutrition</h3>
-                <a href="/health" className="text-xs text-amber-600 hover:underline">Adjust targets →</a>
+               <h3 className="text-sm font-semibold">🔥 Nutriție săptămânală</h3>
+                 <a href="/health" className="text-xs text-amber-600 hover:underline">Ajustează țintele →</a>
               </div>
               {/* Calorie progress bar */}
               <div className="mb-3">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Calories</span>
-                  <span className="font-medium">
-                    {Math.round(weekNutrition.calories)} / {healthGoals.calorieTarget * 7} kcal
-                  </span>
-                </div>
+                 <div className="flex justify-between text-xs mb-1">
+                   <span className="text-muted-foreground">Calorii</span>
+                   <span className="font-medium">
+                     {Math.round(weekNutrition.calories)} / {healthGoals.calorieTarget * 7} kcal
+                   </span>
+                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
@@ -738,9 +738,9 @@ export default function PlanClient() {
                 <span className="text-amber-600 font-medium">🌾 {Math.round(weekNutrition.carbs)}g carbs</span>
                 <span className="text-yellow-700 font-medium">🫒 {Math.round(weekNutrition.fat)}g fat</span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Targets: {healthGoals.macroProtein}% protein · {healthGoals.macroCarbs}% carbs · {healthGoals.macroFat}% fat
-              </p>
+               <p className="text-[10px] text-muted-foreground mt-1">
+                 Ținte: {healthGoals.macroProtein}% proteine · {healthGoals.macroCarbs}% carbohidrați · {healthGoals.macroFat}% grăsimi
+               </p>
             </div>
           )}
           {/* 7-day grid */}
@@ -753,8 +753,8 @@ export default function PlanClient() {
               return (
                 <div key={day} className={`bg-card rounded-xl border overflow-hidden ${isToday ? "border-amber-400 ring-2 ring-amber-200" : "border-border"}`}>
                   {/* Day header */}
-                  <div className={`border-b px-3 py-2 text-center ${isToday ? "bg-amber-100 border-amber-200" : "bg-amber-50 border-amber-100"}`}>
-                    <div className="text-xs font-bold text-amber-700 uppercase tracking-wide">{day.slice(0, 3)}{isToday && <span className="ml-1 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full normal-case tracking-normal font-semibold">Today</span>}</div>
+                   <div className={`border-b px-3 py-2 text-center ${isToday ? "bg-amber-100 border-amber-200" : "bg-amber-50 border-amber-100"}`}>
+                     <div className="text-xs font-bold text-amber-700 uppercase tracking-wide">{day.slice(0, 3)}{isToday && <span className="ml-1 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full normal-case tracking-normal font-semibold">Azi</span>}</div>
                     <div className="text-[10px] text-amber-500 mt-0.5">{dateStr}</div>
                     {healthMode && dayNutrition[day].calories > 0 && (
                       <div className="text-[9px] text-amber-600 font-semibold mt-0.5">
@@ -800,18 +800,18 @@ export default function PlanClient() {
                                     />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-[10px] font-medium line-clamp-1 leading-tight">{dish.recipe.title}</p>
-                                      <p className="text-[9px] text-muted-foreground">{dish.servings}× serving</p>
+                                      <p className="text-[9px] text-muted-foreground">{dish.servings}× porție</p>
                                     </div>
                                   </div>
                                 ))}
-                                <p className="text-[9px] text-amber-600 pt-0.5">
-                                  {isExpanded ? "▲ collapse" : "▼ edit"}
-                                </p>
+                                 <p className="text-[9px] text-amber-600 pt-0.5">
+                                   {isExpanded ? "▲ restrânge" : "▼ editează"}
+                                 </p>
                               </div>
                             ) : (
-                              <div className="h-12 flex items-center justify-center text-[11px] text-stone-400 font-medium">
-                                + Add dish
-                              </div>
+                               <div className="h-12 flex items-center justify-center text-[11px] text-stone-400 font-medium">
+                                 + Adaugă fel
+                               </div>
                             )}
                           </button>
 
@@ -838,7 +838,7 @@ export default function PlanClient() {
                                         onClick={() => updateServings(day, meal, dish.id, dish.servings + 1)}
                                         className="w-5 h-5 rounded-full border border-stone-300 flex items-center justify-center text-xs hover:border-amber-400 hover:text-amber-600 transition-colors"
                                       >+</button>
-                                      <span className="text-[10px] text-muted-foreground ml-0.5">servings</span>
+                                      <span className="text-[10px] text-muted-foreground ml-0.5">porții</span>
                                     </div>
                                   </div>
                                   <button
@@ -852,16 +852,16 @@ export default function PlanClient() {
                               ))}
 
                               {/* Add extra dish button */}
-                              <button
-                                onClick={() => setPickingFor(isPicking ? null : { day, meal })}
-                                className={`w-full py-1.5 rounded-lg border-2 border-dashed text-xs font-medium transition-colors ${
-                                  isPicking
-                                    ? "border-amber-400 text-amber-600 bg-amber-50"
-                                    : "border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-600 hover:bg-amber-50"
-                                }`}
-                              >
-                                {isPicking ? "↓ Pick a recipe below" : "+ Add extra dish"}
-                              </button>
+                               <button
+                                 onClick={() => setPickingFor(isPicking ? null : { day, meal })}
+                                 className={`w-full py-1.5 rounded-lg border-2 border-dashed text-xs font-medium transition-colors ${
+                                   isPicking
+                                     ? "border-amber-400 text-amber-600 bg-amber-50"
+                                     : "border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-600 hover:bg-amber-50"
+                                 }`}
+                               >
+                                 {isPicking ? "↓ Alege o rețetă mai jos" : "+ Adaugă fel suplimentar"}
+                               </button>
                             </div>
                           )}
                         </div>
@@ -873,56 +873,56 @@ export default function PlanClient() {
             })}
           </div>
 
-          {/* Empty state hint */}
-          {totalDishes === 0 && !pickingFor && (
-            <div className="text-center py-8 px-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/30 mb-8">
-              <p className="text-2xl mb-2">🍳</p>
-              <p className="font-semibold text-amber-800">No dishes planned yet</p>
-              <p className="text-sm text-amber-600 mt-1">Tap \"+ Add dish\" on any meal slot above to start planning your week</p>
-            </div>
-          )}
+           {/* Empty state hint */}
+           {totalDishes === 0 && !pickingFor && (
+             <div className="text-center py-8 px-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/30 mb-8">
+               <p className="text-2xl mb-2">🍳</p>
+               <p className="font-semibold text-amber-800">Niciun fel planificat încă</p>
+               <p className="text-sm text-amber-600 mt-1">Apasă \"+ Adaugă fel\" pe orice slot de masă de mai sus pentru a începe planificarea săptămânii tale</p>
+             </div>
+           )}
 
           {/* Recipe picker panel */}
           {pickingFor && (
             <section className="mb-10 rounded-2xl border border-amber-200 bg-amber-50/30 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="text-base font-semibold">
-                    Adding dish to{" "}
-                    <span className="text-amber-600">{pickingFor.day} — {pickingFor.meal}</span>
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Picking from your{" "}
-                    <a href="/me/preferred" className="underline hover:text-amber-600">Preferred Recipes</a>
-                    {preferred.length === 0 && " — none added yet"} 
-                  </p>
-                </div>
-                <button
-                  onClick={() => { setPickingFor(null); setPickerSearch("") }}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Cancel ✕
-                </button>
-              </div>
-
-               {/* Search bar */}
-               <input
-                 type="search"
-                 value={pickerSearch}
-                 onChange={(e) => handlePickerSearchChange(e.target.value)}
-                 placeholder="Search recipes…"
-                 className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
-               />
-
-               {searchLoading ? (
-                 <p className="text-sm text-muted-foreground text-center py-8">Searching…</p>
-               ) : pickerSearch.trim() === "" ? (
-                 <div className="text-center py-10">
-                   <p className="text-muted-foreground text-sm mb-3">Start typing to search for recipes</p>
+               <div className="flex items-center justify-between mb-3">
+                 <div>
+                   <h2 className="text-base font-semibold">
+                     Adaugă fel la{" "}
+                     <span className="text-amber-600">{pickingFor.day} — {pickingFor.meal}</span>
+                   </h2>
+                   <p className="text-xs text-muted-foreground mt-0.5">
+                     Alege din{" "}
+                     <a href="/me/preferred" className="underline hover:text-amber-600">Rețetele tale preferate</a>
+                     {preferred.length === 0 && " — niciuna adăugată încă"} 
+                   </p>
                  </div>
-               ) : searchResults.length === 0 ? (
-                 <p className="text-sm text-muted-foreground text-center py-6">No recipes match your search.</p>
-               ) : (
+                 <button
+                   onClick={() => { setPickingFor(null); setPickerSearch("") }}
+                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                 >
+                   Anulează ✕
+                 </button>
+               </div>
+
+                {/* Search bar */}
+                <input
+                  type="search"
+                  value={pickerSearch}
+                  onChange={(e) => handlePickerSearchChange(e.target.value)}
+                  placeholder="Caută rețete..."
+                  className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
+                />
+
+                {searchLoading ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">Se caută...</p>
+                ) : pickerSearch.trim() === "" ? (
+                  <div className="text-center py-10">
+                    <p className="text-muted-foreground text-sm mb-3">Începe să scrii pentru a căuta rețete</p>
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">Nicio rețetă nu se potrivește cu căutarea ta.</p>
+                ) : (
                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                    {searchResults.map((recipe) => (
                      <button
@@ -1051,7 +1051,7 @@ export default function PlanClient() {
                     flexDirection: 'column',
                     gap: 20,
                   }}>
-                    <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>📋 Generate Shopping List</h2>
+                    <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>📋 Generează lista de cumpărături</h2>
 
                     {/* Scope selector */}
                     <div>

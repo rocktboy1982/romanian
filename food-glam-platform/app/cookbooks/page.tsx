@@ -9,32 +9,32 @@ const CONTINENT_GROUPS = [
   {
     continent: 'Asia',
     ids: ['east-asia', 'southeast-asia', 'south-asia'],
-    desc: 'Ancient spice routes and modern street food',
+    desc: 'Rute antice de mirodenii și mâncare de stradă modernă',
   },
   {
-    continent: 'Middle East & Central Asia',
+    continent: 'Orientul Mijlociu și Asia Centrală',
     ids: ['middle-east', 'central-asia'],
-    desc: 'Silk Road flavours from Istanbul to Samarkand',
+    desc: 'Arome din Drumul Mătăsii de la Istanbul la Samarkand',
   },
   {
-    continent: 'Europe',
+    continent: 'Europa',
     ids: ['western-europe', 'northern-europe', 'eastern-europe'],
-    desc: 'From Alpine cheese cellars to Mediterranean shores',
+    desc: 'De la pivnițe de brânzeturi Alpine la țărmurile Mediteranei',
   },
   {
     continent: 'Africa',
     ids: ['north-africa', 'west-africa', 'east-africa', 'southern-africa'],
-    desc: 'A continent of bold flavours and deep tradition',
+    desc: 'Un continent cu arome îndrăznețe și tradiție profundă',
   },
   {
-    continent: 'Americas',
+    continent: 'Americi',
     ids: ['north-america', 'south-america'],
-    desc: 'New World abundance from the Arctic to Patagonia',
+    desc: 'Abundență din Noul Lume de la Arctic la Patagonia',
   },
   {
     continent: 'Oceania',
     ids: ['oceania'],
-    desc: 'Pacific islands, bush tucker, and fusion',
+    desc: 'Insule din Pacific, mâncare tradițională și fuziune',
   },
 ]
 
@@ -62,48 +62,48 @@ const REGION_IMAGES: Record<string, string> = {
 /* ─── featured collections ───────────────────────────────────────────────── */
 const COLLECTIONS = [
   {
-    title: 'Quick Weeknight',
-    desc: 'Ready in 30 min',
+    title: 'Rapid în seara de lucru',
+    desc: 'Gata în 30 min',
     emoji: '⚡',
     count: 24,
     query: '',
     img: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80',
   },
   {
-    title: 'Vegetarian & Vegan',
-    desc: 'Plant-based for every meal',
+    title: 'Vegetarian și Vegan',
+    desc: 'Pe bază de plante pentru fiecare masă',
     emoji: '🌱',
     count: 18,
     query: 'vegan',
     img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
   },
   {
-    title: 'Street Food',
-    desc: 'Iconic bites worldwide',
+    title: 'Mâncare de stradă',
+    desc: 'Mâncăruri iconice din lume',
     emoji: '🌮',
     count: 15,
     query: 'street-food',
     img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80',
   },
   {
-    title: 'Baked Goods',
-    desc: 'Breads, cakes & pastries',
+    title: 'Produse de patiserie',
+    desc: 'Pâini, prăjituri și patiserii',
     emoji: '🥐',
     count: 21,
     query: 'pastry',
     img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80',
   },
   {
-    title: 'Healthy & Light',
-    desc: 'Under 500 calories',
+    title: 'Sănătos și ușor',
+    desc: 'Sub 500 calorii',
     emoji: '🥗',
     count: 19,
     query: 'healthy',
     img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
   },
   {
-    title: 'Comfort Classics',
-    desc: 'Dishes that feel like home',
+    title: 'Clasice de confort',
+    desc: 'Mâncăruri care se simt ca acasă',
     emoji: '🍲',
     count: 22,
     query: 'casserole',
@@ -141,22 +141,22 @@ export default async function CookbooksPage() {
         <div className="relative h-full flex flex-col justify-between px-8 py-8 max-w-7xl mx-auto w-full">
           {/* Top: Info pill */}
           <div className="self-start">
-            <p
-              className="text-xs font-bold px-2.5 py-1 rounded-full inline-block"
-              style={{ background: 'rgba(255,149,0,0.15)', color: '#ff9500' }}
-            >
-              15 regions · 6 collections
-            </p>
+              <p
+               className="text-xs font-bold px-2.5 py-1 rounded-full inline-block"
+               style={{ background: 'rgba(255,149,0,0.15)', color: '#ff9500' }}
+             >
+               15 regiuni · 6 colecții
+             </p>
           </div>
 
           {/* Bottom: Headline + Subtitle */}
           <div>
             <h1 className="ff text-5xl font-extrabold tracking-tight mb-3 leading-tight" style={{ color: '#fff' }}>
-              The World on a Plate
-            </h1>
-            <p className="text-lg" style={{ color: '#eee' }}>
-              Explore recipes by region, cuisine, and style
-            </p>
+               Lumea pe o farfurie
+             </h1>
+             <p className="text-lg" style={{ color: '#eee' }}>
+               Explorează rețete după regiune, bucătărie și stil
+             </p>
           </div>
         </div>
       </div>
@@ -252,9 +252,9 @@ export default async function CookbooksPage() {
           })}
         </section>
 
-        {/* ── FEATURED COLLECTIONS ── */}
-        <section>
-          <h2 className="ff text-xl font-bold mb-5" style={{ color: '#111' }}>Featured Collections</h2>
+         {/* ── FEATURED COLLECTIONS ── */}
+         <section>
+           <h2 className="ff text-xl font-bold mb-5" style={{ color: '#111' }}>Colecții în evidență</h2>
           <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
             {COLLECTIONS.map((col) => (
               <Link
@@ -309,10 +309,10 @@ export default async function CookbooksPage() {
           </div>
         </section>
 
-        {/* ── DB CUISINES GRID (if available) ── */}
-        {hasCuisines && (
-          <section>
-            <h2 className="ff text-xl font-bold mb-5" style={{ color: '#111' }}>By Cuisine</h2>
+         {/* ── DB CUISINES GRID (if available) ── */}
+         {hasCuisines && (
+           <section>
+             <h2 className="ff text-xl font-bold mb-5" style={{ color: '#111' }}>După bucătărie</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {cuisines.map((cuisine) => (
                 <Link

@@ -41,15 +41,15 @@ export default function FollowChefButton({ handle, displayName }: Props) {
           ? { background: 'rgba(0,0,0,0.06)', color: '#555', border: '1px solid rgba(0,0,0,0.12)' }
           : { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
       >
-        {following ? '✓ Following' : '+ Follow'}
+         {following ? '✓ Urmăresc' : '+ Urmărește'}
       </button>
-      <Link
-        href={`/chefs/${cleanHandle}`}
-        className="px-3 py-2 rounded-lg text-sm font-medium flex items-center"
-        style={{ background: 'rgba(0,0,0,0.04)', color: '#555', border: '1px solid rgba(0,0,0,0.1)' }}
-      >
-        Profile →
-      </Link>
+       <Link
+         href={`/chefs/${cleanHandle}`}
+         className="px-3 py-2 rounded-lg text-sm font-medium flex items-center"
+         style={{ background: 'rgba(0,0,0,0.04)', color: '#555', border: '1px solid rgba(0,0,0,0.1)' }}
+       >
+         Profil →
+       </Link>
     </div>
   )
 }

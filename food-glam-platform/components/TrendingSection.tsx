@@ -86,12 +86,12 @@ export default function TrendingSection() {
       >
         <div className="flex items-center gap-2">
           <span className="text-base">🔥</span>
-          <span
-            className="font-bold text-sm tracking-wide"
-            style={{ fontFamily: "'Syne', sans-serif", color: '#f0f0f0' }}
-          >
-            Trending Now
-          </span>
+           <span
+             className="font-bold text-sm tracking-wide"
+             style={{ fontFamily: "'Syne', sans-serif", color: '#f0f0f0' }}
+           >
+             În tendințe acum
+           </span>
           {!loading && (
             <span
               className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
@@ -101,13 +101,13 @@ export default function TrendingSection() {
             </span>
           )}
         </div>
-        <Link
-          href={tab === 'recipes' ? '/search?sort=trending' : '/search?mode=cocktails&sort=trending'}
-          className="text-[11px] font-semibold transition-opacity hover:opacity-100 opacity-70"
-          style={{ color: '#ff9500' }}
-        >
-          See all →
-        </Link>
+         <Link
+           href={tab === 'recipes' ? '/search?sort=trending' : '/search?mode=cocktails&sort=trending'}
+           className="text-[11px] font-semibold transition-opacity hover:opacity-100 opacity-70"
+           style={{ color: '#ff9500' }}
+         >
+           Vezi tot →
+         </Link>
       </div>
 
       {/* ── Tab toggle ── */}
@@ -148,12 +148,12 @@ export default function TrendingSection() {
         </div>
       )}
 
-      {/* ── Empty state ── */}
-      {!loading && items.length === 0 && (
-        <p className="px-4 py-10 text-sm text-center" style={{ color: '#444' }}>
-          Nothing trending yet
-        </p>
-      )}
+       {/* ── Empty state ── */}
+       {!loading && items.length === 0 && (
+         <p className="px-4 py-10 text-sm text-center" style={{ color: '#444' }}>
+           Nimic în tendințe deocamdată
+         </p>
+       )}
 
       {/* ── List ── */}
       {(!loading || tab === 'cocktails') && items.length > 0 && (
@@ -241,15 +241,15 @@ export default function TrendingSection() {
         >
           <Link
             href={tab === 'recipes' ? '/search?sort=trending' : '/search?mode=cocktails&sort=trending'}
-            className="block text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
-            style={
-              tab === 'cocktails'
-                ? { background: 'rgba(124,58,237,0.1)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.2)' }
-                : { background: 'rgba(255,77,109,0.08)', color: '#ff4d6d', border: '1px solid rgba(255,77,109,0.15)' }
-            }
-          >
-            {tab === 'recipes' ? 'View all trending recipes →' : 'View all trending cocktails →'}
-          </Link>
+             className="block text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
+             style={
+               tab === 'cocktails'
+                 ? { background: 'rgba(124,58,237,0.1)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.2)' }
+                 : { background: 'rgba(255,77,109,0.08)', color: '#ff4d6d', border: '1px solid rgba(255,77,109,0.15)' }
+             }
+           >
+             {tab === 'recipes' ? 'Vezi toate rețetele în tendințe →' : 'Vezi toate cocktailurile în tendințe →'}
+           </Link>
         </div>
       )}
     </div>

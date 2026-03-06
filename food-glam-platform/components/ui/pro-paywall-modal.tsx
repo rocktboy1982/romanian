@@ -9,11 +9,11 @@ interface ProPaywallModalProps {
 }
 
 const PRO_FEATURES = [
-  '✨ Smart shopping list generation',
-  '🛒 Grocery vendor matching & pricing',
-  '📷 Visual ingredient scan (fridge → recipes)',
-  '📅 Multi-week meal planning',
-  '🔔 More coming soon',
+  '✨ Generare inteligentă a listei de cumpărături',
+  '🛒 Potrivire vânzător alimentar și prețuri',
+  '📷 Scanare vizuală a ingredientelor (frigider → rețete)',
+  '📅 Planificare de mese pe mai multe săptămâni',
+  '🔔 Mai mult în curând',
 ]
 
 const PRO_PRICE = '29 RON / lună'
@@ -99,33 +99,33 @@ export default function ProPaywallModal({ onClose, feature }: ProPaywallModalPro
         </div>
 
         {/* CTA */}
-        <button
-          onClick={() => {
-            // TODO: replace with real checkout URL (Stripe / netopia.ro)
-            alert('Plăți în curând! Revino pentru a te abona.')
-            onClose()
-          }}
-          style={{
-            width: '100%', padding: '14px', borderRadius: 12,
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            color: '#fff', border: 'none', fontSize: 16, fontWeight: 700,
-            cursor: 'pointer', boxShadow: '0 4px 14px rgba(217,119,6,0.4)',
-            marginBottom: 10,
-          }}
-        >
-          Upgrade la Pro →
-        </button>
+         <button
+           onClick={() => {
+             // TODO: replace with real checkout URL (Stripe / netopia.ro)
+             alert('Plăți în curând! Revino pentru a te abona.')
+             onClose()
+           }}
+           style={{
+             width: '100%', padding: '14px', borderRadius: 12,
+             background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+             color: '#fff', border: 'none', fontSize: 16, fontWeight: 700,
+             cursor: 'pointer', boxShadow: '0 4px 14px rgba(217,119,6,0.4)',
+             marginBottom: 10,
+           }}
+         >
+           Treci la Pro →
+         </button>
 
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%', padding: '10px', borderRadius: 12,
-            background: 'transparent', color: '#999', border: 'none',
-            fontSize: 14, cursor: 'pointer',
-          }}
-        >
-          Poate mai târziu
-        </button>
+         <button
+           onClick={onClose}
+           style={{
+             width: '100%', padding: '10px', borderRadius: 12,
+             background: 'transparent', color: '#999', border: 'none',
+             fontSize: 14, cursor: 'pointer',
+           }}
+         >
+           Poate mai târziu
+         </button>
       </div>
     </div>
   )

@@ -154,13 +154,13 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData 
       {/* Primary actions */}
       <div className="flex flex-wrap gap-2">
         <Link href={`/recipes/${slug}/cook`} className="flex-1 min-w-[140px]">
-          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/>
-              <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
-            </svg>
-            Cook Mode
-          </Button>
+           <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-2">
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/>
+               <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
+             </svg>
+             Mod gătit
+           </Button>
         </Link>
 
         <Button
@@ -168,56 +168,56 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData 
           className={`flex-1 min-w-[140px] gap-2 ${saved ? "bg-amber-500 hover:bg-amber-600 border-amber-500 text-white" : ""}`}
           onClick={handleSave}
         >
-          {saved ? (
-            <span className="text-base">⭐</span>
-          ) : (
-            <span className="text-base">☆</span>
-          )}
-          {saved ? "Preferred" : "Save"}
-        </Button>
-      </div>
+           {saved ? (
+             <span className="text-base">⭐</span>
+           ) : (
+             <span className="text-base">☆</span>
+           )}
+           {saved ? "Preferat" : "Salvează"}
+         </Button>
+       </div>
 
-      {/* Secondary actions */}
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={handleShare}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          Share
-        </Button>
+       {/* Secondary actions */}
+       <div className="flex flex-wrap gap-2">
+         <Button variant="outline" size="sm" className="gap-1.5" onClick={handleShare}>
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+           </svg>
+           Distribuie
+         </Button>
 
-        <Link href={`/recipes/${slug}/print`} target="_blank">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-              <rect x="6" y="14" width="12" height="8"/>
-            </svg>
-            Print
-          </Button>
-        </Link>
+         <Link href={`/recipes/${slug}/print`} target="_blank">
+           <Button variant="outline" size="sm" className="gap-1.5">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+               <rect x="6" y="14" width="12" height="8"/>
+             </svg>
+             Printează
+           </Button>
+         </Link>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={() => { setExportOpen(!exportOpen); setShareOpen(false); }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Export
-        </Button>
-      </div>
+         <Button
+           variant="outline"
+           size="sm"
+           className="gap-1.5"
+           onClick={() => { setExportOpen(!exportOpen); setShareOpen(false); }}
+         >
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+             <polyline points="7 10 12 15 17 10"/>
+             <line x1="12" y1="15" x2="12" y2="3"/>
+           </svg>
+           Exportă
+         </Button>
+       </div>
 
         <ReportButton contentId={recipeId} contentType="recipe" contentTitle={title} variant="full" />
 
-      {/* Export dropdown */}
-      {exportOpen && (
-        <div className="p-3 bg-muted rounded-lg space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Export recipe as</p>
+       {/* Export dropdown */}
+       {exportOpen && (
+         <div className="p-3 bg-muted rounded-lg space-y-2">
+           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Exportă rețeta ca</p>
           <div className="flex flex-col gap-2">
             <button
               onClick={handleDownloadTxt}
@@ -227,53 +227,53 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData 
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
               </svg>
-              <span>Plain text (.txt)</span>
-              <span className="ml-auto text-xs text-muted-foreground">Ingredients + steps</span>
-            </button>
-            <button
-              onClick={handleDownloadJson}
-              className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-sm hover:bg-background transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-              </svg>
-              <span>JSON (.json)</span>
-              <span className="ml-auto text-xs text-muted-foreground">Machine-readable</span>
-            </button>
-            <Link
-              href={`/recipes/${slug}/print`}
-              target="_blank"
-              className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-sm hover:bg-background transition-colors"
-              onClick={() => setExportOpen(false)}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-              </svg>
-              <span>Save as PDF</span>
-              <span className="ml-auto text-xs text-muted-foreground">Via print dialog</span>
-            </Link>
-          </div>
-        </div>
-      )}
+               <span>Text simplu (.txt)</span>
+               <span className="ml-auto text-xs text-muted-foreground">Ingrediente + pași</span>
+             </button>
+             <button
+               onClick={handleDownloadJson}
+               className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-sm hover:bg-background transition-colors"
+             >
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                 <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+               </svg>
+               <span>JSON (.json)</span>
+               <span className="ml-auto text-xs text-muted-foreground">Citibil de mașină</span>
+             </button>
+             <Link
+               href={`/recipes/${slug}/print`}
+               target="_blank"
+               className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-sm hover:bg-background transition-colors"
+               onClick={() => setExportOpen(false)}
+             >
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                 <rect x="6" y="14" width="12" height="8"/>
+               </svg>
+               <span>Salvează ca PDF</span>
+               <span className="ml-auto text-xs text-muted-foreground">Via dialog de imprimare</span>
+             </Link>
+           </div>
+         </div>
+       )}
 
-      {/* Share dropdown */}
-      {shareOpen && (
-        <div className="p-3 bg-muted rounded-lg space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Share this recipe</p>
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value={typeof window !== "undefined" ? `${window.location.origin}/recipes/${slug}` : `/recipes/${slug}`}
-              className="flex-1 text-xs bg-background border rounded px-2 py-1.5"
-            />
-            <Button size="sm" variant="outline" onClick={handleCopyLink}>
-              {copyFeedback ? "Copied!" : "Copy"}
-            </Button>
-          </div>
-        </div>
-      )}
+       {/* Share dropdown */}
+       {shareOpen && (
+         <div className="p-3 bg-muted rounded-lg space-y-2">
+           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Distribuie această rețetă</p>
+           <div className="flex gap-2">
+             <input
+               readOnly
+               value={typeof window !== "undefined" ? `${window.location.origin}/recipes/${slug}` : `/recipes/${slug}`}
+               className="flex-1 text-xs bg-background border rounded px-2 py-1.5"
+             />
+             <Button size="sm" variant="outline" onClick={handleCopyLink}>
+               {copyFeedback ? "Copiat!" : "Copiază"}
+             </Button>
+           </div>
+         </div>
+       )}
     </div>
   );
 }

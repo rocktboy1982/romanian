@@ -302,13 +302,13 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
   if (!meta) {
     return (
       <div style={{ padding: '40px 20px', maxWidth: 600, margin: '0 auto', background: '#dde3ee', minHeight: '80vh' }}>
-        <p style={{ color: '#888', fontSize: 14 }}>List not found.</p>
-        <button
-          onClick={() => router.push('/me/shopping-lists')}
-          style={{ marginTop: 16, fontSize: 13, color: '#111', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          ← Back to lists
-        </button>
+           <p style={{ color: '#888', fontSize: 14 }}>Lista nu a fost găsită.</p>
+         <button
+           onClick={() => router.push('/me/shopping-lists')}
+           style={{ marginTop: 16, fontSize: 13, color: '#111', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+         >
+           ← Înapoi la liste
+         </button>
       </div>
     )
   }
@@ -341,7 +341,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
             onMouseOver={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#111' }}
             onMouseOut={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#666' }}
           >
-            ← All Lists
+             ← Toate listele
           </button>
 
           {/* Header card */}
@@ -377,10 +377,10 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
                     {meta.name}
                   </h1>
                 )}
-                <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 12, color: '#888' }}>
-                  <span>{items.length} item{items.length !== 1 ? 's' : ''}</span>
-                  <span>·</span>
-                  <span>{checked.length} checked</span>
+                 <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 12, color: '#888' }}>
+                   <span>{items.length} articol{items.length !== 1 ? 'e' : ''}</span>
+                   <span>·</span>
+                   <span>{checked.length} bifate</span>
                   {meta.source_type && (
                     <>
                       <span>·</span>

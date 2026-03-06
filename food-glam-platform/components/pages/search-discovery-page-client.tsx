@@ -84,11 +84,11 @@ interface CocktailResponse {
 
 const REGION_GROUPS = [
   {
-    continent: 'Europe',
+    continent: 'Europa',
     regions: ['western-europe', 'northern-europe', 'eastern-europe'],
   },
   {
-    continent: 'Middle East & Central Asia',
+    continent: 'Orientul Mijlociu și Asia Centrală',
     regions: ['middle-east', 'central-asia'],
   },
   {
@@ -100,33 +100,33 @@ const REGION_GROUPS = [
     regions: ['north-africa', 'west-africa', 'east-africa', 'southern-africa'],
   },
   {
-    continent: 'Americas',
+    continent: 'Americi',
     regions: ['north-america', 'south-america'],
   },
   {
-    continent: 'Oceania & International',
+    continent: 'Oceania și Internațional',
     regions: ['oceania', 'international'],
   },
 ]
 
 // Flat list kept for lookups (active filter label, etc.)
 const REGIONS = [
-  { slug: '', label: 'All Regions', emoji: '\u{1F30D}' },
+  { slug: '', label: 'Toate regiunile', emoji: '\u{1F30D}' },
   ...REGION_GROUPS.flatMap(g => g.regions.map(id => ({ slug: id, label: REGION_META[id].label, emoji: REGION_META[id].emoji }))),
 ]
 const APPROACHES = REGIONS // Alias for backwards compatibility
 
 const FOOD_TAG_GROUPS = [
   {
-    label: 'Dish',
+    label: 'Fel',
     tags: ['pizza', 'noodles', 'sushi', 'pastry', 'tacos', 'curry', 'paella', 'rice', 'bowl', 'stew', 'casserole'],
   },
   {
-    label: 'Protein',
+    label: 'Proteină',
     tags: ['seafood', 'chicken', 'lamb', 'pork', 'beef', 'tofu'],
   },
   {
-    label: 'Character',
+    label: 'Caracter',
     tags: ['spicy', 'sweet', 'smoky', 'crispy', 'healthy', 'street-food', 'breakfast', 'dessert', 'comfort'],
   },
 ]
@@ -134,10 +134,10 @@ const FOOD_TAG_GROUPS = [
 // Flat list derived from groups — used for active-filter lookups
 const FOOD_TAGS = FOOD_TAG_GROUPS.flatMap(g => g.tags)
 
-const STATUS_TAGS = ['Popular', 'Trending', 'New', 'Tested']
+const STATUS_TAGS = ['Popular', 'În tendințe', 'Nou', 'Testat']
 
 const QUALITY_OPTIONS = [
-  { value: 0, label: 'Any' },
+  { value: 0, label: 'Orice' },
   { value: 4.0, label: '4.0+' },
   { value: 4.3, label: '4.3+' },
   { value: 4.5, label: '4.5+' },
@@ -145,7 +145,7 @@ const QUALITY_OPTIONS = [
 ]
 
 const CALORIE_OPTIONS = [
-  { value: 0,    label: 'Any' },
+  { value: 0,    label: 'Orice' },
   { value: 300,  label: '< 300 kcal' },
   { value: 500,  label: '< 500 kcal' },
   { value: 700,  label: '< 700 kcal' },
@@ -167,23 +167,23 @@ const DIET_TAGS = [
 
 
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Relevance', icon: Sparkles },
-  { value: 'trending', label: 'Trending (7d)', icon: Flame },
-  { value: 'newest', label: 'Newest', icon: Clock },
+  { value: 'relevance', label: 'Relevanță', icon: Sparkles },
+  { value: 'trending', label: 'În tendințe (7z)', icon: Flame },
+  { value: 'newest', label: 'Cele mai noi', icon: Clock },
 ]
 
 const PER_PAGE = 12
 
 const SPIRITS = [
-  { value: '', label: 'All Spirits' },
+  { value: '', label: 'Toate spirtoasele' },
   { value: 'whisky',   label: '🥃 Whisky' },
   { value: 'gin',      label: '🌿 Gin' },
   { value: 'rum',      label: '🍹 Rum' },
   { value: 'tequila',  label: '🌵 Tequila' },
   { value: 'vodka',    label: '🧊 Vodka' },
   { value: 'brandy',   label: '🍇 Brandy' },
-  { value: 'liqueur',  label: '🍊 Liqueur' },
-  { value: 'wine',     label: '🍾 Wine' },
+  { value: 'liqueur',  label: '🍊 Lichior' },
+  { value: 'wine',     label: '🍾 Vin' },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -543,26 +543,26 @@ function SearchDiscoveryPageClientContent() {
       {/* ---- Mode toggle: Recipes / Cocktails ---- */}
       <div className="flex justify-center pt-4 pb-0">
         <div className="inline-flex rounded-full p-1 bg-white/60">
-          <button
-            onClick={() => switchMode('recipes')}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-              mode === 'recipes'
-                ? 'bg-amber-500 text-white shadow'
-                : 'text-stone-500 hover:text-stone-800'
-            }`}
-          >
-            🍽️ Recipes
-          </button>
-          <button
-            onClick={() => switchMode('cocktails')}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-              mode === 'cocktails'
-                ? 'bg-violet-600 text-white shadow'
-                : 'text-stone-500 hover:text-stone-800'
-            }`}
-          >
-            🍹 Cocktails
-          </button>
+           <button
+             onClick={() => switchMode('recipes')}
+             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+               mode === 'recipes'
+                 ? 'bg-amber-500 text-white shadow'
+                 : 'text-stone-500 hover:text-stone-800'
+             }`}
+           >
+             🍽️ Rețete
+           </button>
+           <button
+             onClick={() => switchMode('cocktails')}
+             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+               mode === 'cocktails'
+                 ? 'bg-violet-600 text-white shadow'
+                 : 'text-stone-500 hover:text-stone-800'
+             }`}
+           >
+             🍹 Cocktailuri
+           </button>
         </div>
       </div>
       {/* ---- Hero search bar ---- */}
@@ -583,12 +583,12 @@ function SearchDiscoveryPageClientContent() {
           <div className="max-w-2xl mx-auto text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3"
                 style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-              {mode === 'cocktails' ? 'Discover Cocktails' : 'Discover Recipes'}
+              {mode === 'cocktails' ? 'Descoperă Cocktailuri' : 'Descoperă Rețete'}
             </h1>
             <p className="text-stone-300 text-base md:text-lg">
               {mode === 'cocktails'
-                ? 'Search cocktail recipes — filter by alcoholic or non-alcoholic.'
-                : 'Search by title, filter by approach & diet, find your next meal.'
+                ? 'Caută rețete de cocktailuri — filtrează după alcoolice sau non-alcoolice.'
+                : 'Caută după titlu, filtrează după regiune și dietă, găsește-ți următoarea masă.'
               }
             </p>
           </div>
@@ -597,13 +597,13 @@ function SearchDiscoveryPageClientContent() {
           <div className="max-w-2xl mx-auto relative">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder={mode === 'cocktails' ? 'Search cocktails, spirits, tags...' : 'Search recipes by title or keyword...'}
-                className={`w-full pl-12 pr-12 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-stone-400 text-lg focus:outline-none focus:ring-2 transition-all ${mode === 'cocktails' ? 'focus:ring-violet-500/50 focus:border-violet-500/50' : 'focus:ring-amber-500/50 focus:border-amber-500/50'}`}
-              />
+               <input
+                 type="text"
+                 value={query}
+                 onChange={(e) => handleQueryChange(e.target.value)}
+                 placeholder={mode === 'cocktails' ? 'Caută cocktailuri, spirtoase, etichete...' : 'Caută rețete după titlu sau cuvânt cheie...'}
+                 className={`w-full pl-12 pr-12 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-stone-400 text-lg focus:outline-none focus:ring-2 transition-all ${mode === 'cocktails' ? 'focus:ring-violet-500/50 focus:border-violet-500/50' : 'focus:ring-amber-500/50 focus:border-amber-500/50'}`}
+               />
               {query && (
                 <button
                   onClick={() => handleQueryChange('')}
@@ -645,21 +645,21 @@ function SearchDiscoveryPageClientContent() {
 
           {/* ---- Filters toggle (mobile) ---- */}
           <div className="lg:hidden">
-            <button
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-stone-200 shadow-sm"
-            >
-              <span className="flex items-center gap-2 text-sm font-medium text-stone-700">
-                <SlidersHorizontal className="w-4 h-4" />
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-xs font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </span>
-              <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
-            </button>
+             <button
+               onClick={() => setFiltersOpen(!filtersOpen)}
+               className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white border border-stone-200 shadow-sm"
+             >
+               <span className="flex items-center gap-2 text-sm font-medium text-stone-700">
+                 <SlidersHorizontal className="w-4 h-4" />
+                 Filtre
+                 {activeFilterCount > 0 && (
+                   <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-xs font-bold">
+                     {activeFilterCount}
+                   </span>
+                 )}
+               </span>
+               <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+             </button>
           </div>
 
           {/* ---- Sidebar filters ---- */}
@@ -668,13 +668,13 @@ function SearchDiscoveryPageClientContent() {
             {/* ====== COCKTAIL SIDEBAR ====== */}
             {mode === 'cocktails' && (
               <div className="rounded-2xl border p-5 space-y-6 sticky top-4" style={{ background: 'rgba(255,255,255,0.65)', borderColor: 'rgba(0,0,0,0.1)' }}>
-                <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#7c3aed' }}>Filters</h2>
+                 <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#7c3aed' }}>Filtre</h2>
 
                 {/* Category */}
                 <div>
-                  <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Category</label>
-                  <div className="flex flex-col gap-1.5">
-                    {([['', 'All Drinks', '🍹'], ['alcoholic', 'Alcoholic', '🥃'], ['non-alcoholic', 'Non-Alcoholic', '🍃']] as const).map(([val, label, emoji]) => (
+                   <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Categorie</label>
+                   <div className="flex flex-col gap-1.5">
+                     {([['', 'Toate băuturile', '🍹'], ['alcoholic', 'Alcoolice', '🥃'], ['non-alcoholic', 'Non-alcoolice', '🍃']] as const).map(([val, label, emoji]) => (
                       <button
                         key={val}
                         onClick={() => handleCocktailCategoryChange(val)}
@@ -693,7 +693,7 @@ function SearchDiscoveryPageClientContent() {
                 {/* Spirit */}
                 {(cocktailCategory === '' || cocktailCategory === 'alcoholic') && (
                   <div>
-                    <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Spirit</label>
+                    <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Spirtoasă</label>
                     <div className="flex flex-wrap gap-1.5">
                       {SPIRITS.map(sp => (
                         <button
@@ -712,11 +712,11 @@ function SearchDiscoveryPageClientContent() {
                   </div>
                 )}
 
-                {/* Difficulty */}
-                <div>
-                  <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Difficulty</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {([['', 'Any'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']] as const).map(([val, label]) => (
+                 {/* Difficulty */}
+                 <div>
+                   <label className="block text-xs font-medium uppercase tracking-wider mb-2" style={{ color: '#555' }}>Dificultate</label>
+                   <div className="flex flex-wrap gap-1.5">
+                     {([['', 'Orice'], ['easy', 'Ușor'], ['medium', 'Mediu'], ['hard', 'Greu']] as const).map(([val, label]) => (
                       <button
                         key={val}
                         onClick={() => {
@@ -737,23 +737,23 @@ function SearchDiscoveryPageClientContent() {
             {mode === 'recipes' && (
               <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 space-y-6 sticky top-4">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-stone-800 uppercase tracking-wider">Filters</h2>
-                  {hasActiveFilters && (
-                    <button onClick={clearAllFilters} className="text-xs text-amber-600 hover:text-amber-700 font-medium">
-                      Clear all
-                    </button>
-                  )}
-                </div>
+                 <div className="flex items-center justify-between">
+                   <h2 className="text-sm font-semibold text-stone-800 uppercase tracking-wider">Filtre</h2>
+                   {hasActiveFilters && (
+                     <button onClick={clearAllFilters} className="text-xs text-amber-600 hover:text-amber-700 font-medium">
+                       Șterge tot
+                     </button>
+                   )}
+                 </div>
 
-                {/* Region */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider">Region</label>
-                    {approach && (<button onClick={() => handleApproachChange('')} className="text-[10px] text-amber-600 hover:text-amber-700 font-medium">Clear</button>)}
-                  </div>
-                  <select value={approach} onChange={e => handleApproachChange(e.target.value)} className="w-full text-xs rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 cursor-pointer">
-                    <option value="">🌍 All Regions</option>
+                 {/* Region */}
+                 <div>
+                   <div className="flex items-center justify-between mb-2">
+                     <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider">Regiune</label>
+                     {approach && (<button onClick={() => handleApproachChange('')} className="text-[10px] text-amber-600 hover:text-amber-700 font-medium">Șterge</button>)}
+                   </div>
+                   <select value={approach} onChange={e => handleApproachChange(e.target.value)} className="w-full text-xs rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 cursor-pointer">
+                     <option value="">🌍 Toate regiunile</option>
                     {REGION_GROUPS.map(group => (
                       <optgroup key={group.continent} label={group.continent}>
                         {group.regions.map(id => {
@@ -765,9 +765,9 @@ function SearchDiscoveryPageClientContent() {
                   </select>
                 </div>
 
-                {/* Food Tags */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Food Tags</label>
+                 {/* Food Tags */}
+                 <div>
+                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Etichete Mâncare</label>
                   <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
                     {FOOD_TAG_GROUPS.map(group => (
                       <div key={group.label}>
@@ -787,9 +787,9 @@ function SearchDiscoveryPageClientContent() {
                   </div>
                 </div>
 
-                {/* Diet tags */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Diet &amp; Preferences</label>
+                 {/* Diet tags */}
+                 <div>
+                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Dietă &amp; Preferințe</label>
                   <div className="space-y-1.5 max-h-64 overflow-y-auto">
                     {DIET_TAGS.map(tag => {
                       const isChecked = dietTags.includes(tag)
@@ -805,9 +805,9 @@ function SearchDiscoveryPageClientContent() {
                   </div>
                 </div>
 
-                {/* Status */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Status</label>
+                 {/* Status */}
+                 <div>
+                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Stare</label>
                   <div className="flex flex-wrap gap-1.5">
                     {STATUS_TAGS.map(tag => (
                       <button key={tag} onClick={() => handleTagFilterChange(tag)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tagFilter === tag ? 'bg-violet-500 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}>{tag}</button>
@@ -815,19 +815,19 @@ function SearchDiscoveryPageClientContent() {
                   </div>
                 </div>
 
-                {/* Quality */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Min Quality</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {QUALITY_OPTIONS.map(opt => (
-                      <button key={opt.value} onClick={() => handleQualityMinChange(opt.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${qualityMin === opt.value ? 'bg-emerald-500 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}>{opt.label}</button>
-                    ))}
-                  </div>
-                </div>
+                 {/* Quality */}
+                 <div>
+                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Calitate Minimă</label>
+                   <div className="flex flex-wrap gap-1.5">
+                     {QUALITY_OPTIONS.map(opt => (
+                       <button key={opt.value} onClick={() => handleQualityMinChange(opt.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${qualityMin === opt.value ? 'bg-emerald-500 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}>{opt.label}</button>
+                     ))}
+                   </div>
+                 </div>
 
-                {/* Calories */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Max Calories</label>
+                 {/* Calories */}
+                 <div>
+                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">Calorii Maxime</label>
                   <div className="flex flex-wrap gap-1.5">
                     {CALORIE_OPTIONS.map(opt => (
                       <button key={opt.value} onClick={() => handleCalMaxChange(opt.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${calMax === opt.value ? 'bg-rose-500 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}>{opt.label}</button>
@@ -844,22 +844,22 @@ function SearchDiscoveryPageClientContent() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <p className={`text-sm ${mode === 'cocktails' ? 'text-slate-400' : 'text-stone-500'}`}>
-                  {loading ? (
-                    <span className="flex items-center gap-1.5">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Searching...
-                    </span>
-                  ) : (
-                    <>
-                      <span className={`font-semibold ${mode === 'cocktails' ? 'text-white' : 'text-stone-800'}`}>
-                        {mode === 'cocktails' ? cocktailTotal : total}
-                      </span>{' '}
-                      {mode === 'cocktails'
-                        ? (cocktailTotal === 1 ? 'cocktail' : 'cocktails') + ' found'
-                        : (total === 1 ? 'recipe' : 'recipes') + ' found'
-                      }
-                    </>
-                  )}
+                   {loading ? (
+                     <span className="flex items-center gap-1.5">
+                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                       Se caută...
+                     </span>
+                   ) : (
+                     <>
+                       <span className={`font-semibold ${mode === 'cocktails' ? 'text-white' : 'text-stone-800'}`}>
+                         {mode === 'cocktails' ? cocktailTotal : total}
+                       </span>{' '}
+                       {mode === 'cocktails'
+                         ? (cocktailTotal === 1 ? 'cocktail' : 'cocktailuri') + ' găsit'
+                         : (total === 1 ? 'rețetă' : 'rețete') + ' găsite'
+                       }
+                     </>
+                   )}
                 </p>
 
                 {/* Active filter pills */}
@@ -897,22 +897,22 @@ function SearchDiscoveryPageClientContent() {
                         </button>
                       </span>
                     )}
-                    {isTested && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">
-                        Tested Only
-                        <button onClick={handleTestedToggle} className="hover:text-amber-900">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    )}
-                    {qualityMin > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium">
-                        ≥{qualityMin} quality
-                        <button onClick={() => handleQualityMinChange(0)} className="hover:text-emerald-900">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    )}
+                     {isTested && (
+                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">
+                         Doar testate
+                         <button onClick={handleTestedToggle} className="hover:text-amber-900">
+                           <X className="w-3 h-3" />
+                         </button>
+                       </span>
+                     )}
+                     {qualityMin > 0 && (
+                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium">
+                         ≥{qualityMin} calitate
+                         <button onClick={() => handleQualityMinChange(0)} className="hover:text-emerald-900">
+                           <X className="w-3 h-3" />
+                         </button>
+                       </span>
+                     )}
                     {calMax > 0 && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-medium">
                         &lt;{calMax} kcal
@@ -958,17 +958,17 @@ function SearchDiscoveryPageClientContent() {
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-5 ${mode === 'cocktails' ? 'bg-slate-700' : 'bg-stone-100'}`}>
                   <SearchX className={`w-9 h-9 ${mode === 'cocktails' ? 'text-slate-400' : 'text-stone-400'}`} />
                 </div>
-                <h3 className={`text-lg font-semibold mb-2 ${mode === 'cocktails' ? 'text-white' : 'text-stone-800'}`}>
-                  No {mode === 'cocktails' ? 'cocktails' : 'recipes'} found
-                </h3>
-                <p className={`text-sm max-w-sm mb-6 ${mode === 'cocktails' ? 'text-slate-400' : 'text-stone-500'}`}>
-                  {query ? `No results for "${query}". Try different keywords or adjust your filters.` : 'Nothing matches the current filters. Try broadening your search.'}
-                </p>
-                {mode === 'recipes' && hasActiveFilters && (
-                  <button onClick={clearAllFilters} className="px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 transition-colors">
-                    Clear all filters
-                  </button>
-                )}
+                 <h3 className={`text-lg font-semibold mb-2 ${mode === 'cocktails' ? 'text-white' : 'text-stone-800'}`}>
+                   Niciun {mode === 'cocktails' ? 'cocktail' : 'rețetă'} găsit
+                 </h3>
+                 <p className={`text-sm max-w-sm mb-6 ${mode === 'cocktails' ? 'text-slate-400' : 'text-stone-500'}`}>
+                   {query ? `Niciun rezultat pentru "${query}". Încearcă cuvinte cheie diferite sau ajustează filtrele.` : 'Nimic nu se potrivește cu filtrele curente. Încearcă să lărgești căutarea.'}
+                 </p>
+                 {mode === 'recipes' && hasActiveFilters && (
+                   <button onClick={clearAllFilters} className="px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 transition-colors">
+                     Șterge toate filtrele
+                   </button>
+                 )}
               </div>
             )}
 
@@ -993,7 +993,7 @@ function SearchDiscoveryPageClientContent() {
                             : { background: '#059669', color: '#fff' }
                           }
                         >
-                          {c.category === 'alcoholic' ? '🥃 Alcoholic' : '🍃 Non-Alc'}
+                           {c.category === 'alcoholic' ? '🥃 Alcoolice' : '🍃 Non-alc'}
                         </span>
                         {/* ABV badge */}
                         {c.abv !== null && c.abv > 0 && (
@@ -1022,7 +1022,7 @@ function SearchDiscoveryPageClientContent() {
                         <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
                           <span className="text-xs" style={{ color: '#7c3aed' }}>♥ {c.votes}</span>
                           <span className="text-xs" style={{ color: '#888' }}>★ {c.quality_score.toFixed(1)}</span>
-                          <span className="text-xs ml-auto" style={{ color: '#888' }}>Serves {c.serves}</span>
+                           <span className="text-xs ml-auto" style={{ color: '#888' }}>Servește {c.serves}</span>
                         </div>
                       </div>
                     </div>
@@ -1073,13 +1073,13 @@ function SearchDiscoveryPageClientContent() {
             {/* Pagination */}
             {!loading && (mode === 'cocktails' ? cocktailTotal : total) > PER_PAGE && (
               <div className="flex items-center justify-center gap-2 mt-10">
-                <button
-                  onClick={() => mode === 'cocktails' ? handleCocktailPageChange(page - 1) : handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  className={`px-4 py-2.5 rounded-xl border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${mode === 'cocktails' ? 'border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600' : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'}`}
-                >
-                  Previous
-                </button>
+                 <button
+                   onClick={() => mode === 'cocktails' ? handleCocktailPageChange(page - 1) : handlePageChange(page - 1)}
+                   disabled={page <= 1}
+                   className={`px-4 py-2.5 rounded-xl border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${mode === 'cocktails' ? 'border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600' : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'}`}
+                 >
+                   Anterior
+                 </button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: mode === 'cocktails' ? cocktailTotalPages : totalPages }, (_, i) => i + 1)
                     .filter(p => p === 1 || p === (mode === 'cocktails' ? cocktailTotalPages : totalPages) || Math.abs(p - page) <= 1)
@@ -1102,13 +1102,13 @@ function SearchDiscoveryPageClientContent() {
                       )
                     })}
                 </div>
-                <button
-                  onClick={() => mode === 'cocktails' ? handleCocktailPageChange(page + 1) : handlePageChange(page + 1)}
-                  disabled={mode === 'cocktails' ? !cocktailHasMore : !hasMore}
-                  className={`px-4 py-2.5 rounded-xl border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${mode === 'cocktails' ? 'border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600' : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'}`}
-                >
-                  Next
-                </button>
+                 <button
+                   onClick={() => mode === 'cocktails' ? handleCocktailPageChange(page + 1) : handlePageChange(page + 1)}
+                   disabled={mode === 'cocktails' ? !cocktailHasMore : !hasMore}
+                   className={`px-4 py-2.5 rounded-xl border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${mode === 'cocktails' ? 'border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600' : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'}`}
+                 >
+                   Următor
+                 </button>
               </div>
             )}
           </div>
@@ -1120,11 +1120,11 @@ function SearchDiscoveryPageClientContent() {
 
 export default function SearchDiscoveryPageClient() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#dde3ee' }}>
-        <div className="text-muted-foreground">Loading search...</div>
-      </div>
-    }>
+     <Suspense fallback={
+       <div className="min-h-screen flex items-center justify-center" style={{ background: '#dde3ee' }}>
+         <div className="text-muted-foreground">Se încarcă căutarea...</div>
+       </div>
+     }>
       <SearchDiscoveryPageClientContent />
     </Suspense>
   )

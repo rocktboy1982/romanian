@@ -144,10 +144,10 @@ export default function RegionCookbookClient({ region }: { region: string }) {
     <main className="min-h-screen" style={{ background: '#dde3ee', color: '#111' }}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Breadcrumb */}
-        <nav className="text-sm text-muted-foreground mb-6 flex items-center gap-2">
-          <Link href="/cookbooks" className="hover:text-foreground transition-colors">
-            Global Cookbooks
-          </Link>
+         <nav className="text-sm text-muted-foreground mb-6 flex items-center gap-2">
+           <Link href="/cookbooks" className="hover:text-foreground transition-colors">
+             Cărți de bucate globale
+           </Link>
           <span>›</span>
           <span className="text-foreground font-medium">{meta.label}</span>
           {activeCountry && selectedCountry && (
@@ -176,10 +176,10 @@ export default function RegionCookbookClient({ region }: { region: string }) {
         </div>
 
         {/* ── Country filter ── */}
-        <section className="mb-6">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Country / Origin
-          </h2>
+         <section className="mb-6">
+           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+             Țară / Origine
+           </h2>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleCountryChange(null)}
@@ -188,9 +188,9 @@ export default function RegionCookbookClient({ region }: { region: string }) {
                   ? 'bg-amber-500 text-white border-amber-500'
                   : 'border-border hover:border-amber-300 hover:bg-amber-50 text-foreground'
               }`}
-            >
-              🌐 All
-            </button>
+               >
+               🌐 Toate
+             </button>
             {meta.countries.map((country) => (
               <button
                 key={country.id}
@@ -209,22 +209,22 @@ export default function RegionCookbookClient({ region }: { region: string }) {
         </section>
 
         {/* ── Style filter ── */}
-        {selectedCountry && selectedCountry.styles.length > 0 && (
-          <section className="mb-6 pl-4 border-l-2 border-amber-200 animate-in fade-in slide-in-from-top-1 duration-150">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Regional Style
-            </h2>
+         {selectedCountry && selectedCountry.styles.length > 0 && (
+           <section className="mb-6 pl-4 border-l-2 border-amber-200 animate-in fade-in slide-in-from-top-1 duration-150">
+             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+               Stil regional
+             </h2>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleStyleChange(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  !activeStyle
-                    ? 'bg-stone-800 text-white border-stone-800'
-                    : 'border-border hover:border-stone-400 text-foreground'
-                }`}
-              >
-                All Styles
-              </button>
+                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                   !activeStyle
+                     ? 'bg-stone-800 text-white border-stone-800'
+                     : 'border-border hover:border-stone-400 text-foreground'
+                 }`}
+               >
+                 Toate stilurile
+               </button>
               {selectedCountry.styles.map((style) => (
                 <button
                   key={style.id}
@@ -296,26 +296,26 @@ export default function RegionCookbookClient({ region }: { region: string }) {
         {/* ── Recipe grid ── */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">
-              {loading ? (
-                <span className="text-muted-foreground">Loading recipes…</span>
-              ) : (
-                <>
-                  {filteredRecipes.length} Recipe{filteredRecipes.length !== 1 ? 's' : ''}
-                  {total > filteredRecipes.length && (
-                    <span className="text-sm font-normal text-muted-foreground ml-1">
-                      (of {total} total)
-                    </span>
-                  )}
-                </>
-              )}
-            </h2>
-            <Link
-              href={`/search?approach=${region}`}
-              className="text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors"
-            >
-              Advanced search →
-            </Link>
+             <h2 className="text-lg font-semibold">
+               {loading ? (
+                 <span className="text-muted-foreground">Se încarcă rețete...</span>
+               ) : (
+                 <>
+                   {filteredRecipes.length} Rețetă{filteredRecipes.length !== 1 ? 'e' : ''}
+                   {total > filteredRecipes.length && (
+                     <span className="text-sm font-normal text-muted-foreground ml-1">
+                       (din {total} total)
+                     </span>
+                   )}
+                 </>
+               )}
+             </h2>
+             <Link
+               href={`/search?approach=${region}`}
+               className="text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors"
+             >
+               Căutare avansată →
+             </Link>
           </div>
 
           {/* Loading skeletons */}
@@ -334,40 +334,39 @@ export default function RegionCookbookClient({ region }: { region: string }) {
             </div>
           )}
 
-          {/* No recipes at all */}
-          {!loading && allRecipes.length === 0 && (
-            <div className="text-center py-20 text-muted-foreground">
-              <p className="text-4xl mb-4">🌍</p>
-              <p className="font-medium mb-1">No recipes yet for {meta.label}</p>
-              <p className="text-sm mb-4">
-                Be the first to share a {meta.label} recipe with the community.
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                <Link
-                  href="/submit/recipe"
-                  className="px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
-                >
-                  Add a Recipe
-                </Link>
-                <Link href="/search" className="text-sm text-amber-600 hover:underline">
-                  Browse all recipes →
-                </Link>
-              </div>
-            </div>
-          )}
+           {/* No recipes at all */}
+           {!loading && allRecipes.length === 0 && (
+             <div className="text-center py-20 text-muted-foreground">
+               <p className="text-4xl mb-4">🌍</p>
+               <p className="font-medium mb-1">Nicio rețetă încă pentru {meta.label}</p>
+               <p className="text-sm mb-4">
+                 Fii primul care să partajeze o rețetă {meta.label} cu comunitatea.
+               </p>
+               <div className="flex items-center justify-center gap-3">
+                 <Link
+                   href="/submit/recipe"
+                   className="px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+                 >
+                   Adaugă o rețetă
+                 </Link>
+                 <Link href="/search" className="text-sm text-amber-600 hover:underline">
+                   Explorează toate rețetele →
+                 </Link>
+               </div>
+             </div>
+           )}
 
           {/* Filters narrowed to zero */}
           {!loading && allRecipes.length > 0 && filteredRecipes.length === 0 && (
             <div className="text-center py-20 text-muted-foreground">
               <p className="text-4xl mb-4">🍽️</p>
-              <p className="font-medium mb-2">No recipes match these filters</p>
-              <p className="text-sm mb-4">
-                There {allRecipes.length === 1 ? 'is' : 'are'} {allRecipes.length} {meta.label} recipe
-                {allRecipes.length !== 1 ? 's' : ''} — try removing a filter.
-              </p>
-              <button onClick={clearAll} className="text-sm text-amber-600 hover:underline">
-                Clear all filters
-              </button>
+               <p className="font-medium mb-2">Nicio rețetă nu se potrivește cu aceste filtre</p>
+               <p className="text-sm mb-4">
+                 Sunt {allRecipes.length} rețetă{allRecipes.length !== 1 ? 'e' : ''} {meta.label} — încearcă să elimini un filtru.
+               </p>
+               <button onClick={clearAll} className="text-sm text-amber-600 hover:underline">
+                 Șterge toate filtrele
+               </button>
             </div>
           )}
 

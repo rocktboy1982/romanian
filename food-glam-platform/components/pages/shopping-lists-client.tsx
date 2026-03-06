@@ -124,9 +124,9 @@ export default function ShoppingListsClient() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111', margin: 0 }}>Shopping Lists</h1>
-            <p style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
-              {lists.length === 0 ? 'Create your first list' : `${lists.length} list${lists.length !== 1 ? 's' : ''}`}
-            </p>
+           <p style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+               {lists.length === 0 ? 'Creează-ți prima listă' : `${lists.length} listă${lists.length !== 1 ? ',' : ''}`}
+             </p>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
@@ -139,7 +139,7 @@ export default function ShoppingListsClient() {
             onMouseOver={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#333' }}
             onMouseOut={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#111' }}
           >
-            + New List
+             + Listă nouă
           </button>
         </div>
 
@@ -149,41 +149,41 @@ export default function ShoppingListsClient() {
             background: '#fff', borderRadius: 16, padding: 20,
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)', marginBottom: 16,
           }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#333', marginBottom: 8 }}>List name</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                autoFocus
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                placeholder="e.g. Weekly Groceries"
-                style={{
-                  flex: 1, padding: '10px 12px', fontSize: 13, border: '1px solid #ddd',
-                  borderRadius: 8, outline: 'none', color: '#111',
-                }}
-              />
-              <button
-                onClick={handleCreate}
-                disabled={creating || !newName.trim()}
-                style={{
-                  padding: '10px 16px', fontSize: 13, fontWeight: 600, borderRadius: 8,
-                  border: 'none', background: '#111', color: '#fff', cursor: 'pointer',
-                  opacity: (creating || !newName.trim()) ? 0.5 : 1,
-                }}
-              >
-                {creating ? 'Creating…' : 'Create'}
-              </button>
-              <button
-                onClick={() => { setShowCreate(false); setNewName('') }}
-                style={{
-                  padding: '10px 12px', fontSize: 13, color: '#888', background: 'transparent',
-                  border: 'none', cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-            </div>
+             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#333', marginBottom: 8 }}>Nume listă</label>
+             <div style={{ display: 'flex', gap: 8 }}>
+               <input
+                 autoFocus
+                 type="text"
+                 value={newName}
+                 onChange={(e) => setNewName(e.target.value)}
+                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                 placeholder="ex. Cumpărături săptămânale"
+                 style={{
+                   flex: 1, padding: '10px 12px', fontSize: 13, border: '1px solid #ddd',
+                   borderRadius: 8, outline: 'none', color: '#111',
+                 }}
+               />
+               <button
+                 onClick={handleCreate}
+                 disabled={creating || !newName.trim()}
+                 style={{
+                   padding: '10px 16px', fontSize: 13, fontWeight: 600, borderRadius: 8,
+                   border: 'none', background: '#111', color: '#fff', cursor: 'pointer',
+                   opacity: (creating || !newName.trim()) ? 0.5 : 1,
+                 }}
+               >
+                 {creating ? 'Se creează...' : 'Creează'}
+               </button>
+               <button
+                 onClick={() => { setShowCreate(false); setNewName('') }}
+                 style={{
+                   padding: '10px 12px', fontSize: 13, color: '#888', background: 'transparent',
+                   border: 'none', cursor: 'pointer',
+                 }}
+               >
+                 Anulează
+               </button>
+             </div>
           </div>
         )}
 
@@ -194,21 +194,21 @@ export default function ShoppingListsClient() {
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)', textAlign: 'center',
           }}>
             <p style={{ fontSize: 36, marginBottom: 8 }}>📋</p>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: '#111', margin: '0 0 6px 0' }}>No shopping lists yet</h2>
-            <p style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
-              Create a shopping list to keep track of ingredients for your recipes.
-            </p>
-            <button
-              onClick={() => setShowCreate(true)}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '12px 20px', borderRadius: 10, border: 'none',
-                background: '#111', color: '#fff', fontSize: 14, fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              + Create your first list
-            </button>
+             <h2 style={{ fontSize: 18, fontWeight: 600, color: '#111', margin: '0 0 6px 0' }}>Nicio listă de cumpărături încă</h2>
+             <p style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
+               Creează o listă de cumpărături pentru a ține evidența ingredientelor pentru rețetele tale.
+             </p>
+             <button
+               onClick={() => setShowCreate(true)}
+               style={{
+                 display: 'inline-flex', alignItems: 'center', gap: 6,
+                 padding: '12px 20px', borderRadius: 10, border: 'none',
+                 background: '#111', color: '#fff', fontSize: 14, fontWeight: 600,
+                 cursor: 'pointer',
+               }}
+             >
+               + Creează-ți prima listă
+             </button>
           </div>
         )}
 
@@ -237,8 +237,8 @@ export default function ShoppingListsClient() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0, lineHeight: 1.3 }}>{list.name}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, fontSize: 12, color: '#888' }}>
-                      <span>{count} item{count !== 1 ? 's' : ''}</span>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, fontSize: 12, color: '#888' }}>
+                       <span>{count} articol{count !== 1 ? 'e' : ''}</span>
                       {list.source_type && (
                         <span style={{
                           padding: '1px 6px', borderRadius: 4, background: '#f3f3f3',
@@ -256,9 +256,9 @@ export default function ShoppingListsClient() {
                     style={{ display: 'flex', gap: 4, flexShrink: 0 }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      onClick={() => handleShare(list.id)}
-                      title="Share"
+                     <button
+                       onClick={() => handleShare(list.id)}
+                       title="Distribuie"
                       style={{
                         width: 32, height: 32, borderRadius: 6, border: '1px solid #eee',
                         background: '#fff', cursor: 'pointer', fontSize: 14,
@@ -270,11 +270,11 @@ export default function ShoppingListsClient() {
                     >
                       🔗
                     </button>
-                    <button
-                      onClick={() => handleDelete(list.id)}
-                      title="Delete"
-                      style={{
-                        width: 32, height: 32, borderRadius: 6, border: '1px solid #eee',
+                     <button
+                       onClick={() => handleDelete(list.id)}
+                       title="Șterge"
+                       style={{
+                         width: 32, height: 32, borderRadius: 6, border: '1px solid #eee',
                         background: '#fff', cursor: 'pointer', fontSize: 14,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         color: '#ccc', transition: 'all 0.15s',

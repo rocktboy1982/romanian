@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 
 type Hit = {
   id: string;
+  slug?: string | null;
   title?: string | null;
   summary?: string | null;
-  recipe_json?: any;
+  recipe_json?: Record<string, unknown> | null;
   hero_image_url?: string | null;
   rank?: number | null;
 };
@@ -42,16 +43,19 @@ export default function SimilarRecipesClient({ id }: { id: string }) {
   return (
     <div className="space-y-2">
       {items.slice(0,6).map(it => {
-        const img = it.recipe_json?.hero_image_url || it.recipe_json?.image || null;
-        const excerpt = it.summary || it.recipe_json?.description || (it.recipe_json?.recipeIngredient ? (it.recipe_json.recipeIngredient.slice(0,3).join(', ')) : '');
-        const rank = typeof it.rank === 'number' ? it.rank : (it as any).score ?? null;
+        const rj = it.recipe_json || {};
+        const img = it.hero_image_url || (rj as Record<string, unknown>).hero_image_url as string | null || (rj as Record<string, unknown>).image as string | null || null;
+        const ingredients = ((rj as Record<string, unknown>).recipeIngredient || (rj as Record<string, unknown>).ingredients || []) as string[];
+        const excerpt = it.summary || (rj as Record<string, unknown>).description as string || (ingredients.length > 0 ? ingredients.slice(0,3).join(', ') : '');
+        const rank = typeof it.rank === 'number' ? it.rank : null;
+        const href = it.slug ? `/recipes/${it.slug}` : `/recipes/${it.id}`;
         return (
           <Card key={it.id}>
             <CardContent className="p-3 flex gap-3 items-start">
               {img ? <img src={img} alt={it.title || 'thumb'} className="w-20 h-14 object-cover rounded" /> : <div className="w-20 h-14 bg-muted rounded" />}
               <div className="flex-1">
-                <Link href={`/recipes/${it.id}`} className="font-medium block">{it.title || 'Untitled'}</Link>
-                {excerpt && <div className="text-sm text-muted-foreground">{excerpt}</div>}
+                <Link href={href} className="font-medium block">{it.title || 'Untitled'}</Link>
+                {excerpt && <div className="text-sm text-muted-foreground line-clamp-2">{excerpt}</div>}
               </div>
               {rank != null && <div className="text-sm text-muted-foreground flex flex-col items-end"><span className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-semibold">{Math.round(rank * 100) / 100}</span><span className="text-xs text-muted-foreground mt-1">score</span></div>}
             </CardContent>

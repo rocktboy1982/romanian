@@ -57,10 +57,10 @@ function c(id: string, label: string, emoji: string, foodTags: string[] = [], st
 export const REGION_META: Record<string, RegionEntry> = {
 
   /* ── EAST ASIA ──────────────────────────────────────────────────────── */
-  'east-asia': region('East Asia', '🍜', 'China, Japan, Korea and their culinary traditions', [
+  'east-asia': region('Asia de Est', '🍜', 'China, Japonia, Coreea și tradițiile lor culinare', [
     {
       id: 'east-asia-main',
-      label: 'East Asia',
+      label: 'Asia de Est',
       countries: [
         c('chinese',  'Chinese',  '🇨🇳', ['chinese'], [
           { id: 'sichuan',     label: 'Sichuan (四川)'       },
@@ -94,10 +94,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── SOUTHEAST ASIA ─────────────────────────────────────────────────── */
-  'southeast-asia': region('Southeast Asia', '🌴', 'Thailand, Vietnam, Indonesia and the flavours of the tropics', [
+  'southeast-asia': region('Asia de Sud-Est', '🌴', 'Thailanda, Vietnam, Indonezia și aromele tropicale', [
     {
       id: 'mainland-sea',
-      label: 'Mainland',
+      label: 'Continental',
       countries: [
         c('thai',       'Thai',       '🇹🇭', ['thai', 'noodles'], [
           { id: 'central-thai',    label: 'Central Thai'   },
@@ -118,7 +118,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'island-sea',
-      label: 'Island',
+      label: 'Insular',
       countries: [
         c('indonesian', 'Indonesian', '🇮🇩', ['indonesian'], [
           { id: 'padang',   label: 'Padang (Minangkabau)' },
@@ -136,10 +136,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── SOUTH ASIA ─────────────────────────────────────────────────────── */
-  'south-asia': region('South Asia', '🍛', 'India, Pakistan, Bangladesh and the spice-rich subcontinent', [
+  'south-asia': region('Asia de Sud', '🍛', 'India, Pakistan, Bangladesh și subcontinentul bogat în condimente', [
     {
       id: 'south-asia-main',
-      label: 'South Asia',
+      label: 'Asia de Sud',
       countries: [
         c('indian',     'Indian',     '🇮🇳', ['indian', 'curry'], [
           { id: 'north-indian',       label: 'North Indian'    },
@@ -162,10 +162,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── CENTRAL ASIA & CAUCASUS ─────────────────────────────────────────── */
-  'central-asia': region('Central Asia & Caucasus', '🏔️', 'Silk Road flavours from Georgia to Kazakhstan', [
+  'central-asia': region('Asia Centrală și Caucaz', '🏔️', 'Arome din Drumul Mătăsii, din Georgia până în Kazahstan', [
     {
       id: 'caucasus',
-      label: 'Caucasus',
+      label: 'Caucaz',
       countries: [
         c('georgian',   'Georgian',   '🇬🇪', ['georgian']),
         c('armenian',   'Armenian',   '🇦🇲', ['armenian']),
@@ -174,7 +174,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'central-asia-stans',
-      label: 'Central Asia',
+      label: 'Asia Centrală',
       countries: [
         c('uzbek',       'Uzbek',       '🇺🇿', ['uzbek']),
         c('kazakh',      'Kazakh',      '🇰🇿', ['kazakh']),
@@ -187,7 +187,7 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── MIDDLE EAST ─────────────────────────────────────────────────────── */
-  'middle-east': region('Middle East', '🧆', 'Levantine mezze, Persian rice and Arabian spices', [
+  'middle-east': region('Orientul Mijlociu', '🧆', 'Mezze levantine, orez persan și condimente arabe', [
     {
       id: 'levant',
       label: 'Levant',
@@ -205,7 +205,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'gulf',
-      label: 'Gulf',
+      label: 'Golf',
       countries: [
         c('saudi',      'Saudi',      '🇸🇦', ['saudi']),
         c('emirati',    'Emirati',    '🇦🇪', ['emirati']),
@@ -230,7 +230,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'turkey-cyprus',
-      label: 'Turkey & Cyprus',
+      label: 'Turcia și Cipru',
       countries: [
         c('turkish',    'Turkish',    '🇹🇷', ['turkish'], [
           { id: 'kebabs',    label: 'Kebabs'        },
@@ -244,10 +244,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── WESTERN EUROPE ──────────────────────────────────────────────────── */
-  'western-europe': region('Western Europe', '🥖', 'France, Italy, Spain and the culinary heartland of Europe', [
+  'western-europe': region('Europa de Vest', '🥖', 'Franța, Italia, Spania și inima culinară a Europei', [
     {
       id: 'med-europe',
-      label: 'Mediterranean',
+      label: 'Mediteraneean',
       countries: [
         c('italian',  'Italian',  '🇮🇹', ['italian', 'pizza', 'pasta'], [
           { id: 'bolognese',  label: 'Bolognese (Emilia-Romagna)' },
@@ -280,7 +280,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'western-europe-core',
-      label: 'Western Core',
+      label: 'Nucleul Vestic',
       countries: [
         c('french',   'French',   '🇫🇷', ['french', 'pastry'], [
           { id: 'provencal',   label: 'Provençal'    },
@@ -304,7 +304,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'british-irish',
-      label: 'British & Irish',
+      label: 'Britanic și Irlandez',
       countries: [
         c('british',  'British',  '🇬🇧', ['british'], [
           { id: 'english',  label: 'English'  },
@@ -318,7 +318,7 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── NORTHERN EUROPE ─────────────────────────────────────────────────── */
-  'northern-europe': region('Northern Europe', '🐟', 'Scandinavian smokehouse, Baltic rye bread, Nordic foraging', [
+  'northern-europe': region('Europa de Nord', '🐟', 'Afumătorie scandinavă, pâine baltică de secară, culegere nordică', [
     {
       id: 'nordic',
       label: 'Nordic',
@@ -345,10 +345,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── EASTERN EUROPE ──────────────────────────────────────────────────── */
-  'eastern-europe': region('Eastern Europe', '🥟', 'From Polish pierogi to Romanian mămăligă and Georgian khinkali', [
+  'eastern-europe': region('Europa de Est', '🥟', 'De la pierogii polonezi la mămăliga românească și khinkali georgienii', [
     {
       id: 'central-europe',
-      label: 'Central Europe',
+      label: 'Europa Centrală',
       countries: [
         c('polish',   'Polish',   '🇵🇱', ['polish'], [
           { id: 'pierogi',    label: 'Pierogi'     },
@@ -367,7 +367,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'balkans',
-      label: 'Balkans',
+      label: 'Balcani',
       countries: [
         c('serbian',    'Serbian',    '🇷🇸', ['serbian']),
         c('bosnian',    'Bosnian',    '🇧🇦', ['bosnian']),
@@ -382,7 +382,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'eastern-europe-core',
-      label: 'East',
+      label: 'Est',
       countries: [
         c('ukrainian', 'Ukrainian', '🇺🇦', ['ukrainian'], [
           { id: 'borscht',  label: 'Borscht'       },
@@ -401,10 +401,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── NORTH AFRICA ─────────────────────────────────────────────────────── */
-  'north-africa': region('North Africa', '🏺', 'Moroccan tagine, Egyptian ful and Tunisian harissa', [
+  'north-africa': region('Africa de Nord', '🏺', 'Tagine marocan, ful egiptean și harissa tunisiană', [
     {
       id: 'north-africa-main',
-      label: 'North Africa',
+      label: 'Africa de Nord',
       countries: [
         c('moroccan',  'Moroccan',  '🇲🇦', ['moroccan'], [
           { id: 'tagine',   label: 'Tagine'    },
@@ -427,10 +427,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── WEST AFRICA ──────────────────────────────────────────────────────── */
-  'west-africa': region('West Africa', '🫙', 'Nigerian stews, Ghanaian jollof and Senegalese thiéboudienne', [
+  'west-africa': region('Africa de Vest', '🫙', 'Tocane nigeriene, jollof ghanez și thiéboudienne senegalez', [
     {
       id: 'west-africa-main',
-      label: 'West Africa',
+      label: 'Africa de Vest',
       countries: [
         c('nigerian',   'Nigerian',   '🇳🇬', ['nigerian'], [
           { id: 'jollof-ng',   label: 'Jollof Rice'  },
@@ -456,10 +456,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── EAST AFRICA ──────────────────────────────────────────────────────── */
-  'east-africa': region('East Africa', '☕', 'Ethiopian injera, Kenyan nyama choma and Zanzibar spice islands', [
+  'east-africa': region('Africa de Est', '☕', 'Injera etiopiană, nyama choma kenyană și insulele cu condimente din Zanzibar', [
     {
       id: 'horn-of-africa',
-      label: 'Horn of Africa',
+      label: 'Cornul Africii',
       countries: [
         c('ethiopian',  'Ethiopian',  '🇪🇹', ['ethiopian'], [
           { id: 'injera',    label: 'Injera & Stews' },
@@ -473,7 +473,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'great-lakes-africa',
-      label: 'Great Lakes',
+      label: 'Marile Lacuri',
       countries: [
         c('kenyan',    'Kenyan',    '🇰🇪', ['kenyan']),
         c('tanzanian', 'Tanzanian', '🇹🇿', ['tanzanian']),
@@ -486,10 +486,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── SOUTHERN AFRICA ──────────────────────────────────────────────────── */
-  'southern-africa': region('Southern Africa', '🔥', 'South African braai, Zimbabwean sadza and Malagasy romazava', [
+  'southern-africa': region('Africa de Sud', '🔥', 'Braai sud-african, sadza din Zimbabwe și romazava din Madagascar', [
     {
       id: 'southern-africa-main',
-      label: 'Southern Africa',
+      label: 'Africa de Sud',
       countries: [
         c('south-african','South African','🇿🇦', ['south-african'], [
           { id: 'braai',      label: 'Braai (BBQ)'  },
@@ -508,10 +508,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── NORTH AMERICA ────────────────────────────────────────────────────── */
-  'north-america': region('North America', '🍔', 'American BBQ, Canadian poutine and Mexican street food', [
+  'north-america': region('America de Nord', '🍔', 'BBQ american, poutine canadian și street food mexican', [
     {
       id: 'usa',
-      label: 'United States',
+      label: 'Statele Unite',
       countries: [
         c('american-south',    'Southern US',       '🇺🇸', ['southern', 'bbq'], [
           { id: 'bbq-us',    label: 'BBQ'            },
@@ -535,7 +535,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'canada-mexico',
-      label: 'Canada & Mexico',
+      label: 'Canada și Mexic',
       countries: [
         c('canadian', 'Canadian', '🇨🇦', ['canadian'], [
           { id: 'poutine',    label: 'Québécois'       },
@@ -552,7 +552,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'central-america',
-      label: 'Central America & Caribbean',
+      label: 'America Centrală și Caraibe',
       countries: [
         c('guatemalan',  'Guatemalan',  '🇬🇹', ['guatemalan']),
         c('salvadoran',  'Salvadoran',  '🇸🇻', ['salvadoran']),
@@ -574,10 +574,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── SOUTH AMERICA ────────────────────────────────────────────────────── */
-  'south-america': region('South America', '🌮', 'Peruvian ceviche, Brazilian churrasco and Argentine asado', [
+  'south-america': region('America de Sud', '🌮', 'Ceviche peruan, churrasco brazilian și asado argentinian', [
     {
       id: 'andean',
-      label: 'Andean',
+      label: 'Andin',
       countries: [
         c('peruvian',   'Peruvian',   '🇵🇪', ['peruvian', 'ceviche'], [
           { id: 'ceviche',  label: 'Ceviche'                    },
@@ -593,7 +593,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'southern-cone',
-      label: 'Southern Cone',
+      label: 'Conul Sudic',
       countries: [
         c('argentinian','Argentinian','🇦🇷', ['argentinian'], [
           { id: 'asado',      label: 'Asado'      },
@@ -616,7 +616,7 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── OCEANIA ──────────────────────────────────────────────────────────── */
-  oceania: region('Oceania', '🦘', 'Australian BBQ, Māori hāngī and Pacific Island feasts', [
+  oceania: region('Oceania', '🦘', 'BBQ australian, hāngī maori și festinuri din insulele Pacificului', [
     {
       id: 'australasia',
       label: 'Australasia',
@@ -634,7 +634,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'pacific-islands',
-      label: 'Pacific Islands',
+      label: 'Insulele Pacificului',
       countries: [
         c('fijian',       'Fijian',       '🇫🇯', ['fijian']),
         c('samoan',       'Samoan',       '🇼🇸', ['samoan']),
@@ -647,10 +647,10 @@ export const REGION_META: Record<string, RegionEntry> = {
   ]),
 
   /* ── FUSION & GLOBAL ──────────────────────────────────────────────────── */
-  international: region('International & Fusion', '🌍', 'Cross-cultural cooking and borderless recipes', [
+  international: region('Internațional și Fuziune', '🌍', 'Gătit intercultural și rețete fără frontiere', [
     {
       id: 'fusion',
-      label: 'Fusion',
+      label: 'Fuziune',
       countries: [
         c('asian-fusion',     'Asian Fusion',          '✨', ['fusion']),
         c('med-fusion',       'Mediterranean Fusion',   '🤝', ['fusion']),
@@ -661,7 +661,7 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
     {
       id: 'plant-based',
-      label: 'Plant-Based',
+      label: 'Pe bază de plante',
       countries: [
         c('vegan-global',     'Vegan / Plant-Based',    '🌱', ['healthy', 'vegan']),
         c('raw-food',         'Raw Food',               '🥗', ['healthy']),
@@ -689,18 +689,18 @@ export const ALL_COUNTRIES = Object.entries(REGION_META).flatMap(([regionId, reg
    COURSES
    ───────────────────────────────────────────────────────────────────────── */
 export const COURSES = [
-  { id: 'all',       label: 'All Courses', emoji: '🍽️' },
-  { id: 'breakfast', label: 'Breakfast',   emoji: '🥐'  },
+  { id: 'all',       label: 'Toate categoriile', emoji: '🍽️' },
+  { id: 'breakfast', label: 'Mic dejun',   emoji: '🥐'  },
   { id: 'brunch',    label: 'Brunch',      emoji: '🥞'  },
-  { id: 'lunch',     label: 'Lunch',       emoji: '🥙'  },
-  { id: 'dinner',    label: 'Dinner',      emoji: '🍽️' },
-  { id: 'appetiser', label: 'Appetiser',   emoji: '🥗'  },
-  { id: 'soup',      label: 'Soup',        emoji: '🍲'  },
-  { id: 'main',      label: 'Main',        emoji: '🍛'  },
-  { id: 'side',      label: 'Side Dish',   emoji: '🥦'  },
-  { id: 'dessert',   label: 'Dessert',     emoji: '🍰'  },
-  { id: 'snack',     label: 'Snack',       emoji: '🧆'  },
-  { id: 'drink',     label: 'Drink',       emoji: '🧃'  },
+  { id: 'lunch',     label: 'Prânz',       emoji: '🥙'  },
+  { id: 'dinner',    label: 'Cină',      emoji: '🍽️' },
+  { id: 'appetiser', label: 'Aperitiv',   emoji: '🥗'  },
+  { id: 'soup',      label: 'Supă',        emoji: '🍲'  },
+  { id: 'main',      label: 'Fel principal',        emoji: '🍛'  },
+  { id: 'side',      label: 'Garnitură',   emoji: '🥦'  },
+  { id: 'dessert',   label: 'Desert',     emoji: '🍰'  },
+  { id: 'snack',     label: 'Gustare',       emoji: '🧆'  },
+  { id: 'drink',     label: 'Băutură',       emoji: '🧃'  },
 ]
 
 export const COURSE_TAGS: Record<string, string[]> = {

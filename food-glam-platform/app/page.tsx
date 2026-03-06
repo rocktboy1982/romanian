@@ -51,7 +51,7 @@ const CHEFS = MOCK_RECIPES.slice(0, 8).map((r, i) => ({
 }))
 
 /* ─── tab config ─────────────────────────────────────────────────────────── */
-const FEED_TABS = ['For You', 'Trending', 'Following', 'New'] as const
+const FEED_TABS = ['Pentru tine', 'În tendințe', 'Urmărite', 'Noi'] as const
 type FeedTab = typeof FEED_TABS[number]
 
 /* ─── region pills (flat, curated) ──────────────────────────────────────── */
@@ -84,7 +84,7 @@ export default function Home() {
   const feed: Recipe[] = recipes.length > 0 ? recipes : (!loading ? MOCK_RECIPES : [])
 
   /* interactive state */
-  const [activeTab, setActiveTab] = useState<FeedTab>('For You')
+  const [activeTab, setActiveTab] = useState<FeedTab>('Pentru tine')
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [followedChefs, setFollowedChefs] = useState<Set<string>>(new Set())
@@ -150,9 +150,9 @@ export default function Home() {
 
   /* tab filter — simple demo logic */
   const tabFeed = (() => {
-    if (activeTab === 'Trending') return [...feed].sort((a, b) => b.votes - a.votes)
-    if (activeTab === 'New') return [...feed].reverse()
-    if (activeTab === 'Following') return feed.filter((_, i) => i % 2 === 0)
+    if (activeTab === 'În tendințe') return [...feed].sort((a, b) => b.votes - a.votes)
+    if (activeTab === 'Noi') return [...feed].reverse()
+    if (activeTab === 'Urmărite') return feed.filter((_, i) => i % 2 === 0)
     return feed
   })()
 
@@ -234,7 +234,7 @@ export default function Home() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 </div>
               </Link>
-              <span className="text-[10px] text-gray-500">Your story</span>
+              <span className="text-[10px] text-gray-500">Povestea ta</span>
             </div>
 
             {CHEFS.map((chef, i) => (
@@ -294,7 +294,7 @@ export default function Home() {
                   >✕</button>
                   {/* Post type label */}
                   <span className="absolute top-3 left-3 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,149,0,0.85)', color: '#fff' }}>
-                    {latestPost ? 'Latest post' : 'Latest recipe'}
+                    {latestPost ? 'Ultima postare' : 'Ultima rețetă'}
                   </span>
                   {/* Title overlay */}
                   <div className="absolute bottom-3 left-4 right-4">
@@ -309,7 +309,7 @@ export default function Home() {
                     <img src={chef.avatar} alt={chef.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-white leading-tight truncate">{chef.name}</p>
-                      <p className="text-[11px] text-gray-400 truncate">{chef.handle} · {(chef.followers / 1000).toFixed(1)}k followers</p>
+                      <p className="text-[11px] text-gray-400 truncate">{chef.handle} · {(chef.followers / 1000).toFixed(1)}k urmăritori</p>
                     </div>
                     <Link
                       href={`/chefs/${handleKey}`}
@@ -317,7 +317,7 @@ export default function Home() {
                       className="text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
                       style={{ background: 'rgba(255,255,255,0.1)', color: '#ccc' }}
                     >
-                      View profile
+                      Vezi profilul
                     </Link>
                   </div>
 
@@ -339,7 +339,7 @@ export default function Home() {
                       className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
                       style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
                     >
-                      View Recipe
+                      Vezi rețeta
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
                     </Link>
                   )}
@@ -375,7 +375,7 @@ export default function Home() {
             REGION CHIPS  (horizontal scroll)
         ════════════════════════════════════════════════════════ */}
         <section className="px-4 pb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3 text-center" style={{ color: '#555' }}>Browse Cuisines</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3 text-center" style={{ color: '#555' }}>Descoperă bucătării</p>
           <div className="flex gap-2 flex-wrap justify-center pb-1">
             {REGION_PILLS.map(id => {
               const r = REGION_META[id]
@@ -453,9 +453,9 @@ export default function Home() {
                         )}
                         {toastId === recipe.id && (
                           <div className="absolute inset-0 flex items-center justify-center dtap-overlay">
-                            <div className="toast-enter bg-black bg-opacity-80 px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5">
-                              <span>⭐</span><span>Saved</span>
-                            </div>
+                           <div className="toast-enter bg-black bg-opacity-80 px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5">
+                               <span>⭐</span><span>Salvat</span>
+                             </div>
                           </div>
                         )}
                         {/* title + chef overlay */}
@@ -471,11 +471,11 @@ export default function Home() {
                             <button
                               onClick={e => { e.stopPropagation(); toggleFollow(recipe.created_by.id) }}
                               className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all flex-shrink-0"
-                              style={followedChefs.has(recipe.created_by.id)
-                                ? { background: 'rgba(255,255,255,0.15)', color: '#fff' }
-                                : { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-                            >
-                              {followedChefs.has(recipe.created_by.id) ? '✓' : '+ Follow'}
+                               style={followedChefs.has(recipe.created_by.id)
+                                 ? { background: 'rgba(255,255,255,0.15)', color: '#fff' }
+                                 : { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+                             >
+                               {followedChefs.has(recipe.created_by.id) ? '✓' : '+ Urmărește'}
                             </button>
                           </div>
                         </div>

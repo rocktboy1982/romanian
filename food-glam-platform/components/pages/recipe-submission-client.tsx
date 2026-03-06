@@ -134,50 +134,50 @@ export default function RecipeSubmissionClient() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Submit a Recipe</h1>
-        <p className="text-gray-600">Share your favorite recipe with our community. All submissions are reviewed before publishing.</p>
-      </div>
+       <div>
+         <h1 className="text-3xl font-bold mb-2">Trimite o rețetă</h1>
+         <p className="text-gray-600">Distribuie rețeta ta preferată cu comunitatea noastră. Toate trimiterea sunt revizuite înainte de publicare.</p>
+       </div>
 
-      {message && (
-        <div className={`p-4 rounded ${message.startsWith("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
-          {message}
-        </div>
-      )}
+         {message && (
+         <div className={`p-4 rounded ${message.startsWith("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+           {message.replace("✅ Recipe submitted successfully! It's now pending admin approval.", "✅ Rețeta a fost trimisă cu succes! Așteptă aprobarea administratorului.")}
+         </div>
+       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block font-medium mb-2">Recipe Title *</label>
+         {/* Title */}
+         <Card>
+           <CardHeader>
+             <CardTitle>Informații de bază</CardTitle>
+           </CardHeader>
+           <CardContent className="space-y-4">
+             <div>
+               <label className="block font-medium mb-2">Titlu rețetă *</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Classic Pasta Carbonara"
+                 placeholder="ex. Pasta Carbonara clasică"
                 className={errors.title ? "border-red-500" : ""}
               />
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
-            <div>
-              <label className="block font-medium mb-2">Description *</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your recipe..."
+             <div>
+               <label className="block font-medium mb-2">Descriere *</label>
+               <textarea
+                 value={description}
+                 onChange={(e) => setDescription(e.target.value)}
+                 placeholder="Descrie rețeta ta..."
                 rows={4}
                 className={`w-full border rounded p-2 ${errors.description ? "border-red-500" : ""}`}
               />
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium mb-2">Prep Time (minutes) *</label>
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                 <label className="block font-medium mb-2">Timp de pregătire (minute) *</label>
                 <Input
                   type="number"
                   value={prepTime}
@@ -186,8 +186,8 @@ export default function RecipeSubmissionClient() {
                   max="480"
                 />
               </div>
-              <div>
-                <label className="block font-medium mb-2">Cook Time (minutes) *</label>
+               <div>
+                 <label className="block font-medium mb-2">Timp de gătire (minute) *</label>
                 <Input
                   type="number"
                   value={cookTime}
@@ -198,9 +198,9 @@ export default function RecipeSubmissionClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium mb-2">Servings *</label>
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                 <label className="block font-medium mb-2">Porții *</label>
                 <Input
                   type="number"
                   value={servings}
@@ -209,31 +209,31 @@ export default function RecipeSubmissionClient() {
                   max="100"
                 />
               </div>
-              <div>
-                <label className="block font-medium mb-2">Difficulty *</label>
-                <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as any)}
-                  className="w-full border rounded p-2"
-                >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
+               <div>
+                 <label className="block font-medium mb-2">Dificultate *</label>
+                 <select
+                   value={difficulty}
+                   onChange={(e) => setDifficulty(e.target.value as any)}
+                   className="w-full border rounded p-2"
+                 >
+                   <option value="easy">Ușor</option>
+                   <option value="medium">Mediu</option>
+                   <option value="hard">Greu</option>
+                 </select>
+               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium mb-2">Cuisine</label>
-                <Input
-                  value={cuisine}
-                  onChange={(e) => setCuisine(e.target.value)}
-                  placeholder="e.g., Italian"
-                />
-              </div>
-              <div>
-                <label className="block font-medium mb-2">Cover Image URL</label>
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                 <label className="block font-medium mb-2">Bucătărie</label>
+                 <Input
+                   value={cuisine}
+                   onChange={(e) => setCuisine(e.target.value)}
+                   placeholder="ex. Italiană"
+                 />
+               </div>
+               <div>
+                 <label className="block font-medium mb-2">URL imagine de copertă</label>
                 <Input
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
@@ -244,23 +244,23 @@ export default function RecipeSubmissionClient() {
           </CardContent>
         </Card>
 
-        {/* Ingredients */}
-        <Card>
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle>Ingredients *</CardTitle>
-            <Button type="button" size="sm" onClick={handleAddIngredient} variant="outline">
-              <Plus className="w-4 h-4 mr-1" /> Add
-            </Button>
-          </CardHeader>
+         {/* Ingredients */}
+         <Card>
+           <CardHeader className="flex justify-between items-center">
+             <CardTitle>Ingrediente *</CardTitle>
+             <Button type="button" size="sm" onClick={handleAddIngredient} variant="outline">
+               <Plus className="w-4 h-4 mr-1" /> Adaugă
+             </Button>
+           </CardHeader>
           <CardContent className="space-y-3">
             {ingredients.map((ing, idx) => (
               <div key={idx} className="flex gap-2 items-end">
                 <div className="flex-1">
-                  <Input
-                    value={ing.name}
-                    onChange={(e) => handleUpdateIngredient(idx, "name", e.target.value)}
-                    placeholder="Ingredient name"
-                  />
+                   <Input
+                     value={ing.name}
+                     onChange={(e) => handleUpdateIngredient(idx, "name", e.target.value)}
+                     placeholder="Nume ingredient"
+                   />
                 </div>
                 <div className="w-20">
                   <Input
@@ -294,14 +294,14 @@ export default function RecipeSubmissionClient() {
           </CardContent>
         </Card>
 
-        {/* Instructions */}
-        <Card>
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle>Instructions *</CardTitle>
-            <Button type="button" size="sm" onClick={handleAddInstruction} variant="outline">
-              <Plus className="w-4 h-4 mr-1" /> Add Step
-            </Button>
-          </CardHeader>
+         {/* Instructions */}
+         <Card>
+           <CardHeader className="flex justify-between items-center">
+             <CardTitle>Instrucțiuni *</CardTitle>
+             <Button type="button" size="sm" onClick={handleAddInstruction} variant="outline">
+               <Plus className="w-4 h-4 mr-1" /> Adaugă pas
+             </Button>
+           </CardHeader>
           <CardContent className="space-y-3">
             {instructions.map((inst, idx) => (
               <div key={idx} className="flex gap-2">
@@ -331,23 +331,23 @@ export default function RecipeSubmissionClient() {
           </CardContent>
         </Card>
 
-        {/* Tags */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tags *</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="e.g., vegan, quick, dinner"
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
-              />
-              <Button type="button" onClick={handleAddTag} variant="outline">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+         {/* Tags */}
+         <Card>
+           <CardHeader>
+             <CardTitle>Etichete *</CardTitle>
+           </CardHeader>
+           <CardContent className="space-y-3">
+             <div className="flex gap-2">
+               <Input
+                 value={newTag}
+                 onChange={(e) => setNewTag(e.target.value)}
+                 placeholder="ex. vegan, rapid, cină"
+                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+               />
+               <Button type="button" onClick={handleAddTag} variant="outline">
+                 <Plus className="w-4 h-4" />
+               </Button>
+             </div>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <div key={tag} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
@@ -366,15 +366,15 @@ export default function RecipeSubmissionClient() {
           </CardContent>
         </Card>
 
-        {/* Submit */}
-        <div className="flex gap-2">
-          <Button type="submit" disabled={loading} className="px-6">
-            {loading ? "Submitting..." : "Submit Recipe"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => window.history.back()}>
-            Cancel
-          </Button>
-        </div>
+         {/* Submit */}
+         <div className="flex gap-2">
+           <Button type="submit" disabled={loading} className="px-6">
+             {loading ? "Se trimite..." : "Trimite rețeta"}
+           </Button>
+           <Button type="button" variant="outline" onClick={() => window.history.back()}>
+             Anulează
+           </Button>
+         </div>
       </form>
     </div>
   );

@@ -51,12 +51,12 @@ export default function LatestChefVlogs() {
       >
         <div className="flex items-center gap-2">
           <span className="text-base">👨‍🍳</span>
-          <span
-            className="font-bold text-sm tracking-wide"
-            style={{ fontFamily: "'Syne', sans-serif", color: '#f0f0f0' }}
-          >
-            Chef Vlogs
-          </span>
+           <span
+             className="font-bold text-sm tracking-wide"
+             style={{ fontFamily: "'Syne', sans-serif", color: '#f0f0f0' }}
+           >
+             Vloguri Chef
+           </span>
           <span
             className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
             style={{ background: 'rgba(255,149,0,0.15)', color: '#ff9500' }}
@@ -64,12 +64,12 @@ export default function LatestChefVlogs() {
             {SORTED_POSTS.length}
           </span>
         </div>
-        <span className="text-[11px]" style={{ color: '#444' }}>
-          Latest posts
-        </span>
-      </div>
+         <span className="text-[11px]" style={{ color: '#444' }}>
+           Postări recente
+         </span>
+       </div>
 
-      {/* ── List ── */}
+       {/* ── List ── */}
       <div className="flex-1 overflow-y-auto">
         {SORTED_POSTS.map(({ post, chef }, i) => (
           <Link
@@ -158,18 +158,18 @@ export default function LatestChefVlogs() {
         className="px-4 py-2.5"
         style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
       >
-        <Link
-          href="/chefs"
-          className="block text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
-          style={{
-            background: 'rgba(255,149,0,0.08)',
-            color: '#ff9500',
-            border: '1px solid rgba(255,149,0,0.15)',
-          }}
-        >
-          See all chef vlogs →
-        </Link>
-      </div>
-    </div>
-  )
+         <Link
+           href="/chefs"
+           className="block text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
+           style={{
+             background: 'rgba(255,149,0,0.08)',
+             color: '#ff9500',
+             border: '1px solid rgba(255,149,0,0.15)',
+           }}
+         >
+           Vezi toate vlogurile chef →
+         </Link>
+       </div>
+     </div>
+   )
 }

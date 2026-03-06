@@ -32,11 +32,11 @@ export default function LatestChefPosts() {
 
   return (
     <section className="px-4 pb-10">
-      {/* header */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="ff-display text-xl font-bold">Latest from Chefs</p>
-        <span className="text-xs" style={{ color: '#555' }}>From the kitchen</span>
-      </div>
+       {/* header */}
+       <div className="flex items-center justify-between mb-4">
+         <p className="ff-display text-xl font-bold">Ultimele de la Chef</p>
+         <span className="text-xs" style={{ color: '#555' }}>Din bucătărie</span>
+       </div>
 
       {/* horizontal scroll strip */}
       <div

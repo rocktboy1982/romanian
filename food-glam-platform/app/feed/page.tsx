@@ -9,29 +9,29 @@ export default function FeedPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold tracking-tight">Your Feed</h1>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-              Discover Mode
-            </span>
+           <h1 className="text-3xl font-bold tracking-tight">Feed-ul tău</h1>
+             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+               Modul Descoperire
+             </span>
           </div>
-          <p className="text-muted-foreground">
-            Recipes from chefs you follow · Follow more chefs to personalise this feed
-          </p>
+           <p className="text-muted-foreground">
+             Rețete de la bucătarii pe care îi urmărești · Urmărește mai mulți bucătari pentru a personaliza feed-ul
+           </p>
         </div>
         <Link
           href="/search"
           className="text-sm font-medium px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors"
         >
-          Find recipes →
+           Caută rețete →
         </Link>
       </div>
 
       {/* Trending Today */}
       {MOCK_TRENDING && MOCK_TRENDING.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span>🔥</span> Trending Today
-          </h2>
+           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+             <span>🔥</span> În tendințe azi
+           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
             {MOCK_TRENDING.map((item) => (
               <Link
@@ -67,9 +67,9 @@ export default function FeedPage() {
       </div>
 
       {/* Main feed — recipe grid */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">Latest Recipes</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+       <section>
+         <h2 className="text-lg font-semibold mb-4">Rețete recente</h2>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {MOCK_RECIPES.map((recipe) => (
             <Link
               key={recipe.id}
@@ -145,15 +145,15 @@ export default function FeedPage() {
 
       {/* Bottom CTA */}
       <div className="mt-12 text-center">
-        <p className="text-muted-foreground text-sm mb-3">
-          Looking for something specific?
-        </p>
-        <Link
-          href="/search"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors"
-        >
-          Search all recipes →
-        </Link>
+         <p className="text-muted-foreground text-sm mb-3">
+           Cauți ceva anume?
+         </p>
+         <Link
+           href="/search"
+           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors"
+         >
+           Caută toate rețetele →
+         </Link>
       </div>
     </main>
   )

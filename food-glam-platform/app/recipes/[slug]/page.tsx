@@ -341,13 +341,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   {mockRecipe.region}
                 </span>
                 {isTested && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/90 text-white backdrop-blur-sm">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    Tested
-                  </span>
-                )}
+                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/90 text-white backdrop-blur-sm">
+                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                       <polyline points="20 6 9 17 4 12"/>
+                     </svg>
+                     Testată
+                   </span>
+                 )}
                 {dietTags.map((tag: string) => (
                   <span key={tag} className="px-3 py-1 rounded-full text-xs font-medium bg-white/15 text-white/90 backdrop-blur-sm">
                     {tag}
@@ -364,13 +364,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   </svg>
                   {detail.total_time}
                 </span>
-                <span className="flex items-center gap-1.5">Prep: {detail.prep_time}</span>
-                <span className="flex items-center gap-1.5">Cook: {detail.cook_time}</span>
+                <span className="flex items-center gap-1.5">Preparare: {detail.prep_time}</span>
+                <span className="flex items-center gap-1.5">Gătire: {detail.cook_time}</span>
                 <span className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                   </svg>
-                  {detail.servings} servings
+                   {detail.servings} porții
                 </span>
                 <span className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -427,11 +427,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
                        <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
                        <path d="M6 9.01V9"/>
                      </svg>
-                     Ingredients
-                   </CardTitle>
-                 </CardHeader>
-                 <CardContent>
-                   <RecipeIngredientsClient sections={ingredientSections} showCalories />
+                      Ingrediente
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RecipeIngredientsClient sections={ingredientSections} showCalories />
                  </CardContent>
                </Card>
 
@@ -447,11 +447,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
                         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                         <path d="m21 15-5-5L5 21"/>
                       </svg>
-                      Gallery
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PhotoGallery photos={(detail as { photoGallery?: string[] }).photoGallery!} />
+                       Galerie
+                     </CardTitle>
+                   </CardHeader>
+                   <CardContent>
+                     <PhotoGallery photos={(detail as { photoGallery?: string[] }).photoGallery!} />
                   </CardContent>
                 </Card>
               )}
@@ -464,11 +464,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                       <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
                     </svg>
-                    Directions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ol className="space-y-4">
+                     Instrucțiuni
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <ol className="space-y-4">
                     {steps.map((step: string, idx: number) => (
                       <li key={idx} className="flex gap-4">
                         <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
@@ -502,10 +502,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 initialVotes={mockRecipe.votes}
                 initialQualityScore={mockRecipe.quality_score}
               />
-              {/* Tags */}
-              <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Tags</p>
+               {/* Tags */}
+               <Card className="shadow-sm">
+                 <CardContent className="p-4">
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Etichete</p>
                   <div className="flex flex-wrap gap-1.5">
                     {mockRecipe.foodTags?.map((tag: string) => (
                       <span key={tag} className="px-2.5 py-1 rounded-full text-xs bg-amber-50 text-amber-700 border border-amber-200">
@@ -521,38 +521,38 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 </CardContent>
               </Card>
 
-              {/* Creator */}
-              <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Created by</p>
-                  <div className="flex items-center gap-3">
-                    {creator.avatar_url ? (
-                      <img src={creator.avatar_url} alt={creator.display_name} className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-bold text-primary">{creator.display_name.charAt(0).toUpperCase()}</span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{creator.display_name}</p>
-                      <p className="text-xs text-muted-foreground">{creator.handle}</p>
-                    </div>
-                  </div>
-                  <FollowChefButton handle={creator.handle} displayName={creator.display_name} />
-                </CardContent>
-              </Card>
+               {/* Creator */}
+               <Card className="shadow-sm">
+                 <CardContent className="p-4">
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Creat de</p>
+                   <div className="flex items-center gap-3">
+                     {creator.avatar_url ? (
+                       <img src={creator.avatar_url} alt={creator.display_name} className="w-10 h-10 rounded-full object-cover" />
+                     ) : (
+                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                         <span className="text-sm font-bold text-primary">{creator.display_name.charAt(0).toUpperCase()}</span>
+                       </div>
+                     )}
+                     <div className="flex-1 min-w-0">
+                       <p className="font-medium text-sm truncate">{creator.display_name}</p>
+                       <p className="text-xs text-muted-foreground">{creator.handle}</p>
+                     </div>
+                   </div>
+                   <FollowChefButton handle={creator.handle} displayName={creator.display_name} />
+                 </CardContent>
+               </Card>
 
               {/* Nutrition */}
                {detailNutrition && (
                  <Card className="shadow-sm">
                    <CardContent className="p-4">
-                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutrition per serving</p>
-                     <div className="grid grid-cols-2 gap-2">
-                       {([
-                         { label: 'Calories', value: detailNutrition.calories, unit: 'kcal' },
-                         { label: 'Protein',  value: detailNutrition.protein,  unit: 'g' },
-                         { label: 'Carbs',    value: detailNutrition.carbs,    unit: 'g' },
-                         { label: 'Fat',      value: detailNutrition.fat,      unit: 'g' },
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutriție per porție</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { label: 'Calorii', value: detailNutrition.calories, unit: 'kcal' },
+                          { label: 'Proteine',  value: detailNutrition.protein,  unit: 'g' },
+                          { label: 'Carbohidrați',    value: detailNutrition.carbs,    unit: 'g' },
+                          { label: 'Grăsimi',      value: detailNutrition.fat,      unit: 'g' },
                        ] as const).map(({ label, value, unit }) => (
                          <div key={label} className="bg-stone-50 rounded-lg p-2.5 text-center">
                            <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
@@ -567,10 +567,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
                {/* Ad: Sidebar */}
                <AdSidebar placement="recipe-sidebar" />
 
-               {/* Back to browse */}
-              <Link href="/search">
-                <Button variant="outline" className="w-full">Browse more recipes</Button>
-              </Link>
+                {/* Back to browse */}
+               <Link href="/search">
+                 <Button variant="outline" className="w-full">Descoperă mai multe rețete</Button>
+               </Link>
             </div>
           </div>
         </div>
@@ -657,14 +657,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   {approach.name}
                 </Link>
               )}
-              {isTested && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/90 text-white backdrop-blur-sm">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  Tested
-                </span>
-              )}
+               {isTested && (
+                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/90 text-white backdrop-blur-sm">
+                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                     <polyline points="20 6 9 17 4 12"/>
+                   </svg>
+                   Testată
+                 </span>
+               )}
               {dietTags.map((tag: string) => (
                 <span key={tag} className="px-3 py-1 rounded-full text-xs font-medium bg-white/15 text-white/90 backdrop-blur-sm">
                   {tag}
@@ -687,18 +687,18 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   {totalTime}
                 </span>
               )}
-              {prepTime && (
-                <span className="flex items-center gap-1.5">Prep: {prepTime}</span>
-              )}
-              {cookTime && (
-                <span className="flex items-center gap-1.5">Cook: {cookTime}</span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                </svg>
-                {servings} servings
-              </span>
+               {prepTime && (
+                 <span className="flex items-center gap-1.5">Preparare: {prepTime}</span>
+               )}
+               {cookTime && (
+                 <span className="flex items-center gap-1.5">Gătire: {cookTime}</span>
+               )}
+               <span className="flex items-center gap-1.5">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                 </svg>
+                 {servings} porții
+               </span>
               <span className="flex items-center gap-1.5">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
@@ -718,9 +718,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
              target="_blank"
              rel="noopener noreferrer"
              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm transition-colors"
-           >
-             View Original Recipe
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            >
+              Vezi rețeta originală
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                <polyline points="15 3 21 3 21 9"/>
                <line x1="10" y1="14" x2="21" y2="3"/>
@@ -764,15 +764,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
             {((post as Record<string, unknown>).video_url || recipeData.videoUrl) && (
               <Card className="shadow-sm overflow-hidden p-0">
                 <CardHeader className="pb-2 px-5 pt-5">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    Watch
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-5 pb-5">
-                  <VideoEmbed url={((post as Record<string, unknown>).video_url as string) || recipeData.videoUrl!} />
+                   <CardTitle className="flex items-center gap-2 text-lg">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                       <polygon points="5 3 19 12 5 21 5 3"/>
+                     </svg>
+                     Vizionează
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent className="px-5 pb-5">
+                   <VideoEmbed url={((post as Record<string, unknown>).video_url as string) || recipeData.videoUrl!} />
                 </CardContent>
               </Card>
             )}
@@ -785,15 +785,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
                      <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l3.58-3.58c.94-.94.94-2.48 0-3.42L9 5z"/>
                      <path d="M6 9.01V9"/>
                    </svg>
-                   Ingredients
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                 {ingredientSections.length > 0 ? (
-                   <RecipeIngredientsClient sections={ingredientSections} showCalories />
-                 ) : (
-                   <p className="text-sm text-muted-foreground">No ingredients listed.</p>
-                 )}
+                    Ingrediente
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {ingredientSections.length > 0 ? (
+                    <RecipeIngredientsClient sections={ingredientSections} showCalories />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nu sunt ingrediente listate.</p>
+                  )}
                </CardContent>
              </Card>
 
@@ -809,11 +809,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                       <path d="m21 15-5-5L5 21"/>
                     </svg>
-                    Gallery
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PhotoGallery photos={recipeData.photoGallery} />
+                     Galerie
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <PhotoGallery photos={recipeData.photoGallery} />
                 </CardContent>
               </Card>
             )}
@@ -826,24 +826,24 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                     <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
                   </svg>
-                  Directions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {steps.length > 0 ? (
-                  <ol className="space-y-4">
-                    {steps.map((step: string, idx: number) => (
-                      <li key={idx} className="flex gap-4">
-                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
-                          {idx + 1}
-                        </span>
-                        <p className="text-sm leading-relaxed pt-1 flex-1">{step}</p>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No steps listed.</p>
-                )}
+                   Instrucțiuni
+                 </CardTitle>
+               </CardHeader>
+               <CardContent>
+                 {steps.length > 0 ? (
+                   <ol className="space-y-4">
+                     {steps.map((step: string, idx: number) => (
+                       <li key={idx} className="flex gap-4">
+                         <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
+                           {idx + 1}
+                         </span>
+                         <p className="text-sm leading-relaxed pt-1 flex-1">{step}</p>
+                       </li>
+                     ))}
+                   </ol>
+                 ) : (
+                   <p className="text-sm text-muted-foreground">Nu sunt pași listați.</p>
+                 )}
               </CardContent>
             </Card>
 
@@ -872,55 +872,55 @@ export default async function RecipePage({ params }: RecipePageProps) {
             />
 
             {/* Creator card */}
-            {creator && (
-              <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Created by</p>
-                  <div className="flex items-center gap-3">
-                    {creator.avatar_url ? (
-                      <img
-                        src={creator.avatar_url}
-                        alt={creator.display_name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-bold text-primary">
-                          {creator.display_name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{creator.display_name}</p>
-                      <p className="text-xs text-muted-foreground">@{creator.handle}</p>
-                    </div>
-                  </div>
-                  <FollowChefButton handle={creator.handle} displayName={creator.display_name} />
-                </CardContent>
-              </Card>
-            )}
+             {creator && (
+               <Card className="shadow-sm">
+                 <CardContent className="p-4">
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Creat de</p>
+                   <div className="flex items-center gap-3">
+                     {creator.avatar_url ? (
+                       <img
+                         src={creator.avatar_url}
+                         alt={creator.display_name}
+                         className="w-10 h-10 rounded-full object-cover"
+                       />
+                     ) : (
+                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                         <span className="text-sm font-bold text-primary">
+                           {creator.display_name.charAt(0).toUpperCase()}
+                         </span>
+                       </div>
+                     )}
+                     <div className="flex-1 min-w-0">
+                       <p className="font-medium text-sm truncate">{creator.display_name}</p>
+                       <p className="text-xs text-muted-foreground">@{creator.handle}</p>
+                     </div>
+                   </div>
+                   <FollowChefButton handle={creator.handle} displayName={creator.display_name} />
+                 </CardContent>
+               </Card>
+             )}
 
              {/* Quick Nutrition */}
              {recipeData.nutrition_per_serving && (
                <Card className="shadow-sm">
-                 <CardContent className="p-4">
-                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutrition per serving</p>
-                   <div className="grid grid-cols-2 gap-3">
-                     {[
-                       { label: 'Calories', value: (recipeData.nutrition_per_serving as Record<string, number>).calories, unit: 'kcal' },
-                       { label: 'Protein', value: (recipeData.nutrition_per_serving as Record<string, number>).protein, unit: 'g' },
-                       { label: 'Carbs', value: (recipeData.nutrition_per_serving as Record<string, number>).carbs, unit: 'g' },
-                       { label: 'Fat', value: (recipeData.nutrition_per_serving as Record<string, number>).fat, unit: 'g' },
-                     ].map((item) => (
-                       <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
-                         <p className="text-lg font-bold">{item.value ?? '—'}</p>
-                         <p className="text-[10px] text-muted-foreground">{item.unit} {item.label.toLowerCase()}</p>
-                       </div>
-                     ))}
-                   </div>
-                   <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                     Per serving ({servings} servings total)
-                   </p>
+                  <CardContent className="p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutriție per porție</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Calorii', value: (recipeData.nutrition_per_serving as Record<string, number>).calories, unit: 'kcal' },
+                        { label: 'Proteine', value: (recipeData.nutrition_per_serving as Record<string, number>).protein, unit: 'g' },
+                        { label: 'Carbohidrați', value: (recipeData.nutrition_per_serving as Record<string, number>).carbs, unit: 'g' },
+                        { label: 'Grăsimi', value: (recipeData.nutrition_per_serving as Record<string, number>).fat, unit: 'g' },
+                      ].map((item) => (
+                        <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
+                          <p className="text-lg font-bold">{item.value ?? '—'}</p>
+                          <p className="text-[10px] text-muted-foreground">{item.unit} {item.label.toLowerCase()}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                      Per porție ({servings} porții în total)
+                    </p>
                  </CardContent>
                </Card>
              )}
@@ -931,14 +931,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
              {/* Source link */}
             {sourceUrl && (
               <Card className="shadow-sm">
-                <CardContent className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Original Recipe</p>
-                  <a
-                    href={sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 hover:underline transition-colors break-all"
-                  >
+               <CardContent className="p-4">
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Rețeta originală</p>
+                   <a
+                     href={sourceUrl}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 hover:underline transition-colors break-all"
+                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                       <polyline points="15 3 21 3 21 9"/>
@@ -950,10 +950,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
               </Card>
             )}
 
-            {/* Similar Recipes */}
-            <Card className="shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">More like this</CardTitle>
+             {/* Similar Recipes */}
+             <Card className="shadow-sm">
+               <CardHeader className="pb-3">
+                 <CardTitle className="text-base">Rețete similare</CardTitle>
               </CardHeader>
               <CardContent>
                 <SimilarRecipesClient id={post.id} />
