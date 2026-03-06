@@ -1,7 +1,6 @@
 "use client"
 import React, { useState, useMemo, useCallback, useId, useEffect } from "react"
 import Link from "next/link"
-import { MOCK_RECIPES } from "@/lib/mock-data"
 import { usePreferredRecipes, type PreferredRecipe } from "@/lib/preferred-recipes"
 import IngredientLink from '@/components/ui/ingredient-link'
 import { useFeatureFlags } from "@/components/feature-flags-provider"
@@ -10,7 +9,19 @@ import ProPaywallModal from '@/components/ui/pro-paywall-modal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Recipe = typeof MOCK_RECIPES[number]
+interface Recipe {
+  id: string
+  title: string
+  slug: string
+  hero_image_url: string
+  servings: number
+  cook_time_minutes: number | null
+  prep_time_minutes: number | null
+  ingredients: string[]
+  nutrition_per_serving: { calories: number; protein: number; carbs: number; fat: number }
+  dietTags: string[]
+  foodTags: string[]
+}
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const
 const MEALS = ["Breakfast", "Lunch", "Dinner"] as const
@@ -53,108 +64,26 @@ type MealSlot = { dishes: DishEntry[] }
 type WeekPlan = Record<DayKey, Record<MealKey, MealSlot>>
 type PlannerState = Record<number, WeekPlan>  // weekIndex keyed by YEAR_WEEKS index
 
-// ─── Mock ingredient data ──────────────────────────────────────────────────────
-// Each recipe has base ingredients. In production these come from the recipe record.
+// ─── Ingredient data ──────────────────────────────────────────────────────────
+// Ingredients come from the recipe API response as raw strings.
 // Format: { name, qty, unit, category, subtypeNote }
 type Ingredient = { name: string; qty: number; unit: string; category: string; subtypeNote: string }
 
-const RECIPE_INGREDIENTS: Record<string, Ingredient[]> = {
-  "mock-1": [ // Margherita Pizza
-    { name: "Flour", qty: 300, unit: "g", category: "Pantry", subtypeNote: "00 flour" },
-    { name: "Tomatoes", qty: 200, unit: "g", category: "Produce", subtypeNote: "San Marzano" },
-    { name: "Mozzarella", qty: 150, unit: "g", category: "Dairy", subtypeNote: "fresh buffalo" },
-    { name: "Basil", qty: 10, unit: "g", category: "Produce", subtypeNote: "fresh" },
-    { name: "Olive oil", qty: 30, unit: "ml", category: "Pantry", subtypeNote: "extra virgin" },
-  ],
-  "mock-2": [ // Pad Thai
-    { name: "Rice noodles", qty: 200, unit: "g", category: "Pantry", subtypeNote: "flat, 3mm" },
-    { name: "Shrimp", qty: 200, unit: "g", category: "Seafood", subtypeNote: "peeled & deveined" },
-    { name: "Eggs", qty: 2, unit: "pcs", category: "Dairy", subtypeNote: "free-range" },
-    { name: "Bean sprouts", qty: 100, unit: "g", category: "Produce", subtypeNote: "" },
-    { name: "Tamarind paste", qty: 45, unit: "ml", category: "Pantry", subtypeNote: "" },
-    { name: "Fish sauce", qty: 30, unit: "ml", category: "Pantry", subtypeNote: "" },
-  ],
-  "mock-3": [ // Moroccan Tagine
-    { name: "Lamb shoulder", qty: 600, unit: "g", category: "Meat", subtypeNote: "bone-in, cut into chunks" },
-    { name: "Chickpeas", qty: 240, unit: "g", category: "Pantry", subtypeNote: "canned, drained" },
-    { name: "Apricots", qty: 80, unit: "g", category: "Produce", subtypeNote: "dried" },
-    { name: "Onion", qty: 2, unit: "pcs", category: "Produce", subtypeNote: "" },
-    { name: "Ras el hanout", qty: 15, unit: "g", category: "Pantry", subtypeNote: "" },
-  ],
-  "mock-4": [ // California Roll
-    { name: "Sushi rice", qty: 300, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Crab meat", qty: 150, unit: "g", category: "Seafood", subtypeNote: "imitation or real" },
-    { name: "Avocado", qty: 1, unit: "pcs", category: "Produce", subtypeNote: "ripe" },
-    { name: "Cucumber", qty: 1, unit: "pcs", category: "Produce", subtypeNote: "" },
-    { name: "Nori sheets", qty: 4, unit: "pcs", category: "Pantry", subtypeNote: "" },
-  ],
-  "mock-5": [ // Buddha Bowl
-    { name: "Quinoa", qty: 150, unit: "g", category: "Pantry", subtypeNote: "white or tri-colour" },
-    { name: "Sweet potato", qty: 300, unit: "g", category: "Produce", subtypeNote: "" },
-    { name: "Chickpeas", qty: 240, unit: "g", category: "Pantry", subtypeNote: "canned" },
-    { name: "Kale", qty: 100, unit: "g", category: "Produce", subtypeNote: "" },
-    { name: "Tahini", qty: 60, unit: "g", category: "Pantry", subtypeNote: "" },
-  ],
-  "mock-6": [ // Croissants
-    { name: "Flour", qty: 500, unit: "g", category: "Pantry", subtypeNote: "bread flour" },
-    { name: "Butter", qty: 300, unit: "g", category: "Dairy", subtypeNote: "European 84% fat" },
-    { name: "Milk", qty: 150, unit: "ml", category: "Dairy", subtypeNote: "whole" },
-    { name: "Yeast", qty: 7, unit: "g", category: "Pantry", subtypeNote: "instant dry" },
-  ],
-  "mock-7": [ // Tacos al Pastor
-    { name: "Pork shoulder", qty: 500, unit: "g", category: "Meat", subtypeNote: "thinly sliced" },
-    { name: "Pineapple", qty: 200, unit: "g", category: "Produce", subtypeNote: "fresh, diced" },
-    { name: "Corn tortillas", qty: 12, unit: "pcs", category: "Pantry", subtypeNote: "" },
-    { name: "Achiote paste", qty: 30, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Cilantro", qty: 20, unit: "g", category: "Produce", subtypeNote: "fresh" },
-    { name: "White onion", qty: 1, unit: "pcs", category: "Produce", subtypeNote: "" },
-  ],
-  "mock-8": [ // Greek Moussaka
-    { name: "Beef mince", qty: 500, unit: "g", category: "Meat", subtypeNote: "lean" },
-    { name: "Eggplant", qty: 600, unit: "g", category: "Produce", subtypeNote: "large" },
-    { name: "Tomatoes", qty: 400, unit: "g", category: "Produce", subtypeNote: "canned crushed" },
-    { name: "Milk", qty: 500, unit: "ml", category: "Dairy", subtypeNote: "for béchamel" },
-    { name: "Butter", qty: 60, unit: "g", category: "Dairy", subtypeNote: "" },
-    { name: "Parmesan", qty: 50, unit: "g", category: "Dairy", subtypeNote: "grated" },
-  ],
-  "mock-9": [ // Butter Chicken
-    { name: "Chicken thighs", qty: 600, unit: "g", category: "Meat", subtypeNote: "boneless skinless" },
-    { name: "Tomatoes", qty: 400, unit: "g", category: "Produce", subtypeNote: "canned crushed" },
-    { name: "Cream", qty: 150, unit: "ml", category: "Dairy", subtypeNote: "heavy" },
-    { name: "Onion", qty: 2, unit: "pcs", category: "Produce", subtypeNote: "" },
-    { name: "Garam masala", qty: 10, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Ginger", qty: 20, unit: "g", category: "Produce", subtypeNote: "fresh" },
-  ],
-  "mock-10": [ // Cheesecake
-    { name: "Cream cheese", qty: 600, unit: "g", category: "Dairy", subtypeNote: "full fat" },
-    { name: "Graham crackers", qty: 200, unit: "g", category: "Pantry", subtypeNote: "or digestive biscuits" },
-    { name: "Butter", qty: 100, unit: "g", category: "Dairy", subtypeNote: "melted" },
-    { name: "Sugar", qty: 150, unit: "g", category: "Pantry", subtypeNote: "caster" },
-    { name: "Eggs", qty: 3, unit: "pcs", category: "Dairy", subtypeNote: "" },
-  ],
-  "mock-11": [ // Bibimbap
-    { name: "Short-grain rice", qty: 300, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Beef mince", qty: 200, unit: "g", category: "Meat", subtypeNote: "or tofu for vegan" },
-    { name: "Spinach", qty: 100, unit: "g", category: "Produce", subtypeNote: "blanched" },
-    { name: "Carrot", qty: 2, unit: "pcs", category: "Produce", subtypeNote: "julienned" },
-    { name: "Gochujang", qty: 60, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Eggs", qty: 4, unit: "pcs", category: "Dairy", subtypeNote: "fried sunny side up" },
-  ],
-  "mock-12": [ // Paella
-    { name: "Bomba rice", qty: 300, unit: "g", category: "Pantry", subtypeNote: "or Arborio" },
-    { name: "Prawns", qty: 300, unit: "g", category: "Seafood", subtypeNote: "shell-on" },
-    { name: "Mussels", qty: 400, unit: "g", category: "Seafood", subtypeNote: "scrubbed" },
-    { name: "Saffron", qty: 0.5, unit: "g", category: "Pantry", subtypeNote: "" },
-    { name: "Peppers", qty: 2, unit: "pcs", category: "Produce", subtypeNote: "red bell" },
-    { name: "Chicken stock", qty: 900, unit: "ml", category: "Pantry", subtypeNote: "" },
-  ],
-}
-
-// Fallback for any recipe not explicitly listed
-function getIngredients(recipeId: string): Ingredient[] {
-  return RECIPE_INGREDIENTS[recipeId] ?? [
-    { name: "Ingredients", qty: 1, unit: "portion", category: "Pantry", subtypeNote: "see recipe page" }
-  ]
+// Convert raw ingredient strings from API to structured Ingredient objects
+function getIngredients(recipe: Recipe): Ingredient[] {
+  if (!recipe.ingredients || recipe.ingredients.length === 0) {
+    return [
+      { name: "Ingredients", qty: 1, unit: "portion", category: "Pantry", subtypeNote: "see recipe page" }
+    ]
+  }
+  // Map raw ingredient strings to structured format
+  return recipe.ingredients.map((ingredientStr) => ({
+    name: ingredientStr,
+    qty: 1,
+    unit: "item",
+    category: "Uncategorized",
+    subtypeNote: ""
+  }))
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -212,7 +141,7 @@ function buildShoppingList(planner: PlannerState, scope: ShoppingScope): Shoppin
       if (dayFilter && day !== dayFilter) return
       MEALS.forEach((meal) => {
         week[day][meal].dishes.forEach((dish) => {
-          const ings = getIngredients(dish.recipe.id)
+          const ings = getIngredients(dish.recipe)
           const dayLabel = `${day} W${weekIndex + 1}`
           ings.forEach((ing) => {
             const key = `${ing.name.toLowerCase()}__${ing.unit}`
@@ -450,6 +379,9 @@ export default function PlanClient() {
   const [pickingFor, setPickingFor] = useState<{ day: DayKey; meal: MealKey } | null>(null)
   const [view, setView] = useState<"planner" | "shopping">("planner")
   const [pickerSearch, setPickerSearch] = useState("")
+  const [searchResults, setSearchResults] = useState<Recipe[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null)
   const { preferred, hydrated: prefHydrated } = usePreferredRecipes()
   const { flags } = useFeatureFlags()
   const healthMode = !!flags.healthMode
@@ -552,6 +484,43 @@ export default function PlanClient() {
     setExpandedSlot(null)
     setPickingFor(null)
   }, [currentWeek])
+
+  // ── Recipe search with debouncing ──
+  const searchRecipes = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+    setSearchLoading(true)
+    try {
+      const res = await fetch(`/api/recipes/search-for-planner?q=${encodeURIComponent(query)}&limit=20`)
+      if (!res.ok) throw new Error('Search failed')
+      const data = await res.json() as { recipes: Recipe[] }
+      setSearchResults(data.recipes)
+    } catch (err) {
+      console.error('[searchRecipes] error:', err)
+      setSearchResults([])
+    } finally {
+      setSearchLoading(false)
+    }
+  }, [])
+
+  // Handle search input with debouncing
+  const handlePickerSearchChange = useCallback((value: string) => {
+    setPickerSearch(value)
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    const timer = setTimeout(() => {
+      searchRecipes(value)
+    }, 300)
+    setSearchDebounceTimer(timer)
+  }, [searchRecipes, searchDebounceTimer])
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    }
+  }, [searchDebounceTimer])
 
   // ── Stats ──
   const totalDishes = useMemo(() =>
@@ -936,93 +905,47 @@ export default function PlanClient() {
                 </button>
               </div>
 
-              {/* Search bar */}
-              <input
-                type="search"
-                value={pickerSearch}
-                onChange={(e) => setPickerSearch(e.target.value)}
-                placeholder="Search preferred recipes…"
-                className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
-              />
+               {/* Search bar */}
+               <input
+                 type="search"
+                 value={pickerSearch}
+                 onChange={(e) => handlePickerSearchChange(e.target.value)}
+                 placeholder="Search recipes…"
+                 className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
+               />
 
-              {!prefHydrated ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Loading…</p>
-              ) : preferred.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-muted-foreground text-sm mb-3">You have no preferred recipes yet.</p>
-                  <a
-                    href="/me/preferred"
-                    className="text-sm px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors"
-                  >
-                    ⭐ Go to Preferred Recipes
-                  </a>
-                </div>
-              ) : (() => {
-                const q = pickerSearch.trim().toLowerCase()
-                const filtered: PreferredRecipe[] = q
-                  ? preferred.filter((p) =>
-                      p.title.toLowerCase().includes(q) ||
-                      p.region?.toLowerCase().includes(q) ||
-                      p.chefName?.toLowerCase().includes(q) ||
-                      p.dietTags?.some((t) => t.toLowerCase().includes(q))
-                    )
-                  : preferred
-                if (filtered.length === 0) return (
-                  <p className="text-sm text-muted-foreground text-center py-6">No recipes match your search.</p>
-                )
-                return (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {filtered.map((recipe) => {
-                      const mockMatch = MOCK_RECIPES.find((r) => r.id === recipe.id)
-                      const recipeObj: Recipe = mockMatch ?? {
-                        id: recipe.id,
-                        slug: recipe.slug,
-                        title: recipe.title,
-                        summary: "",
-                        hero_image_url: recipe.hero_image_url ?? "",
-                        region: recipe.region ?? "",
-                        votes: 0,
-                        comments: 0,
-                        tag: "",
-                        badges: [],
-                        dietTags: recipe.dietTags ?? [],
-                        foodTags: recipe.foodTags ?? [],
-                        is_tested: false,
-                        quality_score: 0,
-                        created_by: {
-                          id: recipe.chefId ?? "",
-                          display_name: recipe.chefName ?? "",
-                          handle: recipe.chefHandle ?? "",
-                          avatar_url: "",
-                          tier: 'user' as const,
-                        },
-                        is_saved: false,
-                        servings: 1,
-                        nutrition_per_serving: { calories: 0, protein: 0, carbs: 0, fat: 0 },
-                      }
-                      return (
-                        <button
-                          key={recipe.id}
-                          onClick={() => { addDish(pickingFor!.day, pickingFor!.meal, recipeObj); setPickerSearch("") }}
-                          className="text-left rounded-xl overflow-hidden border border-border bg-card hover:shadow-md hover:border-amber-400 transition-all group"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={recipe.hero_image_url ?? ""}
-                            alt={recipe.title}
-                            className="w-full h-20 object-cover group-hover:scale-105 transition-transform duration-200"
-                          />
-                          <div className="p-2">
-                            <p className="text-xs font-medium line-clamp-2 leading-snug">{recipe.title}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{recipe.region}</p>
-                            {recipe.chefName && <p className="text-[10px] text-muted-foreground">by {recipe.chefName}</p>}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )
-              })()}
+               {searchLoading ? (
+                 <p className="text-sm text-muted-foreground text-center py-8">Searching…</p>
+               ) : pickerSearch.trim() === "" ? (
+                 <div className="text-center py-10">
+                   <p className="text-muted-foreground text-sm mb-3">Start typing to search for recipes</p>
+                 </div>
+               ) : searchResults.length === 0 ? (
+                 <p className="text-sm text-muted-foreground text-center py-6">No recipes match your search.</p>
+               ) : (
+                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                   {searchResults.map((recipe) => (
+                     <button
+                       key={recipe.id}
+                       onClick={() => { addDish(pickingFor!.day, pickingFor!.meal, recipe); setPickerSearch("") }}
+                       className="text-left rounded-xl overflow-hidden border border-border bg-card hover:shadow-md hover:border-amber-400 transition-all group"
+                     >
+                       {/* eslint-disable-next-line @next/next/no-img-element */}
+                       <img
+                         src={recipe.hero_image_url}
+                         alt={recipe.title}
+                         className="w-full h-20 object-cover group-hover:scale-105 transition-transform duration-200"
+                       />
+                       <div className="p-2">
+                         <p className="text-xs font-medium line-clamp-2 leading-snug">{recipe.title}</p>
+                         {recipe.foodTags.length > 0 && (
+                           <p className="text-[10px] text-muted-foreground mt-0.5">{recipe.foodTags.join(", ")}</p>
+                         )}
+                       </div>
+                     </button>
+                   ))}
+                 </div>
+               )}
             </section>
           )}
         </>

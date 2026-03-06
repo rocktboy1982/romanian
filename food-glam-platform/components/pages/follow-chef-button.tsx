@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 interface Props {
-  handle: string
+  handle: string | null
   displayName: string
 }
 
 export default function FollowChefButton({ handle, displayName }: Props) {
-  const cleanHandle = handle.replace(/^@/, '')
+  const cleanHandle = (handle ?? displayName.toLowerCase().replace(/\s+/g, '-')).replace(/^@/, '')
   const storageKey = `following_chef_${cleanHandle}`
 
   const [following, setFollowing] = useState(false)
