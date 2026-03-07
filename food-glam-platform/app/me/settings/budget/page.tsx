@@ -22,21 +22,21 @@ export default function BudgetSettingsPage() {
           href="/me"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to profile
+          ← Înapoi la profil
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold tracking-tight mb-1">Budget Settings</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-1">Setări Buget</h1>
       <p className="text-muted-foreground text-sm mb-8">
-        Set your weekly grocery and meal-planning budget.
+        Setați-vă bugetul săptămânal de cumpărături și planificare a meselor.
       </p>
 
       <div className="space-y-6">
         {/* Weekly Budget */}
         <div className="rounded-xl border border-border bg-card p-6">
           <label className="block text-sm font-medium mb-2" htmlFor="budget">
-            Weekly Budget Goal
-          </label>
+             Obiectiv Buget Săptămânal
+           </label>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">{currency}</span>
             <input
@@ -49,26 +49,26 @@ export default function BudgetSettingsPage() {
               className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            We&apos;ll alert you when your meal plan exceeds this amount.
-          </p>
+           <p className="mt-2 text-xs text-muted-foreground">
+             Vă vom alerta când planul de masă depășește această sumă.
+           </p>
         </div>
 
         {/* Currency */}
         <div className="rounded-xl border border-border bg-card p-6">
           <label className="block text-sm font-medium mb-2" htmlFor="currency">
-            Currency
-          </label>
+             Monedă
+           </label>
           <select
             id="currency"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
-            <option value="USD">USD — US Dollar</option>
-            <option value="EUR">EUR — Euro</option>
-            <option value="GBP">GBP — British Pound</option>
-            <option value="RON">RON — Romanian Leu</option>
+            <option value="USD">USD — Dolar SUA</option>
+             <option value="EUR">EUR — Euro</option>
+             <option value="GBP">GBP — Liră Sterlină</option>
+             <option value="RON">RON — Leu Român</option>
           </select>
         </div>
 
@@ -76,10 +76,10 @@ export default function BudgetSettingsPage() {
         <div className="rounded-xl border border-border bg-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Budget Alerts</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Notify me when I&apos;m close to or over budget
-              </p>
+              <p className="text-sm font-medium">Alerturi Buget</p>
+               <p className="text-xs text-muted-foreground mt-0.5">
+                 Anunță-mă când sunt aproape sau depășesc bugetul
+               </p>
             </div>
             <button
               type="button"
@@ -104,15 +104,15 @@ export default function BudgetSettingsPage() {
           <button
             onClick={handleSave}
             className="px-6 py-2 rounded-lg bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors"
-          >
-            {saved ? 'Saved ✓' : 'Save Settings'}
-          </button>
+           >
+             {saved ? 'Salvat ✓' : 'Salvează Setări'}
+           </button>
           <Link
             href="/me"
             className="px-6 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors"
-          >
-            Cancel
-          </Link>
+           >
+             Anulează
+           </Link>
         </div>
       </div>
     </main>

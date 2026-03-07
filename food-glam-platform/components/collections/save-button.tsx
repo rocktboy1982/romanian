@@ -50,8 +50,8 @@ export default function SaveButton({ postId, isSaved = false, onToggle, size = "
     <button
       onClick={toggle}
       disabled={loading}
-      aria-label={saved ? "Unsave" : "Save"}
-      title={saved ? "Remove from cookbook" : "Save to cookbook"}
+      aria-label={saved ? "Desalvează" : "Salvează"}
+       title={saved ? "Elimina din carte de rețete" : "Salvează în carte de rețete"}
       className={`${sizeClasses} flex items-center justify-center rounded-full transition-all duration-200 ${
         saved
           ? "bg-red-50 text-red-500 hover:bg-red-100 shadow-sm"

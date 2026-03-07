@@ -1,9 +1,26 @@
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import SearchDiscoveryPageClient from '@/components/pages/search-discovery-page-client'
 
-export const metadata = {
-  title: 'Search Recipes - Food Glam',
-  description: 'Discover recipes by title, approach, diet, and more.',
+export const metadata: Metadata = {
+  title: 'Caută Rețete | MareChef.ro',
+  description: 'Caută rețete după titlu, abordare, dietă și multe altele. Descoperă mii de rețete delicioase pe MareChef.ro.',
+  openGraph: {
+    title: 'Caută Rețete | MareChef.ro',
+    description: 'Caută rețete după titlu, abordare, dietă și multe altele.',
+    url: 'https://marechef.ro/search',
+    type: 'website',
+    locale: 'ro_RO',
+    siteName: 'MareChef.ro',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Caută Rețete | MareChef.ro',
+    description: 'Caută rețete după titlu, abordare, dietă și multe altele.',
+  },
+  alternates: {
+    canonical: 'https://marechef.ro/search',
+  },
 }
 
 export default function SearchPage() {

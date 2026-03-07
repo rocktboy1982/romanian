@@ -1,8 +1,30 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { REGION_META } from '@/lib/recipe-taxonomy'
+
+export const metadata: Metadata = {
+  title: 'Cărți de Rețete | MareChef.ro',
+  description: 'Explorează rețete din diferite regiuni și culturi. Descoperă mâncare din Asia, Europa, Africa, Americi și Oceania pe MareChef.ro.',
+  openGraph: {
+    title: 'Cărți de Rețete | MareChef.ro',
+    description: 'Explorează rețete din diferite regiuni și culturi.',
+    url: 'https://marechef.ro/cookbooks',
+    type: 'website',
+    locale: 'ro_RO',
+    siteName: 'MareChef.ro',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Cărți de Rețete | MareChef.ro',
+    description: 'Explorează rețete din diferite regiuni și culturi.',
+  },
+  alternates: {
+    canonical: 'https://marechef.ro/cookbooks',
+  },
+}
 
 /* ─── continent groups with descriptions ──────────────────────────────── */
 const CONTINENT_GROUPS = [

@@ -228,7 +228,7 @@ export default function MealPlanCalendarPage() {
     return (
       <main className="container mx-auto px-4 py-8">
         <div className="animate-pulse text-muted-foreground text-center py-20">
-          Loading calendar...
+          Se încarcă calendarul...
         </div>
       </main>
     )
@@ -242,8 +242,8 @@ export default function MealPlanCalendarPage() {
           <Link
             href="/me/meal-plans"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-1 inline-block"
-          >
-            &larr; All Meal Plans
+           >
+            &larr; Toate Planurile de Masă
           </Link>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {plan?.title || "Meal Plan"}
@@ -252,8 +252,8 @@ export default function MealPlanCalendarPage() {
         <div className="flex items-center gap-2">
           <Link href={`/me/meal-plans/${planId}/shopping-list?from=${toISO(weekStart)}&to=${toISO(addDays(weekStart, 6))}`}>
             <Button variant="outline" size="sm">
-              <span role="img" aria-label="shopping" className="mr-1.5">&#x1F6D2;</span>
-              Shopping List
+              <span role="img" aria-label="cumpărături" className="mr-1.5">&#x1F6D2;</span>
+              Lista de cumpărături
             </Button>
           </Link>
         </div>
@@ -261,12 +261,12 @@ export default function MealPlanCalendarPage() {
 
       {/* Week navigation */}
       <div className="flex items-center justify-between mb-6 bg-card border rounded-lg px-4 py-3">
-        <Button
+         <Button
           variant="ghost"
           size="sm"
           onClick={() => setWeekStart(addDays(weekStart, -7))}
         >
-          &larr; Prev Week
+          &larr; Săptămâna Anterioară
         </Button>
         <div className="text-sm font-medium text-foreground">
           {weekDates[0].toLocaleDateString("en-US", {
@@ -280,12 +280,12 @@ export default function MealPlanCalendarPage() {
             year: "numeric",
           })}
         </div>
-        <Button
+         <Button
           variant="ghost"
           size="sm"
           onClick={() => setWeekStart(addDays(weekStart, 7))}
         >
-          Next Week &rarr;
+          Următoarea Săptămână &rarr;
         </Button>
       </div>
 
@@ -347,7 +347,7 @@ export default function MealPlanCalendarPage() {
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium leading-tight line-clamp-2 text-foreground">
-                                {entry.recipe_title || "Recipe"}
+                                {entry.recipe_title || "Rețetă"}
                               </div>
                               {/* Servings */}
                               {editingEntry === entry.id ? (
@@ -366,7 +366,7 @@ export default function MealPlanCalendarPage() {
                                     className="w-12 px-1 py-0.5 text-[10px] border rounded bg-background"
                                     autoFocus
                                   />
-                                  <span className="text-[10px] text-muted-foreground">srv</span>
+                                   <span className="text-[10px] text-muted-foreground">por</span>
                                 </div>
                               ) : (
                                 <button
@@ -376,7 +376,7 @@ export default function MealPlanCalendarPage() {
                                   }}
                                   className="text-[10px] text-muted-foreground hover:text-foreground mt-0.5"
                                 >
-                                  {entry.servings} serving{entry.servings !== 1 ? "s" : ""}
+                                   {entry.servings} porție{entry.servings !== 1 ? "s" : ""}
                                 </button>
                               )}
                             </div>
@@ -385,7 +385,7 @@ export default function MealPlanCalendarPage() {
                           <button
                             onClick={() => handleDeleteEntry(entry.id)}
                             className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive text-xs p-0.5"
-                            title="Remove"
+                            title="Elimina"
                           >
                             &times;
                           </button>
@@ -398,7 +398,7 @@ export default function MealPlanCalendarPage() {
                       onClick={() => openPicker(dateStr, slot)}
                       className="mt-1.5 w-full text-[10px] text-muted-foreground hover:text-primary hover:bg-primary/5 rounded py-1 transition-colors border border-dashed border-transparent hover:border-primary/30"
                     >
-                      + Add recipe
+                      + Adăugați rețetă
                     </button>
                   </div>
                 )
@@ -415,7 +415,7 @@ export default function MealPlanCalendarPage() {
             {/* Modal header */}
             <div className="p-4 border-b">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold text-foreground">Add Recipe</h2>
+                <h2 className="font-semibold text-foreground">Adăugați Rețetă</h2>
                 <button
                   onClick={() => setPickerOpen(false)}
                   className="text-muted-foreground hover:text-foreground text-xl leading-none"
@@ -435,7 +435,7 @@ export default function MealPlanCalendarPage() {
                 type="text"
                 value={searchQuery}
                 onChange={e => handleSearch(e.target.value)}
-                placeholder="Search recipes..."
+                placeholder="Căutați rețete..."
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 autoFocus
               />
@@ -444,19 +444,19 @@ export default function MealPlanCalendarPage() {
             {/* Results */}
             <div className="flex-1 overflow-y-auto p-2">
               {searching && (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  Searching...
-                </div>
+               <div className="text-center py-8 text-muted-foreground text-sm">
+                   Se caută...
+                 </div>
               )}
               {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No recipes found for &ldquo;{searchQuery}&rdquo;
-                </div>
+                 <div className="text-center py-8 text-muted-foreground text-sm">
+                   Nu s-au găsit rețete pentru „{searchQuery}"
+                 </div>
               )}
               {!searching && searchQuery.length < 2 && (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  Type at least 2 characters to search
-                </div>
+                 <div className="text-center py-8 text-muted-foreground text-sm">
+                   Tastați cel puțin 2 caractere pentru a căuta
+                 </div>
               )}
               {searchResults.map(recipe => (
                 <button
@@ -474,7 +474,7 @@ export default function MealPlanCalendarPage() {
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-lg shrink-0">
-                      <span role="img" aria-label="recipe">&#x1F372;</span>
+                       <span role="img" aria-label="rețetă">&#x1F372;</span>
                     </div>
                   )}
                   <span className="text-sm font-medium text-foreground line-clamp-2">

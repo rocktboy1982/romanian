@@ -75,6 +75,17 @@ export const AD_PLACEMENTS = {
     layout: 'in-article' as const,
   },
 
+  'homepage-bottom-banner': {
+    slot: 'banner' as AdSlotKey,
+    format: 'auto' as const,
+    layout: undefined,
+  },
+  'homepage-bottom-infeed': {
+    slot: 'inFeed' as AdSlotKey,
+    format: 'fluid' as const,
+    layout: 'in-article' as const,
+  },
+
   // Feed page
   'feed-infeed': {
     slot: 'inFeed' as AdSlotKey,

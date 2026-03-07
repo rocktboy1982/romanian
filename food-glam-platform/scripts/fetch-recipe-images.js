@@ -270,7 +270,7 @@ function pickCategoryImage(category, slug) {
 
 function httpGet(url) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'User-Agent': 'FoodGlam/1.0' } }, (res) => {
+    const req = https.get(url, { headers: { 'User-Agent': 'MareChef/1.0' } }, (res) => {
       let body = ''
       res.on('data', (chunk) => body += chunk)
       res.on('end', () => {

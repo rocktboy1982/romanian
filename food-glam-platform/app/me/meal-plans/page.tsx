@@ -85,8 +85,8 @@ export default function MealPlansListPage() {
     if (meta?.start_date && meta?.end_date) {
       return `${formatDate(meta.start_date)} — ${formatDate(meta.end_date)}`
     }
-    if (meta?.start_date) return `From ${formatDate(meta.start_date)}`
-    return "No dates set"
+    if (meta?.start_date) return `De la ${formatDate(meta.start_date)}`
+    return "Nicio dată setată"
   }
 
   return (
@@ -102,7 +102,7 @@ export default function MealPlansListPage() {
           </p>
         </div>
         <Button onClick={() => setShowCreate(!showCreate)}>
-          {showCreate ? "Cancel" : "+ New Plan"}
+          {showCreate ? "Anulează" : "+ Nou Plan"}
         </Button>
       </div>
 
@@ -113,7 +113,7 @@ export default function MealPlansListPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-foreground">
-                  Plan Name
+                  Numele Planului
                 </label>
                 <input
                   type="text"
@@ -125,10 +125,10 @@ export default function MealPlansListPage() {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5 text-foreground">
-                    Start Date
-                  </label>
+                 <div>
+                   <label className="block text-sm font-medium mb-1.5 text-foreground">
+                     Data de început
+                   </label>
                   <input
                     type="date"
                     value={newStartDate}
@@ -136,10 +136,10 @@ export default function MealPlansListPage() {
                     className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5 text-foreground">
-                    End Date
-                  </label>
+                 <div>
+                   <label className="block text-sm font-medium mb-1.5 text-foreground">
+                     Data de încheiere
+                   </label>
                   <input
                     type="date"
                     value={newEndDate}
@@ -148,20 +148,20 @@ export default function MealPlansListPage() {
                   />
                 </div>
               </div>
-              <Button onClick={handleCreate} disabled={creating || !newTitle.trim()}>
-                {creating ? "Creating..." : "Create Meal Plan"}
-              </Button>
+               <Button onClick={handleCreate} disabled={creating || !newTitle.trim()}>
+                 {creating ? "Se creează..." : "Creați Plan de Masă"}
+               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-pulse text-muted-foreground">Loading meal plans...</div>
-        </div>
-      )}
+       {/* Loading */}
+       {loading && (
+         <div className="flex items-center justify-center py-20">
+           <div className="animate-pulse text-muted-foreground">Se încarcă planurile de masă...</div>
+         </div>
+       )}
 
       {/* Empty state */}
       {!loading && plans.length === 0 && (
@@ -170,12 +170,12 @@ export default function MealPlansListPage() {
             <div className="text-5xl mb-4">
               <span role="img" aria-label="calendar">&#x1F4C5;</span>
             </div>
-            <h2 className="text-xl font-semibold mb-2">Create your first meal plan</h2>
+            <h2 className="text-xl font-semibold mb-2">Creați-vă primul plan de masă</h2>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Organize your weekly meals, add recipes to each day, and generate
-              shopping lists automatically.
+              Organizați mesele zilei de luni până duminică, adăugați rețete în fiecare zi și generați
+              liste de cumpărături în mod automat.
             </p>
-            <Button onClick={() => setShowCreate(true)}>+ New Plan</Button>
+            <Button onClick={() => setShowCreate(true)}>+ Nou Plan</Button>
           </CardContent>
         </Card>
       )}
@@ -197,14 +197,14 @@ export default function MealPlansListPage() {
                 <CardContent className="pb-3">
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
-                      <span role="img" aria-label="recipes">&#x1F372;</span>
-                      {getEntryCount(plan)} recipe{getEntryCount(plan) !== 1 ? "s" : ""}
-                    </span>
-                    {plan.created_at && (
-                      <span>
-                        Created {formatDate(plan.created_at.slice(0, 10))}
-                      </span>
-                    )}
+                       <span role="img" aria-label="rețete">&#x1F372;</span>
+                       {getEntryCount(plan)} rețet{getEntryCount(plan) !== 1 ? "e" : "ă"}
+                     </span>
+                     {plan.created_at && (
+                       <span>
+                         Creat {formatDate(plan.created_at.slice(0, 10))}
+                       </span>
+                     )}
                   </div>
                 </CardContent>
                 <CardFooter className="pt-0">
@@ -217,9 +217,9 @@ export default function MealPlansListPage() {
                       e.stopPropagation()
                       handleDelete(plan.id)
                     }}
-                  >
-                    Delete
-                  </Button>
+                   >
+                     Șterge
+                   </Button>
                 </CardFooter>
               </Card>
             </Link>

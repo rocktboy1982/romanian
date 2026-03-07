@@ -13,8 +13,53 @@ import { ADSENSE_PUB_ID, ADS_ENABLED } from '@/lib/adsense-config'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Food Glam - Platformă Culinară',
-  description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea.',
+  title: 'MareChef.ro - Platformă Culinară',
+  description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea. Salvează rețete favorite, creează planuri de masă și generează liste de cumpărături.',
+  keywords: ['rețete', 'gătit', 'mâncare', 'rețete ușoare', 'rețete sănătoase', 'planuri de masă'],
+  authors: [{ name: 'MareChef.ro' }],
+  creator: 'MareChef.ro',
+  publisher: 'MareChef.ro',
+  formatDetection: {
+    email: false,
+    telephone: false,
+    address: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ro_RO',
+    url: 'https://marechef.ro',
+    siteName: 'MareChef.ro',
+    title: 'MareChef.ro - Platformă Culinară',
+    description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea.',
+    images: [
+      {
+        url: 'https://marechef.ro/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MareChef.ro - Platformă Culinară',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MareChef.ro - Platformă Culinară',
+    description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea.',
+    images: ['https://marechef.ro/og-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://marechef.ro',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({
@@ -24,7 +69,7 @@ export default function RootLayout({
 }) {
   // ...existing code...
   return (
-    <html lang="en">
+    <html lang="ro">
       <body className={inter.className} style={{ background: '#0d0d0d' }}>
         {/* Google AdSense — loaded once globally, ad units push() individually */}
         {ADS_ENABLED && process.env.NODE_ENV === 'production' && (

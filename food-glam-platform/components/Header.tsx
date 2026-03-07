@@ -40,7 +40,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-amber-600 hover:text-amber-700 transition-colors">
-            Food Glam
+            MareChef.ro
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -50,9 +50,9 @@ export default function Header() {
             <Link href="/me/meal-plans" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
               Meal Plans
             </Link>
-            <Link href="/me/cookbook" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
-              Cookbook
-            </Link>
+             <Link href="/me/cookbook" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
+               Carte de rețete
+             </Link>
             <Link href="/submit/recipe" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
               Submit Recipe
             </Link>

@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Script from 'next/script'
+import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { voteOnPost as _voteOnPost } from '@/app/actions'
@@ -292,6 +294,163 @@ function PhotoGallery({ photos }: { photos: string[] }) {
   )
 }
 
+/**
+ * Helper function to convert time string (e.g., "30 min") to ISO 8601 duration (e.g., "PT30M")
+ */
+function timeStringToISO8601(timeStr: string): string {
+  if (!timeStr) return 'PT0M'
+  const match = timeStr.match(/(\d+)\s*(min|hour|hr|h|m)?/i)
+  if (!match) return 'PT0M'
+  const value = parseInt(match[1], 10)
+  const unit = match[2]?.toLowerCase() || 'min'
+  if (unit === 'hour' || unit === 'hr' || unit === 'h') {
+    return `PT${value}H`
+  }
+  return `PT${value}M`
+}
+
+/**
+ * Generate JSON-LD structured data for Recipe schema.org
+ */
+function generateRecipeJsonLd(recipe: any, detail: any, slug: string) {
+  const baseUrl = 'https://marechef.ro'
+  const recipeUrl = `${baseUrl}/recipes/${slug}`
+
+  // Parse times to ISO 8601 duration format
+  const prepTime = timeStringToISO8601(detail.prep_time)
+  const cookTime = timeStringToISO8601(detail.cook_time)
+  const totalTime = timeStringToISO8601(detail.total_time)
+
+  // Build recipeInstructions array with HowToStep
+  const recipeInstructions = detail.steps.map((step: string, idx: number) => ({
+    '@type': 'HowToStep',
+    position: idx + 1,
+    text: step,
+  }))
+
+  // Build recipeIngredient array
+  const recipeIngredient = detail.ingredients || []
+
+  // Build nutrition information
+  const nutrition = detail.nutrition || {}
+
+  const jsonLd: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: recipe.title,
+    description: recipe.summary || recipe.title,
+    image: recipe.hero_image_url || `${baseUrl}/og-default.jpg`,
+    author: {
+      '@type': 'Person',
+      name: recipe.created_by?.display_name || 'MareChef',
+    },
+    prepTime,
+    cookTime,
+    totalTime,
+    recipeYield: `${detail.servings} porții`,
+    recipeCategory: 'Rețetă',
+    recipeCuisine: recipe.region || 'Internațional',
+    recipeIngredient,
+    recipeInstructions,
+    nutrition: {
+      '@type': 'NutritionInformation',
+      calories: `${nutrition.calories || 0} calories`,
+      carbohydrateContent: `${nutrition.carbs || 0}g`,
+      proteinContent: `${nutrition.protein || 0}g`,
+      fatContent: `${nutrition.fat || 0}g`,
+    },
+    url: recipeUrl,
+  }
+
+  // Add optional fields
+  if (recipe.votes) {
+    jsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: Math.min(5, Math.max(1, (recipe.votes / 20))),
+      ratingCount: recipe.votes,
+    }
+  }
+
+  if (recipe.created_at) {
+    jsonLd.datePublished = new Date(recipe.created_at).toISOString().split('T')[0]
+  }
+
+  return jsonLd
+}
+
+/**
+ * Generate metadata for recipe pages (SEO)
+ * Includes title, description, OG image, Twitter card, canonical URL
+ */
+export async function generateMetadata({ params }: RecipePageProps): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createServerSupabaseClient()
+  const baseUrl = 'https://marechef.ro'
+
+  // Try Supabase first
+  const { data: post } = await supabase
+    .from('posts')
+    .select('title, summary, hero_image_url, votes, created_at')
+    .eq('slug', slug)
+    .eq('type', 'recipe')
+    .single()
+
+  // Fall back to mock data
+  let recipe = post
+  if (!recipe) {
+    const mockRecipe = MOCK_RECIPES.find(r => r.slug === slug)
+    if (!mockRecipe) {
+      return {
+        title: 'Rețeta nu a fost găsită | MareChef.ro',
+        description: 'Rețeta pe care o cauți nu a fost găsită.',
+      }
+    }
+    recipe = {
+      title: mockRecipe.title,
+      summary: mockRecipe.summary,
+      hero_image_url: mockRecipe.hero_image_url,
+      votes: mockRecipe.votes,
+      created_at: new Date().toISOString(),
+    }
+  }
+
+  const title = `${recipe.title} | MareChef.ro`
+  const description = recipe.summary || `Descoperă rețeta pentru ${recipe.title} pe MareChef.ro - o platformă culinară elegantă cu rețete din toată lumea.`
+  const imageUrl = recipe.hero_image_url || `${baseUrl}/og-default.jpg`
+  const canonicalUrl = `${baseUrl}/recipes/${slug}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'article',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: recipe.title,
+        },
+      ],
+      locale: 'ro_RO',
+      siteName: 'MareChef.ro',
+      publishedTime: recipe.created_at ? new Date(recipe.created_at).toISOString() : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: canonicalUrl,
+    },
+  }
+}
+
 export default async function RecipePage({ params }: RecipePageProps) {
   const { slug } = await params
   const supabase = await createServerSupabaseClient()
@@ -328,9 +487,19 @@ export default async function RecipePage({ params }: RecipePageProps) {
     const isTested = mockRecipe.is_tested
     const votes = mockRecipe.votes
 
+    // Generate JSON-LD for SEO
+    const jsonLdData = generateRecipeJsonLd(mockRecipe, detail, slug)
+
     return (
-      <main className="min-h-screen pb-24 md:pb-8" style={{ background: '#dde3ee', color: '#111' }}>
-        {/* Hero Section */}
+      <>
+        <Script
+          id="recipe-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+          strategy="afterInteractive"
+        />
+        <main className="min-h-screen pb-24 md:pb-8" style={{ background: '#dde3ee', color: '#111' }}>
+          {/* Hero Section */}
         <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
           <img src={heroImage} alt={mockRecipe.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -571,10 +740,11 @@ export default async function RecipePage({ params }: RecipePageProps) {
                <Link href="/search">
                  <Button variant="outline" className="w-full">Descoperă mai multe rețete</Button>
                </Link>
-            </div>
-          </div>
-        </div>
-      </main>
+           </div>
+         </div>
+       </div>
+     </main>
+      </>
     )
   }
 
@@ -632,8 +802,26 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const isTested = post.is_tested
   const sourceUrl = (post as Record<string, unknown>).source_url as string | null
 
+  // Generate JSON-LD for SEO
+  const jsonLdData = generateRecipeJsonLd(post, {
+    servings,
+    prep_time: prepTime,
+    cook_time: cookTime,
+    total_time: totalTime,
+    ingredients: rawIngredients,
+    steps,
+    nutrition: recipeData.nutrition_per_serving || {},
+  }, slug)
+
   return (
-    <main className="min-h-screen pb-24 md:pb-8">
+    <>
+      <Script
+        id="recipe-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+        strategy="afterInteractive"
+      />
+      <main className="min-h-screen pb-24 md:pb-8">
       {/* Hero Section */}
       <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
         <img
@@ -959,9 +1147,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 <SimilarRecipesClient id={post.id} />
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </div>
-    </main>
-  )
-}
+           </div>
+         </div>
+       </div>
+     </main>
+      </>
+    )
+  }

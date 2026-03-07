@@ -59,8 +59,11 @@ const MAX_TEXT_LENGTH = 4500         // max chars per translation request
  */
 async function translateText(text, sourceLang = 'en', targetLang = 'ro') {
   if (!text || typeof text !== 'string' || text.trim().length === 0) return text
-  // Skip if already looks Romanian (rough heuristic)
-  if (/[ăâîșț]/i.test(text) && text.length > 20) return text
+  // Skip if text is clearly Romanian (multiple diacritics = already translated)
+  const roChars = (text.match(/[ăâîșțĂÂÎȘȚ]/g) || []).length
+  if (roChars >= 3 && text.length > 20) return text
+  // Skip if no Latin letters (numbers, symbols, proper nouns)
+  if (!/[a-zA-Z]{3,}/.test(text)) return text
 
   // Truncate very long texts
   const input = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text
@@ -205,8 +208,18 @@ async function main() {
 
     for (const recipe of recipes) {
       if (translatedSet.has(recipe.id)) {
-        skipped++
-        continue
+        // Re-check: only re-translate if SUMMARY is clearly still in English
+        // (recipe_json may have stray English words even after translation, that's acceptable)
+        const summary = (recipe.summary || '').toLowerCase()
+        // Check if summary contains "Ingredients:" marker (batch-seeded format, still in English)
+        const summaryEnglish = summary.includes('ingredients:')
+        if (!summaryEnglish) {
+          skipped++
+          continue
+        }
+        // Summary is clearly English — remove from "done" set and re-translate
+        translatedSet.delete(recipe.id)
+        console.log(`  ↻ Re-translating ${recipe.slug} (summary still in English)`)
       }
 
       try {

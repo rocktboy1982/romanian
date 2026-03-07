@@ -91,10 +91,10 @@ export default function MealPlanShoppingListPage() {
           href={`/me/meal-plans/${planId}`}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-1 inline-block"
         >
-          &larr; Back to Calendar
+          &larr; Înapoi la Calendar
         </Link>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          <span role="img" aria-label="shopping">&#x1F6D2;</span> Shopping List
+          <span role="img" aria-label="cumpărături">&#x1F6D2;</span> Lista de cumpărături
         </h1>
       </div>
 
@@ -103,7 +103,7 @@ export default function MealPlanShoppingListPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5">From</label>
+              <label className="block text-sm font-medium mb-1.5">De la</label>
               <input
                 type="date"
                 value={fromDate}
@@ -112,7 +112,7 @@ export default function MealPlanShoppingListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">To</label>
+              <label className="block text-sm font-medium mb-1.5">Până la</label>
               <input
                 type="date"
                 value={toDate}
@@ -122,7 +122,7 @@ export default function MealPlanShoppingListPage() {
             </div>
           </div>
           <Button size="sm" onClick={fetchList}>
-            Generate List
+            Generează Lista
           </Button>
         </CardContent>
       </Card>
@@ -148,7 +148,7 @@ export default function MealPlanShoppingListPage() {
       {/* Loading */}
       {loading && (
         <div className="text-center py-12 text-muted-foreground">
-          Generating shopping list...
+          Se generează lista de cumpărături...
         </div>
       )}
 
@@ -161,8 +161,8 @@ export default function MealPlanShoppingListPage() {
             </div>
             <p className="text-muted-foreground">
               {entryCount === 0
-                ? "No recipes in this date range. Add some recipes to your meal plan first."
-                : "No ingredients found in the recipes for this period."}
+                ? "Nicio rețetă în acest interval de dată. Adăugați mai întâi rețete în planul de masă."
+                : "Niciun ingredient găsit în rețetele din această perioadă."}
             </p>
           </CardContent>
         </Card>
@@ -174,8 +174,8 @@ export default function MealPlanShoppingListPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center justify-between">
               <span>
-                {totalCount} ingredient{totalCount !== 1 ? "s" : ""} from{" "}
-                {entryCount} recipe{entryCount !== 1 ? "s" : ""}
+                {totalCount} ingredient{totalCount !== 1 ? "e" : ""} din{" "}
+                {entryCount} rețet{entryCount !== 1 ? "e" : "ă"}
               </span>
             </CardTitle>
           </CardHeader>
@@ -229,11 +229,11 @@ export default function MealPlanShoppingListPage() {
       {!loading && items.length > 0 && (
         <div className="flex gap-2 mt-6 print:hidden">
           <Button variant="outline" onClick={handlePrint}>
-            <span role="img" aria-label="print" className="mr-1.5">&#x1F5A8;</span>
-            Print
+            <span role="img" aria-label="tipărire" className="mr-1.5">&#x1F5A8;</span>
+            Tipărește
           </Button>
           <Button onClick={handleSaveToShoppingLists} disabled={saving}>
-            {saving ? "Saving..." : "Save to Shopping Lists"}
+            {saving ? "Se salvează..." : "Salvează în Listele de cumpărături"}
           </Button>
         </div>
       )}

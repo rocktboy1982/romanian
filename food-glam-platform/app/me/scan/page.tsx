@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import ScanClient from '@/components/pages/scan-client'
 
 export const metadata: Metadata = {
-  title: 'Scan Ingredients | Food Glam',
+  title: 'Scanează Ingrediente | MareChef.ro',
   description: 'Take a photo of your ingredients to find recipes and manage your shopping.',
 }
 

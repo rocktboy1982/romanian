@@ -15,17 +15,17 @@ const TimeEstimate: React.FC<TimeEstimateProps> = ({ prepTime, cookTime }) => {
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <Clock size={16} />
       <div>
-        <span style={{ fontWeight: '500' }}>Total Time:</span>
-        <span>{total_time} min</span>
-      </div>
-      <div>
-        <span>Prep:</span>
-        <span>{prepTime} min</span>
-      </div>
-      <div>
-        <span>Cook:</span>
-        <span>{cookTime} min</span>
-      </div>
+         <span style={{ fontWeight: '500' }}>Timp Total:</span>
+         <span>{total_time} min</span>
+       </div>
+       <div>
+         <span>Pregătire:</span>
+         <span>{prepTime} min</span>
+       </div>
+       <div>
+         <span>Gătim:</span>
+         <span>{cookTime} min</span>
+       </div>
     </div>
   );
 };

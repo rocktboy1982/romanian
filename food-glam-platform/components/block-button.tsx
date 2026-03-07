@@ -55,9 +55,9 @@ export function BlockButton({ userId, initialBlocked = false, className }: Block
           ? 'text-red-500 hover:text-red-700 font-medium'
           : 'text-muted-foreground hover:text-red-500'
       } ${className || ''}`}
-      title={blocked ? 'Unblock this user' : 'Block this user'}
-    >
-      {loading ? '...' : blocked ? 'Unblock' : 'Block'}
+      title={blocked ? 'Deblochează acest utilizator' : 'Blochează acest utilizator'}
+     >
+       {loading ? '...' : blocked ? 'Deblochează' : 'Blochează'}
     </button>
   )
 }

@@ -133,17 +133,8 @@ export function Navigation() {
         {/* ── Row 1: logo + search + auth ─────────────────────────────── */}
         <div className="flex items-center gap-4 px-6 py-3">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex-shrink-0 text-2xl font-extrabold tracking-tight"
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            FoodGlam
+          <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+            <img src="/logo.svg" alt="MareChef.ro" className="h-9 w-auto" />
           </Link>
 
           {/* Search bar — expands to fill available space */}
@@ -261,17 +252,8 @@ export function Navigation() {
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        <Link
-          href="/"
-          className="text-xl font-extrabold tracking-tight"
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          FoodGlam
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/logo.svg" alt="MareChef.ro" className="h-7 w-auto" />
         </Link>
 
         {/* inline search on mobile */}
@@ -298,7 +280,7 @@ export function Navigation() {
         <button
           onClick={() => setMobileOpen(v => !v)}
           className="flex flex-col gap-1.5 p-2"
-          aria-label="Menu"
+           aria-label="Meniu"
         >
           <span className="block w-5 h-0.5 rounded transition-all" style={{ background: mobileOpen ? '#ff4d6d' : '#ccc' }} />
           <span className="block w-5 h-0.5 rounded transition-all" style={{ background: mobileOpen ? '#ff9500' : '#ccc', opacity: mobileOpen ? 0 : 1 }} />

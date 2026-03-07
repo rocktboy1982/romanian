@@ -9,7 +9,7 @@
  */
 
 // ── eMAG ────────────────────────────────────────────────────────────────────
-const EMAG_AFFILIATE_TAG = 'foodglam-20' // TODO: replace with real affiliate tag
+const EMAG_AFFILIATE_TAG = 'marechef-20' // TODO: replace with real affiliate tag
 
 /**
  * Returns an eMAG search URL for a given ingredient name.

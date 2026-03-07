@@ -38,7 +38,7 @@ export default function SignInPage() {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-             <h1 className="text-3xl font-bold text-gray-900 mb-2">Bine ai venit la Food Glam</h1>
+             <h1 className="text-3xl font-bold text-gray-900 mb-2">Bine ai venit la MareChef.ro</h1>
              <p className="text-gray-600">Autentifică-te pentru a salva rețete, planifica mese și multe altele</p>
            </div>
 

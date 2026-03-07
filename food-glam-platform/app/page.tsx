@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LatestChefVlogs from '@/components/LatestChefVlogs'
 import TrendingSection from '@/components/TrendingSection'
-import { AdBanner } from '@/components/ads/ad-placements'
+import { AdBanner, AdInFeed } from '@/components/ads/ad-placements'
 import { REGION_META } from '@/lib/recipe-taxonomy'
 import { MOCK_RECIPES } from '@/lib/mock-data'
 import { MOCK_CHEF_POSTS, MOCK_CHEF_PROFILES } from '@/lib/mock-chef-data'
@@ -223,8 +223,8 @@ export default function Home() {
         {/* ════════════════════════════════════════════════════════
             STORIES STRIP  (Instagram-style)
         ════════════════════════════════════════════════════════ */}
-        <section className="px-4 pt-5 pb-4">
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1" style={{ scrollSnapType: 'x mandatory' }}>
+        <section className="px-4 pt-10 pb-4">
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2" style={{ scrollSnapType: 'x mandatory' }}>
 
             {/* "Add story" button */}
             <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
@@ -515,6 +515,10 @@ export default function Home() {
                     </div>
                   )
                 })}
+
+                {/* Ad boxes — styled like recipe cards */}
+                <AdInFeed placement="homepage-bottom-banner" className="rounded-2xl overflow-hidden" />
+                <AdInFeed placement="homepage-bottom-infeed" className="rounded-2xl overflow-hidden" />
               </div>
             )}
           </div>

@@ -328,7 +328,7 @@ function RecipeBody({
 
         {/* Footer */}
         <footer style={{ marginTop: 40, paddingTop: 16, borderTop: '1px solid #eee', fontSize: '0.75rem', color: '#aaa' }}>
-          <p style={{ margin: 0 }}>Printed from Food Glam Platform — foodglam.com/recipes/{slug}</p>
+          <p style={{ margin: 0 }}>Printat de pe MareChef.ro — marechef.ro/recipes/{slug}</p>
         </footer>
       </main>
     </>

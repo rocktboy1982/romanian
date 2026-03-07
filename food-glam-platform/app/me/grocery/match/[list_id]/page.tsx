@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import GroceryMatchClient from '@/components/pages/grocery-match-client'
 
 export const metadata: Metadata = {
-  title: 'Match Products | Food Glam',
+  title: 'Potrivire Produse | MareChef.ro',
 }
 
 export default async function GroceryMatchPage({ params }: { params: Promise<{ list_id: string }> }) {
