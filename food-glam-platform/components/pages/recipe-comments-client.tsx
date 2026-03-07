@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
+import { sanitizeText } from '@/lib/sanitize'
 
 interface MockUser {
   id: string
@@ -263,7 +264,7 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
                 <span className="text-xs" style={{ color: '#555' }}>·</span>
                 <span className="text-xs" style={{ color: '#666' }}>{timeAgo(comment.createdAt)}</span>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: '#444' }}>{comment.text}</p>
+               <p className="text-sm leading-relaxed" style={{ color: '#444' }}>{sanitizeText(comment.text)}</p>
             </div>
           </div>
         ))}

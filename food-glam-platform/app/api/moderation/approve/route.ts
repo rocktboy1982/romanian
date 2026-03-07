@@ -10,6 +10,17 @@ interface ModerationPayload {
 
 export async function POST(req: NextRequest): Promise<NextResponse<SubmissionResponse>> {
   try {
+    // Auth + moderator check
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 });
+    }
+    const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1);
+    if (!roles || roles.length === 0) {
+      return NextResponse.json({ success: false, message: 'Moderator access required' }, { status: 403 });
+    }
+
     const body: ModerationPayload = await req.json();
 
     if (!body.recipeId) {
@@ -26,9 +37,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<SubmissionRes
       );
     }
 
-    const supabase = createServerSupabaseClient();
-
-    // Verify the post exists
+    // Verify the post exists (reuse supabase client from auth check above)
     const { data: post, error: fetchError } = await supabase
       .from('posts')
       .select('id, status')

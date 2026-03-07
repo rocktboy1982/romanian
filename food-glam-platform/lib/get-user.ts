@@ -23,12 +23,14 @@ export async function getRequestUser(
   const { data: { user } } = await supabase.auth.getUser()
   if (user) return { id: user.id, email: user.email ?? '' }
 
-  // 2. Fallback: mock user id sent as a header by the client
-  const mockId = req.headers.get('x-mock-user-id')
-  if (mockId && mockId !== 'anonymous') {
-    // Normalize non-UUID mock ids to the default Chef Anna profile
-    const id = UUID_RE.test(mockId) ? mockId : DEFAULT_MOCK_USER_ID
-    return { id, email: 'mock@local' }
+  // 2. Fallback: mock user id sent as a header by the client (DEV ONLY)
+  if (process.env.NODE_ENV === 'development') {
+    const mockId = req.headers.get('x-mock-user-id')
+    if (mockId && mockId !== 'anonymous') {
+      // Normalize non-UUID mock ids to the default Chef Anna profile
+      const id = UUID_RE.test(mockId) ? mockId : DEFAULT_MOCK_USER_ID
+      return { id, email: 'mock@local' }
+    }
   }
 
   return null

@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server'
 import { MOCK_RECIPES } from '@/lib/mock-data'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+async function requireAdmin(req: Request) {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).eq('role', 'admin').limit(1)
+  if (!roles || roles.length === 0) return null
+  return user
+}
 
 // In-memory store for demo (survives hot-reload, resets on server restart)
 type ContentStatus = 'active' | 'pending' | 'rejected' | 'removed'
@@ -25,6 +35,9 @@ function buildContent() {
 }
 
 export async function GET(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const q = searchParams.get('q')?.toLowerCase()
@@ -37,6 +50,9 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+
   const body = await req.json() as { id: string | string[]; status: ContentStatus }
   const ids = Array.isArray(body.id) ? body.id : [body.id]
   ids.forEach(id => { statusOverrides[id] = body.status })
@@ -44,6 +60,9 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+
   const body = await req.json() as { id: string | string[] }
   const ids = Array.isArray(body.id) ? body.id : [body.id]
   ids.forEach(id => { statusOverrides[id] = 'removed' })

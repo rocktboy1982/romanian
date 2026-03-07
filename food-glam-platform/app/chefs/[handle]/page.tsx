@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
+import { sanitizeText, sanitizeUrl } from '@/lib/sanitize'
 import type { ChefProfile, ChefBlogPost } from '@/lib/mock-chef-data'
 
 interface MockUser {
@@ -93,16 +94,16 @@ export default function ChefPage() {
       .then(data => {
         if (data.error) { setLoading(false); return }
         const base: ChefProfile = data.profile
-        try {
-          const raw = localStorage.getItem(`chef_profile_override_${handle}`)
-          if (raw) {
-            const ov = JSON.parse(raw)
-            if (ov.display_name) base.display_name = ov.display_name
-            if (ov.bio)          base.bio          = ov.bio
-            if (ov.avatar_url)   base.avatar_url   = ov.avatar_url
-            if (ov.banner_url)   base.banner_url   = ov.banner_url
-          }
-        } catch { /* ignore */ }
+         try {
+           const raw = localStorage.getItem(`chef_profile_override_${handle}`)
+           if (raw) {
+             const ov = JSON.parse(raw)
+             if (ov.display_name) base.display_name = sanitizeText(ov.display_name)
+             if (ov.bio)          base.bio          = sanitizeText(ov.bio)
+             if (ov.avatar_url)   base.avatar_url   = sanitizeUrl(ov.avatar_url)
+             if (ov.banner_url)   base.banner_url   = sanitizeUrl(ov.banner_url)
+           }
+         } catch { /* ignore */ }
         setProfile(base)
         setPosts(data.posts)
         setIsFollowing(data.profile.is_following)
@@ -124,20 +125,20 @@ export default function ChefPage() {
     }
     // Re-apply profile override once localStorage is accessible
     setProfile(prev => {
-      if (!prev) return prev
-      try {
-        const raw = localStorage.getItem(`chef_profile_override_${handle}`)
-        if (!raw) return prev
-        const ov = JSON.parse(raw)
-        return {
-          ...prev,
-          ...(ov.display_name && { display_name: ov.display_name }),
-          ...(ov.bio          && { bio:          ov.bio }),
-          ...(ov.avatar_url   && { avatar_url:   ov.avatar_url }),
-          ...(ov.banner_url   && { banner_url:   ov.banner_url }),
-        }
-      } catch { return prev }
-    })
+       if (!prev) return prev
+       try {
+         const raw = localStorage.getItem(`chef_profile_override_${handle}`)
+         if (!raw) return prev
+         const ov = JSON.parse(raw)
+         return {
+           ...prev,
+           ...(ov.display_name && { display_name: sanitizeText(ov.display_name) }),
+           ...(ov.bio          && { bio:          sanitizeText(ov.bio) }),
+           ...(ov.avatar_url   && { avatar_url:   sanitizeUrl(ov.avatar_url) }),
+           ...(ov.banner_url   && { banner_url:   sanitizeUrl(ov.banner_url) }),
+         }
+       } catch { return prev }
+     })
   }, [handle, hydrated])
 
   /* ── loading skeleton ── */
@@ -256,7 +257,7 @@ export default function ChefPage() {
         </div>
 
         {/* bio */}
-        <p className="text-sm leading-relaxed mb-4" style={{ color: '#555' }}>{profile.bio}</p>
+        <p className="text-sm leading-relaxed mb-4" style={{ color: '#555' }}>{sanitizeText(profile.bio)}</p>
 
         {/* stats row */}
         <div className="flex gap-6 mb-6 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
@@ -381,7 +382,7 @@ export default function ChefPage() {
                                 )}
 
                                 <p className="text-sm leading-relaxed mb-3" style={{ color: '#333', whiteSpace: 'pre-wrap' }}>
-                                  {item.data.body}
+                                  {sanitizeText(item.data.body)}
                                 </p>
 
                                 {item.data.attachedRecipe && (
@@ -402,7 +403,7 @@ export default function ChefPage() {
                                       </span>
                                       <div className="flex gap-3 items-start pr-16">
                                         {item.data.sponsoredProduct.imageUrl && (
-                                          <img src={item.data.sponsoredProduct.imageUrl} alt="" className="w-16 h-16 rounded flex-shrink-0 object-cover" onError={() => {}} />
+                                          <img src={sanitizeUrl(item.data.sponsoredProduct.imageUrl)} alt="" className="w-16 h-16 rounded flex-shrink-0 object-cover" onError={() => {}} />
                                         )}
                                         <div className="flex-1 min-w-0">
                                           <p className="font-semibold text-sm" style={{ color: '#111' }}>{item.data.sponsoredProduct.name}</p>
@@ -411,7 +412,7 @@ export default function ChefPage() {
                                       </div>
                                     </div>
                                     <a
-                                      href={item.data.sponsoredProduct.linkUrl}
+                                      href={sanitizeUrl(item.data.sponsoredProduct.linkUrl)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="inline-block text-xs font-semibold px-3 py-1.5 rounded-full transition-all hover:opacity-80"

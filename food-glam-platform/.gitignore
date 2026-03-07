@@ -1,1 +1,40 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# environment variables
+.env
+.env.*
+!.env.example
+
+# build
+dist/
+build/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# misc
+.DS_Store
+*.pem
 nul
+response.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Supabase local
+supabase/.temp/
+
+# translation progress (local state)
+scripts/.translate-progress.json
+scripts/translate-output.log
+scripts/translate-error.log

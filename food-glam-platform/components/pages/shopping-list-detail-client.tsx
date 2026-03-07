@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { freshfulReferralUrl } from '@/lib/affiliate'
+import { sanitizeUrl } from '@/lib/sanitize'
 import IngredientLink from '@/components/ui/ingredient-link'
 
 function getUserId() {
@@ -231,26 +232,29 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     }
   }
 
-  const handleShare = async () => {
-    setSharing(true)
-    try {
-      const res = await fetch('/api/shopping-lists/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
-        body: JSON.stringify({ id: listId }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const fullUrl = data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url
-        setShareUrl(fullUrl)
-        setShowShareModal(true)
-      }
-    } catch {
-      // ignore
-    } finally {
-      setSharing(false)
-    }
-  }
+   const handleShare = async () => {
+     setSharing(true)
+     try {
+       const res = await fetch('/api/shopping-lists/share', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+         body: JSON.stringify({ id: listId }),
+       })
+       if (res.ok) {
+         const data = await res.json()
+         const fullUrl = data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url
+         const validatedUrl = sanitizeUrl(fullUrl)
+         if (validatedUrl !== '#') {
+           setShareUrl(validatedUrl)
+           setShowShareModal(true)
+         }
+       }
+     } catch {
+       // ignore
+     } finally {
+       setSharing(false)
+     }
+   }
 
   const handleCopyShareLink = async () => {
     if (!shareUrl) return

@@ -22,7 +22,8 @@ export async function GET(req: Request) {
       .eq('status', 'active')
 
     if (q) {
-      query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
+      const safeQ = q.replace(/[%_]/g, '')
+      query = query.or(`title.ilike.%${safeQ}%,summary.ilike.%${safeQ}%`)
     }
 
     query = query.order('quality_score', { ascending: false, nullsFirst: false }).limit(limit)
@@ -30,7 +31,8 @@ export async function GET(req: Request) {
     const { data: posts, error } = await query
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('Planner search DB error:', error.message)
+      return NextResponse.json({ error: 'Search failed' }, { status: 500 })
     }
 
     const recipes = (posts ?? []).map(post => {

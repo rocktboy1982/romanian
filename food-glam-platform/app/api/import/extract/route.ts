@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { fetchAndExtractJsonLd } from '@/lib/jsonld'
+import { rateLimit } from '@/lib/rate-limit'
 
 /**
  * POST /api/import/extract
@@ -14,6 +15,16 @@ import { fetchAndExtractJsonLd } from '@/lib/jsonld'
  */
 export async function POST(req: Request) {
   try {
+    // Rate limit: 10 extractions per hour per IP
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const { success } = rateLimit(`import:extract:${ip}`, 10, 60 * 60 * 1000)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
     const { url } = body
 
@@ -36,15 +47,23 @@ export async function POST(req: Request) {
 
     // Block local/private URLs for security (SSRF prevention)
     const hostname = parsedUrl.hostname.toLowerCase()
-    if (
-      hostname === 'localhost' ||
-      hostname.endsWith('.local') ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      /^\d+\.\d+\.\d+\.\d+$/.test(hostname) || // IPv4
-      hostname.includes(':') // IPv6
-    ) {
-      return NextResponse.json({ error: 'Cannot import from local URLs' }, { status: 400 })
+    const isPrivateIP = (h: string) => {
+      if (h === 'localhost' || h.endsWith('.local') || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0') return true
+      if (h.includes(':')) return true // IPv6
+      const parts = h.split('.').map(Number)
+      if (parts.length !== 4 || parts.some(isNaN)) return false
+      // 10.0.0.0/8
+      if (parts[0] === 10) return true
+      // 172.16.0.0/12
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
+      // 192.168.0.0/16
+      if (parts[0] === 192 && parts[1] === 168) return true
+      // 169.254.0.0/16 (link-local)
+      if (parts[0] === 169 && parts[1] === 254) return true
+      return false
+    }
+    if (isPrivateIP(hostname)) {
+      return NextResponse.json({ error: 'Cannot import from local or private URLs' }, { status: 400 })
     }
 
     // Extract recipe data

@@ -7,8 +7,8 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ isModerator: false })
 
-    const { data: roles } = await supabase.from('app_roles').select('*').eq('user_id', user.id).limit(1)
-    const isModerator = (roles && roles.length > 0)
+    const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)
+    const isModerator = (roles && roles.length > 0 && ['moderator', 'admin'].includes(roles[0].role))
     return NextResponse.json({ isModerator })
   } catch {
     return NextResponse.json({ isModerator: false })

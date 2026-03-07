@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const REPORT_THRESHOLD = 20
 
@@ -25,6 +26,16 @@ export const REPORT_STORE = new Map<string, ReportRecord>()
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 10 reports per hour per IP
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const { success } = rateLimit(`report:${ip}`, 10, 60 * 60 * 1000)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
     const { contentId, contentType, contentTitle, reason, detail, reporterHandle } = body
 

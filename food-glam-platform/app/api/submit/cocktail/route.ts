@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MOCK_COCKTAILS } from '@/lib/mock-data'
+import { rateLimit } from '@/lib/rate-limit'
 import type { MockCocktail } from '@/lib/mock-data'
 
 function slugify(s: string) {
@@ -8,6 +9,16 @@ function slugify(s: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 submissions per hour per IP
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const { success } = rateLimit(`submit:cocktail:${ip}`, 5, 60 * 60 * 1000)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
 
     const {

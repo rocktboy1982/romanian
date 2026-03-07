@@ -17,10 +17,9 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    // simple moderator check
-    const { data: roles } = await supabase.from('app_roles').select('*').eq('user_id', user.id).limit(1)
-    const isModerator = (roles && roles.length > 0)
-    if (!isModerator) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // moderator role check — verify actual role value
+    const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)
+    if (!roles || roles.length === 0) return NextResponse.json({ error: 'Moderator access required' }, { status: 403 })
 
     if (action === 'approve') {
       // fetch submission

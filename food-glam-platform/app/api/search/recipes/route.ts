@@ -158,10 +158,12 @@ export async function GET(req: NextRequest) {
         if (!ftsErr && ftsIds && ftsIds.length > 0) {
           query = query.in('id', (ftsIds as { id: string }[]).map((r) => r.id))
         } else {
-          query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
+          const safeQ = q.replace(/[%_]/g, '')
+          query = query.or(`title.ilike.%${safeQ}%,summary.ilike.%${safeQ}%`)
         }
       } catch {
-        query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
+        const safeQ = q.replace(/[%_]/g, '')
+        query = query.or(`title.ilike.%${safeQ}%,summary.ilike.%${safeQ}%`)
       }
     }
 

@@ -24,6 +24,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'image field required' }, { status: 400 })
     }
 
+    // Validate file size (max 5MB)
+    const MAX_SIZE = 5 * 1024 * 1024
+    if (imageFile.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'Image too large. Maximum size is 5MB.' }, { status: 400 })
+    }
+
+    // Validate MIME type
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!ALLOWED_TYPES.includes(imageFile.type)) {
+      return NextResponse.json({ error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF.' }, { status: 400 })
+    }
+
     // Convert to base64
     const arrayBuffer = await imageFile.arrayBuffer()
     const base64 = Buffer.from(arrayBuffer).toString('base64')

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateRecipe } from '@/lib/recipe-validator';
+import { rateLimit } from '@/lib/rate-limit';
 import { SubmissionResponse, RecipeSubmission } from '@/types/submission';
 
 // In-memory store for dev (resets on server restart)
@@ -16,6 +17,16 @@ function hasSubmittedTodayDev(): boolean {
 
 export async function POST(req: NextRequest): Promise<NextResponse<SubmissionResponse>> {
   try {
+    // Rate limit: 5 submissions per hour per IP
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { success } = rateLimit(`submit:recipe:${ip}`, 5, 60 * 60 * 1000);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
 
     // Rate limit: 1 post per day

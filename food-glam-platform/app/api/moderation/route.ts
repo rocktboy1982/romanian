@@ -6,8 +6,8 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json([], { status: 200 })
 
-  // For now, simple role check: assume moderators have app_roles row (simple approach)
-  const { data: roles } = await supabase.from('app_roles').select('*').eq('user_id', user.id).limit(1)
+  // Moderator role check — verify actual role value
+  const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)
   const isModerator = (roles && roles.length > 0)
   if (!isModerator) return NextResponse.json([], { status: 200 })
 
@@ -26,9 +26,8 @@ export async function PUT(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  const { data: roles } = await supabase.from('app_roles').select('*').eq('user_id', user.id).limit(1)
-  const isModerator = (roles && roles.length > 0)
-  if (!isModerator) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { data: putRoles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)
+  if (!putRoles || putRoles.length === 0) return NextResponse.json({ error: 'Moderator access required' }, { status: 403 })
 
   const { data, error } = await supabase.from('posts').update({ status }).in('id', ids).select()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { sanitizeUrl } from '@/lib/sanitize'
 
 type ShoppingList = {
   id: string
@@ -79,25 +80,27 @@ export default function ShoppingListsClient() {
     }
   }
 
-  const handleShare = async (id: string) => {
-    try {
-      const res = await fetch('/api/shopping-lists/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
-        body: JSON.stringify({ id }),
-      })
-      if (!res.ok) return
-      const data = await res.json()
-      if (data.url) {
-        await navigator.clipboard.writeText(
-          data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url
-        )
-        alert('Share link copied to clipboard!')
-      }
-    } catch {
-      // ignore
-    }
-  }
+   const handleShare = async (id: string) => {
+     try {
+       const res = await fetch('/api/shopping-lists/share', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+         body: JSON.stringify({ id }),
+       })
+       if (!res.ok) return
+       const data = await res.json()
+       if (data.url) {
+         const url = data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url
+         const validatedUrl = sanitizeUrl(url)
+         if (validatedUrl !== '#') {
+           await navigator.clipboard.writeText(validatedUrl)
+           alert('Share link copied to clipboard!')
+         }
+       }
+     } catch {
+       // ignore
+     }
+   }
 
   const getItemCount = (list: ShoppingList): number => {
     if (!list.shopping_list_items || list.shopping_list_items.length === 0) return 0

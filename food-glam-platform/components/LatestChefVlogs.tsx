@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
+import { sanitizeText } from '@/lib/sanitize'
 import {
   MOCK_CHEF_POSTS,
   MOCK_CHEF_PROFILES,
@@ -116,19 +117,19 @@ export default function LatestChefVlogs() {
                 </span>
                 {chef && <TierStar tier={chef.tier} size={10} />}
               </div>
-              {/* Post title */}
-              <p
-                className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-white transition-colors mb-1"
-                style={{ color: '#ddd' }}
-              >
-                {post.title}
-              </p>
-              {/* Description snippet */}
-              {post.description && (
-                <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: '#555' }}>
-                  {post.description}
-                </p>
-              )}
+               {/* Post title */}
+               <p
+                 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-white transition-colors mb-1"
+                 style={{ color: '#ddd' }}
+               >
+                 {sanitizeText(post.title)}
+               </p>
+               {/* Description snippet */}
+               {post.description && (
+                 <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: '#555' }}>
+                   {sanitizeText(post.description)}
+                 </p>
+               )}
               {/* Meta row */}
               <div className="flex items-center gap-2 mt-1">
                 <span
