@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
+import {
+  extractIngredientsFromJson,
+  normalizeIngredientKey,
+  type RecipeIngredient,
+} from '@/lib/ingredient-normalizer'
 
 // ── Types ──
 interface MealEntry {
@@ -16,12 +21,6 @@ interface MealEntry {
 interface MealsData {
   _meta: { start_date?: string | null; end_date?: string | null }
   entries: MealEntry[]
-}
-
-interface RecipeIngredient {
-  name: string
-  amount?: number
-  unit?: string
 }
 
 interface ShoppingListItem {
@@ -93,8 +92,8 @@ export async function GET(
     const baseServings = (recipeJson.servings as number) || (recipeJson.yield as number) || 1
     const multiplier = entry.servings / baseServings
 
-    // Extract ingredients from recipe_json
-    const ingredients = extractIngredients(recipeJson)
+     // Extract ingredients from recipe_json
+     const ingredients = extractIngredientsFromJson(recipeJson)
 
     for (const ing of ingredients) {
       const key = normalizeIngredientKey(ing.name, ing.unit || '')
@@ -121,62 +120,4 @@ export async function GET(
   )
 
   return NextResponse.json({ items, entry_count: entries.length })
-}
-
-/** Extract ingredients array from various recipe_json formats */
-function extractIngredients(recipeJson: Record<string, unknown>): RecipeIngredient[] {
-  // Try common recipe JSON structures
-  const candidates = [
-    recipeJson.ingredients,
-    recipeJson.recipeIngredient,
-    (recipeJson.recipe as Record<string, unknown>)?.ingredients,
-  ]
-
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate.map(item => {
-        if (typeof item === 'string') {
-          return parseIngredientString(item)
-        }
-        if (typeof item === 'object' && item !== null) {
-          const obj = item as Record<string, unknown>
-          return {
-            name: String(obj.name || obj.ingredient || obj.text || ''),
-            amount: Number(obj.amount || obj.quantity || 0) || 0,
-            unit: String(obj.unit || obj.unitOfMeasure || ''),
-          }
-        }
-        return { name: String(item), amount: 0, unit: '' }
-      }).filter(i => i.name.length > 0)
-    }
-  }
-
-  return []
-}
-
-/** Best-effort parse of "2 cups flour" style strings */
-function parseIngredientString(str: string): RecipeIngredient {
-  const match = str.match(/^([\d./]+)\s*([\w]+)?\s+(.+)$/)
-  if (match) {
-    const amount = parseFraction(match[1])
-    return { name: match[3].trim(), amount, unit: match[2] || '' }
-  }
-  return { name: str.trim(), amount: 0, unit: '' }
-}
-
-/** Parse fraction strings like "1/2" or "1" into a number */
-function parseFraction(str: string): number {
-  if (str.includes('/')) {
-    const parts = str.split('/')
-    const num = parseFloat(parts[0])
-    const den = parseFloat(parts[1])
-    if (den === 0) return 0
-    return num / den
-  }
-  return parseFloat(str) || 0
-}
-
-/** Normalize key for merging: lowercase name + unit */
-function normalizeIngredientKey(name: string, unit: string): string {
-  return `${name.toLowerCase().trim()}|${unit.toLowerCase().trim()}`
 }

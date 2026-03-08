@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MOCK_COCKTAILS } from '@/lib/mock-data'
 import { rateLimit } from '@/lib/rate-limit'
+import { slugify } from '@/lib/slug'
 import type { MockCocktail } from '@/lib/mock-data'
-
-function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 80)
-}
 
 export async function POST(req: NextRequest) {
   try {

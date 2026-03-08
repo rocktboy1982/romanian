@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MOCK_COMMUNITY_THREADS } from '@/lib/mock-data'
+import { timeAgo } from '@/lib/time-utils'
 
 interface CommunityThread {
   id: string
@@ -11,16 +12,6 @@ interface CommunityThread {
   replies: number
   views: number
   created_at: string
-}
-
-function timeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `acum ${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `acum ${hours}h`
-  const days = Math.floor(hours / 24)
-  return `acum ${days}z`
 }
 
 export default function CommunitySection() {

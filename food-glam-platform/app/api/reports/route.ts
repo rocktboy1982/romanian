@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
-
-const ALLOWED_ENTITY_TYPES = ['post', 'thread', 'reply', 'profile'] as const
-const ALLOWED_CATEGORIES = ['spam', 'hate', 'harassment', 'copyright', 'misinfo', 'other'] as const
-
-type EntityType = typeof ALLOWED_ENTITY_TYPES[number]
-type Category = typeof ALLOWED_CATEGORIES[number]
-
-function isEntityType(v: unknown): v is EntityType {
-  return typeof v === 'string' && (ALLOWED_ENTITY_TYPES as readonly string[]).includes(v)
-}
-function isCategory(v: unknown): v is Category {
-  return typeof v === 'string' && (ALLOWED_CATEGORIES as readonly string[]).includes(v)
-}
+import { isEntityType, isReportCategory } from '@/lib/type-guards'
 
 /* ── GET: Fetch reports (moderator) ──────────────────────── */
 export async function GET(req: Request) {
@@ -56,9 +44,9 @@ export async function POST(req: Request) {
     if (!entity_id || typeof entity_id !== 'string') {
       return NextResponse.json({ error: 'entity_id is required' }, { status: 400 })
     }
-    if (!isCategory(category)) {
-      return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
-    }
+     if (!isReportCategory(category)) {
+       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+     }
 
     const { data, error } = await supabase
       .from('reports')

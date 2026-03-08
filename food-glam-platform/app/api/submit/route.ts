@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { isLocalSupabase } from '@/lib/supabase-utils'
+import { slugify } from '@/lib/slug'
 
 const ALLOWED_TYPES = ['recipe', 'short', 'image', 'video'] as const
 const ALLOWED_STATUSES = ['draft', 'active'] as const
 const MAX_POSTS_PER_DAY = 1
-
-function isLocalSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  return url.includes('127.0.0.1') || url.includes('localhost') || !url
-}
 
 // In-memory fallback store for local dev (resets on server restart)
 const DEV_POSTS: Record<string, unknown>[] = []
@@ -45,7 +42,7 @@ export async function POST(req: Request) {
         )
       }
 
-      const baseSlug = (slug || title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).slice(0, 80)
+      const baseSlug = slugify(slug || title.trim())
       const finalSlug = `${baseSlug}-${Date.now().toString(36)}`
       const id = `dev-post-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
       const post = {
@@ -85,7 +82,7 @@ export async function POST(req: Request) {
       )
     }
     // Build slug (ensure unique by appending random suffix)
-    const baseSlug = (slug || title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).slice(0, 80)
+    const baseSlug = slugify(slug || title.trim())
     const finalSlug = `${baseSlug}-${Date.now().toString(36)}`
     const insert: Record<string, unknown> = {
       title: title.trim(),

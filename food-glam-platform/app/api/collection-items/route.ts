@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { isLocalSupabase } from '@/lib/supabase-utils'
 
 // ── In-memory fallback store (dev only, resets on restart) ───────────────────
 interface MemItem { collection_id: string; post_id: string; user_id: string; created_at: string }
 const DEV_ITEMS: MemItem[] = []
 const DEV_COOKBOOK_ID = 'dev-cookbook-001'
-
-function isLocalSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  return url.includes('127.0.0.1') || url.includes('localhost') || !url
-}
 
 // ── GET /api/collection-items ────────────────────────────────────────────────
 // Returns all saved items for the current user's cookbook, joined with post data.
