@@ -142,6 +142,60 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
   ['busuioc', 'basil'],
   ['oregano', 'oregano'],
   ['cimbru', 'thyme'],
+  ['chimen', 'cumin'],
+  ['boia', 'paprika'],
+  ['boia de ardei', 'paprika'],
+  ['boia dulce', 'sweet paprika'],
+  ['boia iute', 'hot paprika'],
+  ['piper negru', 'black pepper'],
+  ['piper alb', 'white pepper'],
+  ['ulei vegetal', 'vegetable oil'],
+  ['ulei de cocos', 'coconut oil'],
+  ['ulei de palmier', 'palm oil'],
+  ['faina universala', 'all-purpose flour'],
+  ['suc de lamaie', 'lemon juice'],
+  ['lapte de cocos', 'coconut milk'],
+  ['lapte integral', 'whole milk'],
+  ['praf de copt', 'baking powder'],
+  ['bicarbonat de sodiu', 'baking soda'],
+  ['extract de vanilie', 'vanilla extract'],
+  ['sos de soia', 'soy sauce'],
+  ['pasta de tomate', 'tomato paste'],
+  ['pasta de rosii', 'tomato paste'],
+  ['coriandru', 'coriander'],
+  ['ghimbir', 'ginger'],
+  ['nucsoara', 'nutmeg'],
+  ['dafin', 'bay leaf'],
+  ['frunze de dafin', 'bay leaves'],
+  ['foi de dafin', 'bay leaves'],
+  ['amidon de porumb', 'cornstarch'],
+  ['pesmet', 'breadcrumbs'],
+  ['smantana groasa', 'heavy cream'],
+  ['smantana dulce', 'cream'],
+  ['orez cu bob lung', 'long grain rice'],
+  ['carne de vita tocata', 'ground beef'],
+  ['miel', 'lamb'],
+  ['bulion de vita', 'beef broth'],
+  ['bulion de carne', 'beef broth'],
+  ['bulion de legume', 'vegetable broth'],
+  ['bulion de pui', 'chicken broth'],
+  ['apa', 'water'],
+  ['cepe', 'onion'],
+  ['patlagini', 'plantain'],
+  ['bacon', 'bacon'],
+  ['migdale', 'almonds'],
+  ['fistic', 'pistachios'],
+  ['seminte de mac', 'poppy seeds'],
+  ['seminte de susan', 'sesame seeds'],
+  ['seminte de in', 'flax seeds'],
+  ['cardamom', 'cardamom'],
+  ['turmeric', 'turmeric'],
+  ['curcuma', 'turmeric'],
+  ['drojdie', 'yeast'],
+  ['drojdie uscata', 'dry yeast'],
+  ['ghee', 'ghee'],
+  ['patrunjel proaspat', 'fresh parsley'],
+  ['apa de trandafiri', 'rose water'],
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FRENCH (fr)
@@ -167,7 +221,7 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
   ['jambon', 'ham'],
   ['lait', 'milk'],
   ['lentilles', 'lentils'],
-  ['miel', 'honey'],
+  ['miel fr', 'honey'],    // "miel" in Romanian = lamb; French duplicate avoided
   ['oeuf', 'egg'],
   ['oeufs', 'eggs'],
   ['oignon', 'onion'],
@@ -395,7 +449,7 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
   ['möhren', 'carrot'],
   ['öl', 'oil'],
   ['olivenöl', 'olive oil'],
-  ['paprika', 'bell pepper'],
+  ['paprika de', 'bell pepper'],   // DE "Paprika" = bell pepper; generic "paprika" = spice
   ['rote paprika', 'red pepper'],
   ['grüne paprika', 'green pepper'],
   ['petersilie', 'parsley'],
@@ -1256,7 +1310,7 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
   // Listed once here to avoid TypeScript duplicate-key errors.
   // ═══════════════════════════════════════════════════════════════════════════
   ['tomate', 'tomato'],          // RO · FR · ES · IT · DE · PT
-  ['miel', 'honey'],             // FR · ES
+  // ['miel', 'honey'],          // FR · ES — conflicts with RO "miel" = lamb; RO wins (Romanian site)
   ['patata', 'potato'],          // ES · IT · EL
   ['farina', 'flour'],           // IT (also farine FR — different key)
   ['pollo', 'chicken'],          // ES · IT
@@ -1266,7 +1320,7 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
   ['yogurt', 'yogurt'],          // EN · various
   ['oregano', 'oregano'],        // EN · various
   ['cilantro', 'cilantro'],      // EN · ES
-  ['salsa', 'sauce'],            // ES · IT overlap (context-dependent — using generic)
+  // ['salsa', 'sauce'],         // ES · IT overlap — conflicts with IT "salsa" = parsley
   ['paprika', 'paprika'],        // EN cooking term (spice, not bell pepper)
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1319,8 +1373,10 @@ export const INGREDIENT_ALIASES: Record<string, string> = buildAliases([
  *   expandSearchTerms("hühnchen")        → ["hühnchen","chicken"]
  */
 export function expandSearchTerms(query: string): string[] {
-  const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  const expanded = new Set<string>(tokens);
+  const raw = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  // Strip diacritics so "măsline" matches "masline" in dictionary
+  const tokens = raw.map(t => stripDiacritics(t));
+  const expanded = new Set<string>([...raw, ...tokens]);
 
   // 1. Try full phrase
   const fullPhrase = tokens.join(' ');
@@ -1354,11 +1410,29 @@ export function expandSearchTerms(query: string): string[] {
 }
 
 /**
+ * Strip Unicode diacritics/accents from a string.
+ * "făină" → "faina", "măsline" → "masline", "șofran" → "sofran"
+ */
+function stripDiacritics(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    // Romanian cedilla variants not caught by NFD decomposition
+    .replace(/ț/g, 't').replace(/Ț/g, 'T')
+    .replace(/ș/g, 's').replace(/Ș/g, 'S')
+}
+
+/**
  * Resolve a single ingredient name to its English canonical.
  * Falls back to the original if no alias found.
  * Used when normalising shopping list ingredients from foreign-language recipes.
+ *
+ * Strips diacritics before lookup so "ulei de măsline" matches "ulei de masline".
  */
 export function resolveIngredientName(name: string): string {
-  const lower = name.toLowerCase().trim();
-  return INGREDIENT_ALIASES[lower] ?? name;
+  const lower = name.toLowerCase().trim()
+  // Try exact match first
+  const exact = INGREDIENT_ALIASES[lower]
+  if (exact) return exact
+  // Try with diacritics stripped (recipes use ă/â/î/ș/ț, dictionary uses ASCII)
+  const stripped = stripDiacritics(lower)
+  return INGREDIENT_ALIASES[stripped] ?? name
 }

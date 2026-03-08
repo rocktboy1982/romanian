@@ -132,7 +132,7 @@ export default function MealPlanShoppingListPage() {
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
             <span>
-              {checkedCount} of {totalCount} items checked
+              {checkedCount} din {totalCount} bifate
             </span>
             <span>{progress}%</span>
           </div>
@@ -168,62 +168,85 @@ export default function MealPlanShoppingListPage() {
         </Card>
       )}
 
-      {/* Shopping list items */}
-      {!loading && items.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center justify-between">
-              <span>
-                {totalCount} ingredient{totalCount !== 1 ? "e" : ""} din{" "}
-                {entryCount} rețet{entryCount !== 1 ? "e" : "ă"}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y divide-border">
-              {items.map(item => {
-                const isChecked = checked.has(item.name)
-                return (
-                  <li key={item.name} className="py-2.5">
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleItem(item.name)}
-                        className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-ring shrink-0"
-                      />
-                      <div className={`flex-1 min-w-0 transition-opacity ${isChecked ? "opacity-40" : ""}`}>
-                        <div className="flex items-baseline gap-2">
-                          <span
-                            className={`text-sm font-medium ${
-                              isChecked
-                                ? "line-through text-muted-foreground"
-                                : "text-foreground"
-                            }`}
-                          >
-                            {item.name}
-                          </span>
-                          {item.amount > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              {formatAmount(item.amount)}{" "}
-                              {item.unit}
-                            </span>
-                          )}
-                        </div>
-                        {item.recipe_titles.length > 0 && (
-                          <div className="text-[10px] text-muted-foreground mt-0.5">
-                            {item.recipe_titles.join(", ")}
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                  </li>
-                )
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      {/* Shopping list items — grouped by category */}
+      {!loading && items.length > 0 && (() => {
+        // Group items by category while preserving sort order
+        const groups: { category: string; items: ShoppingListItem[] }[] = []
+        let currentCategory = ''
+        for (const item of items) {
+          const cat = item.category || 'Altele'
+          if (cat !== currentCategory) {
+            currentCategory = cat
+            groups.push({ category: cat, items: [] })
+          }
+          groups[groups.length - 1].items.push(item)
+        }
+
+        return (
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              {totalCount} ingredient{totalCount !== 1 ? "e" : ""} din{" "}
+              {entryCount} rețet{entryCount !== 1 ? "e" : "ă"}
+            </div>
+            {groups.map(group => (
+              <Card key={group.category}>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wide text-primary">
+                    {group.category}
+                    <span className="text-xs font-normal text-muted-foreground ml-2">
+                      ({group.items.length})
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-3">
+                  <ul className="divide-y divide-border">
+                    {group.items.map(item => {
+                      const itemKey = `${item.name}|${item.unit}`
+                      const isChecked = checked.has(itemKey)
+                      return (
+                        <li key={itemKey} className="py-2.5">
+                          <label className="flex items-start gap-3 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleItem(itemKey)}
+                              className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-ring shrink-0"
+                            />
+                            <div className={`flex-1 min-w-0 transition-opacity ${isChecked ? "opacity-40" : ""}`}>
+                              <div className="flex items-baseline gap-2">
+                                <span
+                                  className={`text-sm font-medium ${
+                                    isChecked
+                                      ? "line-through text-muted-foreground"
+                                      : "text-foreground"
+                                  }`}
+                                >
+                                  {item.name}
+                                </span>
+                                {item.amount > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatAmount(item.amount)}{" "}
+                                    {item.unit}
+                                  </span>
+                                )}
+                              </div>
+                              {item.recipe_titles.length > 0 && (
+                                <div className="text-[10px] text-muted-foreground mt-0.5">
+                                  {item.recipe_titles.join(", ")}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
+      })()}
 
       {/* Actions */}
       {!loading && items.length > 0 && (

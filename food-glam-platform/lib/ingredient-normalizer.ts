@@ -5,6 +5,121 @@ import { resolveIngredientName } from '@/lib/ingredient-aliases'
  * Ingredient Normalizer for Shopping Lists
  */
 
+// ── Ingredient Categories (shopping aisle grouping) ─────────────────────────
+// Maps English canonical ingredient names to Romanian category labels.
+// Variants like "red onion", "yellow onion" all map to the same category
+// but remain as separate line items in the shopping list.
+const CATEGORY_MAP: Record<string, string> = {
+  // Legume / Vegetables
+  'onion': 'Legume', 'red onion': 'Legume', 'scallion': 'Legume', 'leek': 'Legume',
+  'garlic': 'Legume', 'potato': 'Legume', 'sweet potato': 'Legume',
+  'tomato': 'Legume', 'cucumber': 'Legume', 'bell pepper': 'Legume',
+  'red pepper': 'Legume', 'green pepper': 'Legume', 'chili pepper': 'Legume',
+  'carrot': 'Legume', 'celery': 'Legume', 'spinach': 'Legume',
+  'cabbage': 'Legume', 'red cabbage': 'Legume', 'cauliflower': 'Legume',
+  'broccoli': 'Legume', 'zucchini': 'Legume', 'eggplant': 'Legume',
+  'pumpkin': 'Legume', 'mushroom': 'Legume', 'corn': 'Legume',
+  'peas': 'Legume', 'green beans': 'Legume', 'beans': 'Legume',
+  'lentils': 'Legume', 'beet': 'Legume', 'asparagus': 'Legume',
+  'fennel': 'Legume', 'lettuce': 'Legume', 'arugula': 'Legume',
+  'bok choy': 'Legume', 'artichoke': 'Legume', 'kohlrabi': 'Legume',
+  'brussels sprouts': 'Legume', 'chard': 'Legume', 'collard greens': 'Legume',
+  'snow peas': 'Legume', 'sugar snap peas': 'Legume', 'plantain': 'Legume',
+  'chickpeas': 'Legume', 'turnip': 'Legume', 'rutabaga': 'Legume',
+
+  // Fructe / Fruits
+  'apple': 'Fructe', 'pear': 'Fructe', 'banana': 'Fructe',
+  'orange': 'Fructe', 'lemon': 'Fructe', 'lime': 'Fructe',
+  'strawberry': 'Fructe', 'raspberry': 'Fructe', 'cherry': 'Fructe',
+  'peach': 'Fructe', 'grape': 'Fructe', 'mango': 'Fructe',
+  'pineapple': 'Fructe', 'watermelon': 'Fructe', 'melon': 'Fructe',
+  'avocado': 'Fructe', 'fig': 'Fructe', 'date': 'Fructe',
+  'pomegranate': 'Fructe', 'kiwi': 'Fructe', 'plum': 'Fructe',
+  'apricot': 'Fructe', 'coconut': 'Fructe', 'olive': 'Fructe',
+  'citrus': 'Fructe', 'blueberry': 'Fructe', 'cranberry': 'Fructe',
+
+  // Carne / Meat
+  'chicken': 'Carne', 'beef': 'Carne', 'pork': 'Carne', 'lamb': 'Carne',
+  'veal': 'Carne', 'turkey': 'Carne', 'duck': 'Carne',
+  'ground beef': 'Carne', 'ground meat': 'Carne', 'meat': 'Carne',
+  'sausage': 'Carne', 'bacon': 'Carne', 'ham': 'Carne',
+  'chicken breast': 'Carne', 'chicken paprikash': 'Carne',
+
+  // Pește și fructe de mare / Seafood
+  'fish': 'Pește', 'salmon': 'Pește', 'tuna': 'Pește', 'cod': 'Pește',
+  'shrimp': 'Pește', 'jumbo shrimp': 'Pește', 'sardine': 'Pește',
+  'smoked salmon': 'Pește', 'fish fillet': 'Pește',
+
+  // Lactate / Dairy
+  'milk': 'Lactate', 'whole milk': 'Lactate', 'cheese': 'Lactate',
+  'cottage cheese': 'Lactate', 'feta cheese': 'Lactate',
+  'butter': 'Lactate', 'cream': 'Lactate', 'heavy cream': 'Lactate',
+  'light cream': 'Lactate', 'sour cream': 'Lactate',
+  'yogurt': 'Lactate', 'whipped cream': 'Lactate',
+  'egg': 'Lactate', 'eggs': 'Lactate', 'egg white': 'Lactate',
+  'ghee': 'Lactate',
+
+  // Cereale și paste / Grains & Pasta
+  'rice': 'Cereale', 'long grain rice': 'Cereale', 'pasta': 'Cereale',
+  'flour': 'Cereale', 'all-purpose flour': 'Cereale',
+  'breadcrumbs': 'Cereale', 'groats': 'Cereale',
+  'cornstarch': 'Cereale', 'baking powder': 'Cereale',
+  'baking soda': 'Cereale', 'yeast': 'Cereale', 'dry yeast': 'Cereale',
+
+  // Condimente / Spices & Seasonings
+  'salt': 'Condimente', 'black pepper': 'Condimente', 'white pepper': 'Condimente',
+  'paprika': 'Condimente', 'sweet paprika': 'Condimente', 'hot paprika': 'Condimente',
+  'cumin': 'Condimente', 'cinnamon': 'Condimente', 'nutmeg': 'Condimente',
+  'cardamom': 'Condimente', 'turmeric': 'Condimente', 'ginger': 'Condimente',
+  'oregano': 'Condimente', 'basil': 'Condimente', 'thyme': 'Condimente',
+  'rosemary': 'Condimente', 'dill': 'Condimente', 'parsley': 'Condimente',
+  'fresh parsley': 'Condimente', 'cilantro': 'Condimente', 'coriander': 'Condimente',
+  'bay leaf': 'Condimente', 'bay leaves': 'Condimente', 'tarragon': 'Condimente',
+  'chives': 'Condimente', 'caraway': 'Condimente', 'poppy seeds': 'Condimente',
+  'sesame seeds': 'Condimente', 'flax seeds': 'Condimente',
+  'vanilla extract': 'Condimente', 'rose water': 'Condimente',
+  'spices': 'Condimente', 'herbs': 'Condimente',
+
+  // Uleiuri și sosuri / Oils & Sauces
+  'oil': 'Uleiuri', 'olive oil': 'Uleiuri', 'vegetable oil': 'Uleiuri',
+  'coconut oil': 'Uleiuri', 'palm oil': 'Uleiuri',
+  'vinegar': 'Uleiuri', 'apple cider vinegar': 'Uleiuri',
+  'soy sauce': 'Uleiuri', 'tomato paste': 'Uleiuri', 'sauce': 'Uleiuri',
+  'garlic sauce': 'Uleiuri',
+
+  // Dulciuri / Sweeteners
+  'sugar': 'Dulciuri', 'brown sugar': 'Dulciuri', 'honey': 'Dulciuri',
+  'maple syrup': 'Dulciuri', 'chocolate': 'Dulciuri',
+
+  // Nuci și semințe / Nuts & Seeds
+  'almonds': 'Nuci', 'pistachios': 'Nuci', 'walnuts': 'Nuci',
+  'peanuts': 'Nuci', 'cashews': 'Nuci', 'hazelnuts': 'Nuci',
+  'macadamia': 'Nuci', 'pecans': 'Nuci', 'pine nuts': 'Nuci',
+
+  // Lichide / Liquids
+  'water': 'Lichide', 'beef broth': 'Lichide', 'chicken broth': 'Lichide',
+  'vegetable broth': 'Lichide', 'coconut milk': 'Lichide',
+  'lemon juice': 'Lichide', 'tea': 'Lichide',
+
+  // Altele / Other
+  'sauerkraut': 'Altele', 'roast': 'Altele', 'vegetables': 'Altele',
+}
+
+// Category display order for consistent rendering
+export const CATEGORY_ORDER = [
+  'Legume', 'Fructe', 'Carne', 'Pește',
+  'Lactate', 'Cereale', 'Condimente',
+  'Uleiuri', 'Dulciuri', 'Nuci', 'Lichide', 'Altele',
+]
+
+/**
+ * Get the shopping category for an ingredient based on its canonical English name.
+ * Returns Romanian category label, or "Altele" if unknown.
+ */
+export function getIngredientCategory(canonicalName: string): string {
+  return CATEGORY_MAP[canonicalName.toLowerCase()] ?? 'Altele'
+}
+
 const UNIT_CONVERSIONS: Record<string, { base: string; factor: number }> = {
   'ml': { base: 'ml', factor: 1 },
   'l': { base: 'ml', factor: 1000 },

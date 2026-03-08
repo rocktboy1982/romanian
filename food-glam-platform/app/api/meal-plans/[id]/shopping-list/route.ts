@@ -3,7 +3,9 @@ import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import {
   extractIngredientsFromJson,
-  normalizeIngredientKey,
+  parseIngredient,
+  getIngredientCategory,
+  CATEGORY_ORDER,
   type RecipeIngredient,
 } from '@/lib/ingredient-normalizer'
 
@@ -28,6 +30,7 @@ interface ShoppingListItem {
   amount: number
   unit: string
   recipe_titles: string[]
+  category: string
 }
 
 /**
@@ -96,7 +99,15 @@ export async function GET(
      const ingredients = extractIngredientsFromJson(recipeJson)
 
     for (const ing of ingredients) {
-      const key = normalizeIngredientKey(ing.name, ing.unit || '')
+      // Parse to get normalizedName (English canonical) — used ONLY for category lookup
+      const parsed = parseIngredient(`${ing.amount || ''} ${ing.unit || ''} ${ing.name}`.trim())
+      const baseUnit = (ing.unit || '').toLowerCase().trim()
+      // Merge key uses the ORIGINAL name (exact match only)
+      // "ceapă roșie" and "ceapă galbenă" stay separate
+      // Only identical ingredients (same name + same unit) get merged
+      const originalName = ing.name.toLowerCase().trim()
+      const key = `${originalName}|${baseUnit}`
+      const category = getIngredientCategory(parsed.normalizedName)
       const existing = ingredientMap.get(key)
 
       if (existing) {
@@ -110,14 +121,21 @@ export async function GET(
           amount: (ing.amount || 0) * multiplier,
           unit: ing.unit || '',
           recipe_titles: [post.title],
+          category,
         })
       }
     }
   }
 
-  const items = Array.from(ingredientMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  )
+  // Sort by category order first, then alphabetically within category
+  const items = Array.from(ingredientMap.values()).sort((a, b) => {
+    const catA = CATEGORY_ORDER.indexOf(a.category)
+    const catB = CATEGORY_ORDER.indexOf(b.category)
+    const orderA = catA === -1 ? CATEGORY_ORDER.length : catA
+    const orderB = catB === -1 ? CATEGORY_ORDER.length : catB
+    if (orderA !== orderB) return orderA - orderB
+    return a.name.localeCompare(b.name, 'ro')
+  })
 
   return NextResponse.json({ items, entry_count: entries.length })
 }

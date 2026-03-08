@@ -49,6 +49,7 @@ export interface ShoppingListItem {
   amount: number
   unit: string
   recipe_titles: string[]
+  category: string
 }
 
 export interface RecipePickerResult {
