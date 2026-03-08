@@ -1,66 +1,194 @@
 import { NextResponse } from 'next/server'
-import { MOCK_RECIPES } from '@/lib/mock-data'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 async function requireAdmin(req: Request) {
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = createServiceSupabaseClient()
+  const user = await getRequestUser(req, supabase)
   if (!user) return null
-  const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).eq('role', 'admin').limit(1)
-  if (!roles || roles.length === 0) return null
-  return user
+  
+  // Check app_roles for admin/moderator
+  const { data: roles } = await supabase
+    .from('app_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .in('role', ['admin', 'moderator'])
+    .limit(1)
+  
+  if (roles && roles.length > 0) return user
+  
+  // Fallback: check is_moderator flag
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_moderator')
+    .eq('id', user.id)
+    .single()
+  
+  if (profile?.is_moderator) return user
+  return null
 }
 
 type ChefStatus = 'active' | 'suspended' | 'banned'
 type ChefTier   = 'pro' | 'amateur' | 'user'
-const chefStatusOverrides: Record<string, ChefStatus> = {}
-const chefTierOverrides:   Record<string, ChefTier>   = {}
-const chefNotes: Record<string, string> = {}
 
-// Derive unique chefs from mock recipes
-function buildChefs() {
-  const seen = new Set<string>()
-  return MOCK_RECIPES
-    .filter(r => { const s = !seen.has(r.created_by.id); seen.add(r.created_by.id); return s })
-    .map((r, i) => ({
-      id: r.created_by.id,
-      display_name: r.created_by.display_name,
-      handle: r.created_by.handle,
-      avatar_url: r.created_by.avatar_url,
-      status: (chefStatusOverrides[r.created_by.id] ?? 'active') as ChefStatus,
-      tier:   (chefTierOverrides[r.created_by.id]  ?? 'user')   as ChefTier,
-      notes: chefNotes[r.created_by.id] ?? '',
-      recipe_count: MOCK_RECIPES.filter(x => x.created_by.id === r.created_by.id).length,
-      total_votes: MOCK_RECIPES.filter(x => x.created_by.id === r.created_by.id).reduce((s, x) => s + x.votes, 0),
-      joined_at: new Date(Date.now() - (i + 1) * 15 * 86400000).toISOString(),
-      followers: [12400, 38700, 9100, 54200, 21300, 67800, 4500, 31900, 22100, 8800, 41000, 6200][i] ?? 5000,
-    }))
+function mapSanctionToStatus(sanctions: any[]): ChefStatus {
+  if (!sanctions || sanctions.length === 0) return 'active'
+  
+  // Check for active bans
+  const now = new Date().toISOString()
+  const activeBan = sanctions.find(s => 
+    s.type === 'ban' && (!s.expires_at || s.expires_at > now)
+  )
+  if (activeBan) return 'banned'
+  
+  // Check for active suspensions
+  const activeSuspend = sanctions.find(s => 
+    s.type === 'suspend' && (!s.expires_at || s.expires_at > now)
+  )
+  if (activeSuspend) return 'suspended'
+  
+  return 'active'
 }
 
 export async function GET(req: Request) {
   const admin = await requireAdmin(req)
   if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
 
+  const supabase = createServiceSupabaseClient()
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const q = searchParams.get('q')?.toLowerCase()
+  const limit = parseInt(searchParams.get('limit') || '50')
+  const offset = parseInt(searchParams.get('offset') || '0')
 
-  let chefs = buildChefs()
-  if (status && status !== 'all') chefs = chefs.filter(c => c.status === status)
-  if (q) chefs = chefs.filter(c =>
-    c.display_name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q)
-  )
-  return NextResponse.json({ chefs, total: chefs.length })
+  // Get profiles that have at least 1 active recipe (they're "chefs")
+  const { data: chefProfiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+
+  if (profileError) {
+    console.error('Error fetching profiles:', profileError)
+    return NextResponse.json({ error: 'Failed to fetch chefs' }, { status: 500 })
+  }
+
+  // Filter and enrich chefs with recipe counts, votes, and followers
+  const chefs = await Promise.all((chefProfiles || []).map(async (profile: any) => {
+    // Get recipe count
+    const { count: recipeCount } = await supabase
+      .from('posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('created_by', profile.id)
+      .eq('type', 'recipe')
+      .eq('status', 'active')
+
+    // Skip if no recipes (not a chef)
+    if (!recipeCount || recipeCount === 0) return null
+
+    // Get total votes on their recipes
+    const { data: recipes } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('created_by', profile.id)
+      .eq('type', 'recipe')
+      .eq('status', 'active')
+
+    let totalVotes = 0
+    if (recipes && recipes.length > 0) {
+      const recipeIds = recipes.map(r => r.id)
+      const { count: voteCount } = await supabase
+        .from('votes')
+        .select('*', { count: 'exact', head: true })
+        .in('post_id', recipeIds)
+      totalVotes = voteCount || 0
+    }
+
+    // Get follower count
+    const { count: followerCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', profile.id)
+
+    // Get user sanctions to determine status
+    const { data: sanctions } = await supabase
+      .from('user_sanctions')
+      .select('*')
+      .eq('user_id', profile.id)
+
+    const chefStatus = mapSanctionToStatus(sanctions || [])
+
+    // Filter by status if requested
+    if (status && status !== 'all' && chefStatus !== status) {
+      return null
+    }
+
+    // Search filter
+    if (q && !profile.display_name?.toLowerCase().includes(q) && !profile.handle?.toLowerCase().includes(q)) {
+      return null
+    }
+
+    return {
+      id: profile.id,
+      display_name: profile.display_name || 'Unknown',
+      handle: profile.handle || '',
+      avatar_url: profile.avatar_url || null,
+      status: chefStatus,
+      tier: 'user' as ChefTier, // Default tier, could be extended with a tier column
+      notes: '', // Notes field doesn't exist in profiles table
+      recipe_count: recipeCount,
+      total_votes: totalVotes,
+      joined_at: profile.created_at,
+      followers: followerCount || 0,
+    }
+  }))
+
+  // Filter out nulls and apply pagination
+  const filteredChefs = chefs.filter(c => c !== null)
+  const paginatedChefs = filteredChefs.slice(offset, offset + limit)
+
+  return NextResponse.json({ chefs: paginatedChefs, total: filteredChefs.length })
 }
 
 export async function PUT(req: Request) {
   const admin = await requireAdmin(req)
   if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
 
+  const supabase = createServiceSupabaseClient()
   const body = await req.json() as { id: string; status?: ChefStatus; notes?: string; tier?: ChefTier }
-  if (body.status) chefStatusOverrides[body.id] = body.status
-  if (body.tier) chefTierOverrides[body.id] = body.tier
-  if (body.notes !== undefined) chefNotes[body.id] = body.notes
+
+  // Handle status changes via user_sanctions
+  if (body.status) {
+    const now = new Date().toISOString()
+    
+    if (body.status === 'active') {
+      // Remove active sanctions
+      await supabase
+        .from('user_sanctions')
+        .delete()
+        .eq('user_id', body.id)
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
+    } else if (body.status === 'suspended') {
+      // Create a suspend sanction
+      await supabase
+        .from('user_sanctions')
+        .insert({
+          user_id: body.id,
+          type: 'suspend',
+          reason: 'Admin suspension',
+          created_by: admin.id,
+        })
+    } else if (body.status === 'banned') {
+      // Create a ban sanction
+      await supabase
+        .from('user_sanctions')
+        .insert({
+          user_id: body.id,
+          type: 'ban',
+          reason: 'Admin ban',
+          created_by: admin.id,
+        })
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }
 
@@ -68,7 +196,23 @@ export async function DELETE(req: Request) {
   const admin = await requireAdmin(req)
   if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
 
+  const supabase = createServiceSupabaseClient()
   const body = await req.json() as { id: string }
-  chefStatusOverrides[body.id] = 'banned'
+
+  // Create a ban sanction
+  const { error } = await supabase
+    .from('user_sanctions')
+    .insert({
+      user_id: body.id,
+      type: 'ban',
+      reason: 'Admin ban',
+      created_by: admin.id,
+    })
+
+  if (error) {
+    console.error('Error banning chef:', error)
+    return NextResponse.json({ error: 'Failed to ban chef' }, { status: 500 })
+  }
+
   return NextResponse.json({ ok: true })
 }
