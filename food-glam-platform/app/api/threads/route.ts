@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
+import { validateContent } from '@/lib/profanity-filter'
 import pool from '@/lib/db'
 
 const MAX_COMMENTS_PER_DAY = 1
@@ -46,6 +47,14 @@ export async function POST(req: Request) {
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
+
+    // Profanity check
+    const titleCheck = validateContent(title)
+    if (titleCheck) return NextResponse.json({ error: titleCheck }, { status: 400 })
+    if (threadBody) {
+      const bodyCheck = validateContent(threadBody)
+      if (bodyCheck) return NextResponse.json({ error: bodyCheck }, { status: 400 })
     }
 
     // Rate limit: 1 comment (thread or reply) per day

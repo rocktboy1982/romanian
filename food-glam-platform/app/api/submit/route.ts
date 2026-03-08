@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { isLocalSupabase } from '@/lib/supabase-utils'
 import { slugify } from '@/lib/slug'
+import { validateContent } from '@/lib/profanity-filter'
 
 const ALLOWED_TYPES = ['recipe', 'short', 'image', 'video'] as const
 const ALLOWED_STATUSES = ['draft', 'active'] as const
@@ -31,6 +32,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid content type' }, { status: 400 })
     }
     const postStatus = ALLOWED_STATUSES.includes(status) ? status : 'draft'
+
+    // Profanity check
+    const titleCheck = validateContent(title)
+    if (titleCheck) return NextResponse.json({ error: titleCheck }, { status: 400 })
 
     // ── Local dev fallback (no real Supabase) ──────────────────────
     if (isLocalSupabase()) {

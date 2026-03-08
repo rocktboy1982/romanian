@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
+import { validateContent } from '@/lib/profanity-filter'
 import pool from '@/lib/db'
 
 const MAX_COMMENTS_PER_DAY = 1
@@ -48,6 +49,10 @@ export async function POST(req: Request) {
     if (!body || typeof body !== 'string' || !body.trim()) {
       return NextResponse.json({ error: 'Reply body is required' }, { status: 400 })
     }
+
+    // Profanity check
+    const profanityError = validateContent(body)
+    if (profanityError) return NextResponse.json({ error: profanityError }, { status: 400 })
 
     // Verify thread exists and is not locked
     const { rows: threadRows } = await pool.query(
