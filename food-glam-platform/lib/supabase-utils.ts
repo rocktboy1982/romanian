@@ -12,3 +12,9 @@ export function safeParse<T>(v: unknown): T | null {
     return null;
   }
 }
+
+/** Check if the app is running against a local Supabase instance */
+export function isLocalSupabase(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  return url.includes('127.0.0.1') || url.includes('localhost') || !url
+}

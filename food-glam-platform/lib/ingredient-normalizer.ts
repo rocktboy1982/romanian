@@ -116,3 +116,68 @@ export function mergeIngredients(ingredients: string[]): MergedIngredient[] {
   
   return merged.sort((a, b) => a.name.localeCompare(b.name))
 }
+
+/** Recipe ingredient interface for JSON extraction */
+export interface RecipeIngredient {
+  name: string
+  amount?: number
+  unit?: string
+}
+
+/** Extract ingredients array from various recipe_json formats */
+export function extractIngredientsFromJson(recipeJson: Record<string, unknown>): RecipeIngredient[] {
+  // Try common recipe JSON structures
+  const candidates = [
+    recipeJson.ingredients,
+    recipeJson.recipeIngredient,
+    (recipeJson.recipe as Record<string, unknown>)?.ingredients,
+  ]
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate.map(item => {
+        if (typeof item === 'string') {
+          return parseSimpleIngredient(item)
+        }
+        if (typeof item === 'object' && item !== null) {
+          const obj = item as Record<string, unknown>
+          return {
+            name: String(obj.name || obj.ingredient || obj.text || ''),
+            amount: Number(obj.amount || obj.quantity || 0) || 0,
+            unit: String(obj.unit || obj.unitOfMeasure || ''),
+          }
+        }
+        return { name: String(item), amount: 0, unit: '' }
+      }).filter(i => i.name.length > 0)
+    }
+  }
+
+  return []
+}
+
+/** Best-effort parse of "2 cups flour" style strings */
+export function parseSimpleIngredient(str: string): RecipeIngredient {
+  const match = str.match(/^([\d./]+)\s*([\w]+)?\s+(.+)$/)
+  if (match) {
+    const amount = parseFraction(match[1])
+    return { name: match[3].trim(), amount, unit: match[2] || '' }
+  }
+  return { name: str.trim(), amount: 0, unit: '' }
+}
+
+/** Parse fraction strings like "1/2" or "1" into a number */
+export function parseFraction(str: string): number {
+  if (str.includes('/')) {
+    const parts = str.split('/')
+    const num = parseFloat(parts[0])
+    const den = parseFloat(parts[1])
+    if (den === 0) return 0
+    return num / den
+  }
+  return parseFloat(str) || 0
+}
+
+/** Normalize key for merging: lowercase name + unit */
+export function normalizeIngredientKey(name: string, unit: string): string {
+  return `${name.toLowerCase().trim()}|${unit.toLowerCase().trim()}`
+}
