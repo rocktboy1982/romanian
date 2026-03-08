@@ -23,10 +23,18 @@ export async function GET(_req: NextRequest) {
       .order('name')
 
     if (error || !cuisines || cuisines.length === 0) {
-      return NextResponse.json({ data: MOCK_CUISINES, error: null })
+      return NextResponse.json({ data: MOCK_CUISINES, error: null }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+        },
+      })
     }
 
-    return NextResponse.json({ data: cuisines, error: null })
+    return NextResponse.json({ data: cuisines, error: null }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+      },
+    })
   } catch (err: unknown) {
     return NextResponse.json({ data: MOCK_CUISINES, error: null })
   }

@@ -37,7 +37,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: null, error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ data: cookbooks, error: null })
+    return NextResponse.json({ data: cookbooks, error: null }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+      },
+    })
   } catch (err: unknown) {
     return NextResponse.json(
       { data: null, error: String(err instanceof Error ? err.message : err) },

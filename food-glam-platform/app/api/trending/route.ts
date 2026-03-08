@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getRecentVotes } from '@/lib/data-access/votes'
 
 export async function GET(req: Request) {
   // Check if local Supabase is running
@@ -54,20 +55,13 @@ export async function GET(req: Request) {
 
     const postIds = posts?.map(p => p.id) || []
     
-    const { data: recentVotes, error: voteError } = await supabase
-      .from('votes')
-      .select('post_id, value')
-      .in('post_id', postIds)
-      .gte('created_at', sevenDaysAgo.toISOString())
-
-    if (voteError) {
-      console.error('Votes query error:', voteError)
-    }
-
+    // Fetch recent votes (last 7 days) in a single aggregation query
+    const voteStatsMap = await getRecentVotes(supabase, postIds, 7)
+    
+    // Extract trending votes for this route
     const voteMap = new Map<string, number>()
-    recentVotes?.forEach(vote => {
-      const current = voteMap.get(vote.post_id) || 0
-      voteMap.set(vote.post_id, current + (vote.value || 0))
+    Object.entries(voteStatsMap).forEach(([postId, stats]) => {
+      voteMap.set(postId, stats.trending)
     })
 
     const trendingRecipes = posts
@@ -82,7 +76,11 @@ export async function GET(req: Request) {
       .sort((a, b) => b.votes - a.votes)
       .slice(0, 10) || []
 
-    return NextResponse.json({ recipes: trendingRecipes })
+    return NextResponse.json({ recipes: trendingRecipes }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+      },
+    })
   } catch (err: any) {
     console.error('Trending API error:', err)
     console.log('Falling back to mock data (Supabase not available)')

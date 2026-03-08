@@ -5,6 +5,7 @@ import { expandSearchTerms } from '@/lib/ingredient-aliases'
 import { scoreAndRank } from '@/lib/search'
 import { MOCK_RECIPES } from '@/lib/mock-data'
 import { REGION_META, ALL_COUNTRIES, COURSE_TAGS } from '@/lib/recipe-taxonomy'
+import { getVotesByPostIds } from '@/lib/data-access/votes'
 
 /** Apply region/country/course filters to a list of mock-recipe-shaped docs */
 function applyFilters<T extends { recipe_json?: any; title?: string | null; summary?: string | null }>(
@@ -159,8 +160,19 @@ export async function POST(req: Request) {
         ...doc,
         rank: (supabaseRows!.find(r => r.id === (doc as any).id) as any)?.rank ?? null,
       }));
+      
+      // Fetch vote counts for all results in a single query
+      const resultIds = paged.map((doc: any) => doc.id).filter(Boolean);
+      const voteMap = await getVotesByPostIds(supabase, resultIds);
+      
+      // Add vote counts to results
+      const pagedWithVotes = paged.map((doc: any) => ({
+        ...doc,
+        votes: voteMap[doc.id] || 0,
+      }));
+      
       const result = {
-        results: paged,
+        results: pagedWithVotes,
         total: reRanked.length,
         page,
         pageSize,
@@ -169,7 +181,11 @@ export async function POST(req: Request) {
         expandedTerms: expandedTerms.length > 0 ? expandedTerms : null,
       };
       cacheSet(cacheKey, result, 30);
-      return NextResponse.json(result);
+      return NextResponse.json(result, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300',
+        },
+      });
     }
 
     // --- Mock data fallback ---
@@ -228,7 +244,11 @@ export async function POST(req: Request) {
       expandedTerms: expandedTerms.length > 0 ? expandedTerms : null,
     };
     cacheSet(cacheKey, result, 30);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300',
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
   }

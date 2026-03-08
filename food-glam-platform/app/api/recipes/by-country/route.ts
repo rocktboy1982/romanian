@@ -62,7 +62,11 @@ export async function GET(req: Request) {
       approach: Array.isArray(post.approaches) ? post.approaches[0] : post.approaches,
     }))
 
-    return NextResponse.json({ recipes, total: count ?? recipes.length })
+    return NextResponse.json({ recipes, total: count ?? recipes.length }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    })
   } catch (err) {
     console.error('by-country error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

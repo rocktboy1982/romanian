@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getVotesByPostIds } from '@/lib/data-access/votes'
 
 export async function GET(req: Request) {
   // Check if Supabase is available
@@ -66,20 +67,7 @@ export async function GET(req: Request) {
     }
 
     const postIds = posts?.map(p => p.id) || []
-    const { data: voteCounts, error: voteError } = await supabase
-      .from('votes')
-      .select('post_id, value')
-      .in('post_id', postIds)
-
-    if (voteError) {
-      console.error('Votes query error:', voteError)
-    }
-
-    const voteMap = new Map<string, number>()
-    voteCounts?.forEach(vote => {
-      const current = voteMap.get(vote.post_id) || 0
-      voteMap.set(vote.post_id, current + (vote.value || 0))
-    })
+    const voteMap = await getVotesByPostIds(supabase, postIds)
 
     let savedPostIds: Set<string> = new Set()
     if (user) {
@@ -94,7 +82,7 @@ export async function GET(req: Request) {
     }
 
     const formattedRecipes = posts?.map(post => {
-      const netVotes = voteMap.get(post.id) || 0
+      const netVotes = voteMap[post.id] || 0
 
       let tag = 'New'
       if (netVotes > 50) tag = 'Trending'
@@ -133,6 +121,10 @@ export async function GET(req: Request) {
     return NextResponse.json({
       recipes: formattedRecipes,
       has_user: !!user
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+      },
     })
   } catch (err: any) {
     console.error('Homepage API error:', err)

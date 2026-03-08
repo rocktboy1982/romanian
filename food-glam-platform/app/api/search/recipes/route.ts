@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { cacheGet, cacheSet } from '@/lib/cache'
+import { getVotesByPostIds, getRecentVotes } from '@/lib/data-access/votes'
 
 /**
  * GET /api/search/recipes
@@ -260,25 +261,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(result)
     }
 
-    // Fetch vote counts for these posts
+    // Fetch vote counts for these posts (single aggregation query)
     const postIds = posts.map(p => p.id)
-    const { data: voteCounts } = await supabase
-      .from('votes')
-      .select('post_id, value, created_at')
-      .in('post_id', postIds)
-
-    // Compute net votes + trending votes (last 7 days)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const voteStatsMap = await getRecentVotes(supabase, postIds, 7)
+    
+    // Convert to Map for compatibility with existing code
     const voteMap = new Map<string, { net: number; trending: number }>()
-
-    voteCounts?.forEach(vote => {
-      const current = voteMap.get(vote.post_id) || { net: 0, trending: 0 }
-      const val = vote.value || 0
-      current.net += val
-      if (vote.created_at && vote.created_at >= sevenDaysAgo) {
-        current.trending += val
-      }
-      voteMap.set(vote.post_id, current)
+    Object.entries(voteStatsMap).forEach(([postId, stats]) => {
+      voteMap.set(postId, stats)
     })
 
     // Format recipes
@@ -346,7 +336,11 @@ export async function GET(req: NextRequest) {
     }
 
     cacheSet(cacheKey, result, 15)
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    })
   } catch (err: unknown) {
     console.error('Search recipes API error:', err)
     return NextResponse.json(

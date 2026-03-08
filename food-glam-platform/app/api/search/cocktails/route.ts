@@ -116,6 +116,10 @@ export async function GET(req: NextRequest) {
       per_page: perPage,
       has_more: page * perPage < total,
       filters: { q, category, spirit, difficulty, sort },
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
     })
   } catch (err: unknown) {
     console.error('Cocktail search error:', err)

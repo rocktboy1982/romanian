@@ -8,5 +8,9 @@ export async function GET() {
     return { ...post, chef }
   })
 
-  return NextResponse.json({ posts })
+  return NextResponse.json({ posts }, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+    },
+  })
 }

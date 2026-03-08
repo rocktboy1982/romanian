@@ -5,6 +5,7 @@ import {
   fallbackTrending,
   type RecommendationCandidate,
 } from '@/lib/recommendations'
+import { getVotesByPostIds, getRecentVotes } from '@/lib/data-access/votes'
 
 export async function GET() {
   // Check if local Supabase is running
@@ -91,30 +92,16 @@ export async function GET() {
 
     const postIds = posts.map((p) => p.id)
 
-    // 3. Fetch all-time vote counts
-    const { data: allVotes } = await supabase
-      .from('votes')
-      .select('post_id, value')
-      .in('post_id', postIds)
+    // 3. Fetch all-time vote counts (single aggregation query)
+    const allVoteMap = await getVotesByPostIds(supabase, postIds)
 
-    const voteMap = new Map<string, number>()
-    allVotes?.forEach((v) => {
-      voteMap.set(v.post_id, (voteMap.get(v.post_id) || 0) + (v.value || 0))
-    })
-
-    // 4. Fetch recent votes (last 7 days) for trending
-    const { data: recentVotes } = await supabase
-      .from('votes')
-      .select('post_id, value')
-      .in('post_id', postIds)
-      .gte('created_at', sevenDaysAgo.toISOString())
-
-    const recentVoteMap = new Map<string, number>()
-    recentVotes?.forEach((v) => {
-      recentVoteMap.set(
-        v.post_id,
-        (recentVoteMap.get(v.post_id) || 0) + (v.value || 0)
-      )
+    // 4. Fetch recent votes (last 7 days) for trending (single aggregation query)
+    const recentVoteStatsMap = await getRecentVotes(supabase, postIds, 7)
+    
+    // Extract trending votes
+    const recentVoteMap: Record<string, number> = {}
+    Object.entries(recentVoteStatsMap).forEach(([postId, stats]) => {
+      recentVoteMap[postId] = stats.trending
     })
 
     // 5. Fetch user's saved items (if authenticated)
@@ -152,8 +139,8 @@ export async function GET() {
         approach_id: p.approach_id,
         cook_time_minutes: (rj.cook_time_minutes as number) ?? (rj.cookTime as number) ?? null,
         servings: (rj.servings as number) ?? null,
-        net_votes: voteMap.get(p.id) || 0,
-        recent_votes: recentVoteMap.get(p.id) || 0,
+        net_votes: allVoteMap[p.id] || 0,
+        recent_votes: recentVoteMap[p.id] || 0,
         is_saved: savedPostIds.has(p.id),
       }
     })
@@ -173,6 +160,10 @@ export async function GET() {
     return NextResponse.json({
       recommendations,
       has_user: !!user,
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
