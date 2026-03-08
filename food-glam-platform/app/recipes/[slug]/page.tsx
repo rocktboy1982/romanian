@@ -455,13 +455,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const { slug } = await params
   const supabase = await createServerSupabaseClient()
 
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+
   // Try Supabase first
   const { data: post } = await supabase
     .from('posts')
     .select(`
       *,
       approaches(name, slug),
-      profiles:created_by(display_name, handle, avatar_url)
+      profiles:created_by(id, display_name, handle, avatar_url)
     `)
     .eq('slug', slug)
     .eq('type', 'recipe')
@@ -785,10 +788,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   // Creator info
   const creator = Array.isArray(post.profiles)
-    ? (post.profiles as Array<{ display_name: string; handle: string; avatar_url: string | null }>)[0]
-    : (post.profiles as { display_name: string; handle: string; avatar_url: string | null } | null)
+    ? (post.profiles as Array<{ id: string; display_name: string; handle: string; avatar_url: string | null }>)[0]
+    : (post.profiles as { id: string; display_name: string; handle: string; avatar_url: string | null } | null)
+
+  // Check if current user is the owner
+  const isOwner = !!(user && creator && user.id === creator.id)
 
   const heroImage = post.hero_image_url || `https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=600&fit=crop`
+  const imageAttribution = (post as Record<string, unknown>).image_attribution as {
+    source?: string; photographer?: string; photographerUrl?: string; sourceUrl?: string
+  } | null
   const servings = recipeData.servings || 4
   // Support both string times ("45 min") and numeric minutes (45)
   const seededData = recipeData as unknown as { prep_time_minutes?: number; cook_time_minutes?: number }
@@ -831,6 +840,27 @@ export default async function RecipePage({ params }: RecipePageProps) {
         />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+        {/* Photo attribution (Unsplash/Pexels/Pixabay compliance) */}
+        {imageAttribution?.photographer && (
+          <div className="absolute top-3 right-3 z-10">
+            <span className="text-[10px] text-white/70 bg-black/40 backdrop-blur-sm rounded px-2 py-1">
+              Foto de{' '}
+              <a href={imageAttribution.photographerUrl || '#'} target="_blank" rel="noopener noreferrer" className="underline hover:text-white/90">
+                {imageAttribution.photographer}
+              </a>
+              {' pe '}
+              <a
+                href={imageAttribution.sourceUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white/90"
+              >
+                {imageAttribution.source === 'unsplash' ? 'Unsplash' : imageAttribution.source === 'pexels' ? 'Pexels' : imageAttribution.source === 'pixabay' ? 'Pixabay' : imageAttribution.source || ''}
+              </a>
+            </span>
+          </div>
+        )}
 
         {/* Content on hero */}
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
@@ -932,6 +962,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   recipeId={post.id}
                   slug={slug}
                   title={post.title}
+                  isOwner={isOwner}
                   exportData={{
                     servings,
                     total_time: totalTime ?? undefined,

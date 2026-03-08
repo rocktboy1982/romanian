@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { MOCK_COCKTAILS } from '@/lib/mock-data'
 import type { MockCocktail } from '@/lib/mock-data'
 import ReportButton from '@/components/ReportButton'
+import DeleteContentButton from '@/components/DeleteContentButton'
 import RecipeRating from '@/components/RecipeRating'
 import { AdInArticle, AdSidebar } from '@/components/ads/ad-placements'
 
@@ -68,6 +69,20 @@ export default function CocktailDetailPage() {
   const slug = typeof params.slug === 'string' ? params.slug : Array.isArray(params.slug) ? params.slug[0] : ''
 
   const [cocktail, setCocktail] = useState<CocktailDetail | null | undefined>(undefined)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Try to get current user from localStorage
+    try {
+      const mockUser = localStorage.getItem('mock_user')
+      if (mockUser) {
+        const user = JSON.parse(mockUser)
+        setCurrentUserId(user.id ?? null)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
 
   useEffect(() => {
     if (!slug) return
@@ -306,9 +321,18 @@ export default function CocktailDetailPage() {
                  Vezi toate cocktailurile →
                </Link>
              </div>
-            <div className="pt-1 flex justify-center">
-              <ReportButton contentId={cocktail.id} contentType="cocktail" contentTitle={cocktail.title} variant="full" />
-            </div>
+             <div className="pt-1 flex flex-col items-center gap-2">
+               <ReportButton contentId={cocktail.id} contentType="cocktail" contentTitle={cocktail.title} variant="full" />
+               {currentUserId && cocktail.created_by.id === currentUserId && (
+                 <DeleteContentButton
+                   postId={cocktail.id}
+                   postTitle={cocktail.title}
+                   onDeleted={() => window.location.href = '/'}
+                   variant="button"
+                   size="sm"
+                 />
+               )}
+             </div>
 
           </div>
         </div>

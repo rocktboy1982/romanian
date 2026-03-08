@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { usePreferredRecipes } from '@/lib/preferred-recipes';
 import ReportButton from '@/components/ReportButton';
+import DeleteContentButton from '@/components/DeleteContentButton';
+import { useRouter } from 'next/navigation';
 
 interface ExportData {
   servings?: number;
@@ -24,14 +26,16 @@ interface RecipeActionsClientProps {
   slug: string;
   title: string;
   exportData?: ExportData;
+  isOwner?: boolean;
 }
 
-export default function RecipeActionsClient({ recipeId, slug, title, exportData }: RecipeActionsClientProps) {
+export default function RecipeActionsClient({ recipeId, slug, title, exportData, isOwner = false }: RecipeActionsClientProps) {
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const { addRecipe, removeRecipe, preferredIds } = usePreferredRecipes();
+  const router = useRouter();
 
   useEffect(() => {
     setSaved(preferredIds.has(recipeId));
@@ -210,9 +214,20 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData 
            </svg>
            Exportă
          </Button>
-       </div>
+        </div>
 
-        <ReportButton contentId={recipeId} contentType="recipe" contentTitle={title} variant="full" />
+         <div className="flex flex-wrap gap-2 items-center justify-between">
+           <ReportButton contentId={recipeId} contentType="recipe" contentTitle={title} variant="full" />
+           {isOwner && (
+             <DeleteContentButton
+               postId={recipeId}
+               postTitle={title}
+               onDeleted={() => router.push('/')}
+               variant="button"
+               size="sm"
+             />
+           )}
+         </div>
 
        {/* Export dropdown */}
        {exportOpen && (

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase-client'
 import { MOCK_RECIPES } from '@/lib/mock-data'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
+import DeleteContentButton from '@/components/DeleteContentButton'
 
 type PostStatus = 'draft' | 'pending_review' | 'active' | 'rejected' | 'archived'
 
@@ -245,7 +246,16 @@ export default function MyPostsPage() {
                         View
                       </Link>
                     )}
-                  </div>
+
+                    {/* Delete button for all posts */}
+                    <DeleteContentButton
+                      postId={post.id}
+                      postTitle={post.title}
+                      onDeleted={() => setPosts(prev => prev.filter(p => p.id !== post.id))}
+                      variant="button"
+                      size="sm"
+                    />
+                   </div>
                 </div>
               </li>
             )

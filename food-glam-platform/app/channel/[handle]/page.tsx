@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Users, Grid3X3, Play, Image as ImageIcon, BookOpen, Info, UserPlus, UserCheck, UserMinus, Loader2 } from 'lucide-react'
 import RecipeCard from '@/components/RecipeCard'
+import DeleteContentButton from '@/components/DeleteContentButton'
 import { useToast } from '@/components/ui/use-toast'
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -347,21 +348,23 @@ export default function ChannelPage() {
         </div>
       </div>
 
-      {/* ── Tab Content ───────────────────────────────────── */}
-      <div className="container mx-auto px-4 mt-6">
-        {activeTab === 'about' ? (
-          <AboutTab profile={profile} joinDate={joinDate} />
-        ) : (
-          <ContentGrid
-            posts={posts}
-            loading={postsLoading}
-            total={totalPosts}
-            hasMore={hasMore}
-            activeTab={activeTab}
-            onLoadMore={() => fetchPosts(activeTab, posts.length)}
-          />
-        )}
-      </div>
+       {/* ── Tab Content ───────────────────────────────────── */}
+       <div className="container mx-auto px-4 mt-6">
+         {activeTab === 'about' ? (
+           <AboutTab profile={profile} joinDate={joinDate} />
+         ) : (
+           <ContentGrid
+             posts={posts}
+             loading={postsLoading}
+             total={totalPosts}
+             hasMore={hasMore}
+             activeTab={activeTab}
+             onLoadMore={() => fetchPosts(activeTab, posts.length)}
+             isOwnProfile={profile.is_own_profile}
+             onPostDeleted={(postId) => setPosts(prev => prev.filter(p => p.id !== postId))}
+           />
+         )}
+       </div>
     </main>
   )
 }
@@ -409,6 +412,8 @@ function ContentGrid({
   hasMore,
   activeTab,
   onLoadMore,
+  isOwnProfile = false,
+  onPostDeleted,
 }: {
   posts: Post[]
   loading: boolean
@@ -416,6 +421,8 @@ function ContentGrid({
   hasMore: boolean
   activeTab: TabKey
   onLoadMore: () => void
+  isOwnProfile?: boolean
+  onPostDeleted?: (postId: string) => void
 }) {
   const tabLabel = TABS.find(t => t.key === activeTab)?.label ?? activeTab
 
@@ -457,55 +464,78 @@ function ContentGrid({
       </p>
 
       {/* Grid of recipe cards (reuse RecipeCard) */}
-      {activeTab === 'recipe' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map(post => (
-            <RecipeCard
-              key={post.id}
-              id={post.id}
-              slug={post.slug}
-              title={post.title}
-              summary={post.summary}
-              hero_image_url={post.hero_image_url}
-              region={post.region}
-              votes={post.votes}
-              comments={post.comments}
-              tag={post.tag}
-              badges={post.badges}
-              dietTags={post.dietTags}
-              foodTags={post.foodTags}
-              is_tested={post.is_tested}
-              quality_score={post.quality_score}
-              created_by={post.created_by}
-              is_saved={post.is_saved}
-            />
-          ))}
-        </div>
-      ) : (
-        /* Generic content grid for shorts/images/collections */
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {posts.map(post => (
-            <div
-              key={post.id}
-              className="group relative border rounded-lg overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={post.hero_image_url}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-3">
-                <h4 className="font-medium text-sm line-clamp-2">{post.title}</h4>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {post.votes} votes
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+       {activeTab === 'recipe' ? (
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {posts.map(post => (
+             <div key={post.id} className="relative group">
+               <RecipeCard
+                 id={post.id}
+                 slug={post.slug}
+                 title={post.title}
+                 summary={post.summary}
+                 hero_image_url={post.hero_image_url}
+                 region={post.region}
+                 votes={post.votes}
+                 comments={post.comments}
+                 tag={post.tag}
+                 badges={post.badges}
+                 dietTags={post.dietTags}
+                 foodTags={post.foodTags}
+                 is_tested={post.is_tested}
+                 quality_score={post.quality_score}
+                 created_by={post.created_by}
+                 is_saved={post.is_saved}
+               />
+               {isOwnProfile && (
+                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <DeleteContentButton
+                     postId={post.id}
+                     postTitle={post.title}
+                     onDeleted={() => onPostDeleted?.(post.id)}
+                     variant="icon"
+                     size="sm"
+                   />
+                 </div>
+               )}
+             </div>
+           ))}
+         </div>
+       ) : (
+         /* Generic content grid for shorts/images/collections */
+         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+           {posts.map(post => (
+             <div
+               key={post.id}
+               className="group relative border rounded-lg overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+             >
+               <div className="aspect-square overflow-hidden relative">
+                 <img
+                   src={post.hero_image_url}
+                   alt={post.title}
+                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                 />
+                 {isOwnProfile && (
+                   <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <DeleteContentButton
+                       postId={post.id}
+                       postTitle={post.title}
+                       onDeleted={() => onPostDeleted?.(post.id)}
+                       variant="icon"
+                       size="sm"
+                     />
+                   </div>
+                 )}
+               </div>
+               <div className="p-3">
+                 <h4 className="font-medium text-sm line-clamp-2">{post.title}</h4>
+                 <p className="text-xs text-muted-foreground mt-1">
+                   {post.votes} votes
+                 </p>
+               </div>
+             </div>
+           ))}
+         </div>
+       )}
 
       {/* Load More */}
       {hasMore && (
