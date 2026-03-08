@@ -34,7 +34,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // but fall back to broader pool
     const slugPrefix = target.slug ? target.slug.split('-').slice(0, 1).join('-') : null;
 
-    // Get up to 200 recipes from same cuisine + 100 random others
+    // Get up to 50 recipes from same cuisine + 50 random others (max 100 candidates)
     let candidates: RecipeDoc[] = [];
 
     if (slugPrefix) {
@@ -45,7 +45,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         .eq('status', 'active')
         .ilike('slug', `${slugPrefix}-%`)
         .neq('id', id)
-        .limit(200);
+        .limit(50);
       if (sameCuisine) candidates.push(...(sameCuisine as unknown as RecipeDoc[]));
     }
 
@@ -57,7 +57,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         .eq('type', 'recipe')
         .eq('status', 'active')
         .neq('id', id)
-        .limit(300);
+        .limit(50);
       if (broader) {
         const existingIds = new Set(candidates.map(c => c.id));
         for (const r of broader) {
@@ -68,7 +68,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     const results = scoreAndRank(candidates, q, 10);
     cacheSet(cacheKey, results, 60);
-    return NextResponse.json({ results });
+    return NextResponse.json({ results }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 500 });
