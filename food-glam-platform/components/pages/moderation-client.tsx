@@ -180,7 +180,7 @@ export default function ModerationClient() {
                     {previewId === it.id && (
                       <div className="mt-3 p-3 bg-muted/50 rounded-lg border">
                         {it.hero_image_url && (
-                          <Image src={it.hero_image_url} alt="" className="h-32 w-auto object-cover rounded mb-2" />
+                          <Image src={it.hero_image_url} alt="" width={256} height={128} className="h-32 w-auto object-cover rounded mb-2" />
                         )}
                         <pre className="text-xs whitespace-pre-wrap max-h-60 overflow-y-auto">
                           {typeof it.content === 'string' ? it.content : JSON.stringify(it.content, null, 2)}

@@ -380,31 +380,30 @@ export default function RegionCookbookClient({ region }: { region: string }) {
                   href={`/recipes/${recipe.slug}`}
                   className="group rounded-xl overflow-hidden border border-border bg-card hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                 >
-                  <div className="aspect-[4/3] bg-stone-100 overflow-hidden relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                   <div className="aspect-[4/3] bg-stone-100 overflow-hidden relative">
                     <Image
                       src={recipe.hero_image_url}
                       alt={recipe.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     <div className="absolute top-2 right-2 flex items-center gap-2">
                       {recipe.source_url && (
-                        <a
-                          href={recipe.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
                             if (recipe.source_url) {
-                              window.open(recipe.source_url, '_blank')
+                              window.open(recipe.source_url, '_blank', 'noopener,noreferrer')
                             }
                           }}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
                           title="View original source"
                         >
                           🔗
-                        </a>
+                        </button>
                       )}
                       {recipe.is_tested && (
                         <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-500 text-white">

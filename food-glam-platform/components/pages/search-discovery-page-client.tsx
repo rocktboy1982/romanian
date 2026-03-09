@@ -985,7 +985,7 @@ function SearchDiscoveryPageClientContent() {
                     <div className="rounded-xl overflow-hidden flex flex-col h-full border transition-all hover:shadow-lg" style={{ background: 'rgba(255,255,255,0.75)', borderColor: 'rgba(0,0,0,0.1)' }}>
                       {/* Image */}
                       <div className="relative">
-                        <Image src={c.hero_image_url} alt={c.title} className="w-full h-44 object-cover" />
+                        <Image src={c.hero_image_url} alt={c.title} width={400} height={176} className="w-full h-44 object-cover" />
                         {/* Category badge */}
                         <span
                           className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold shadow"

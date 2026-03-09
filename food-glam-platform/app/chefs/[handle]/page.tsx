@@ -378,7 +378,7 @@ export default function ChefPage() {
                               >
                                 {item.data.attachedRecipe && (
                                   <div className="mb-3 rounded-lg overflow-hidden" style={{ height: 80 }}>
-                                    <Image src={item.data.attachedRecipe.hero_image_url} alt="" className="w-full h-full object-cover" />
+                                    <Image src={item.data.attachedRecipe.hero_image_url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" />
                                   </div>
                                 )}
 
