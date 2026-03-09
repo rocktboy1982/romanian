@@ -324,6 +324,68 @@ export default function PartyPlanClient() {
     }
   }, [state, ingredientsByCategory, copyShoppingList])
 
+  // Print shopping list
+  const printShoppingList = useCallback(() => {
+    let html = `<!DOCTYPE html><html><head><title>${state.partyName} - Listă de cumpărături</title><style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 780px; margin: 0 auto; padding: 32px 40px; color: #111; font-size: 16px; line-height: 1.5; }
+      h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+      .meta { font-size: 15px; color: #555; margin-bottom: 28px; border-bottom: 2px solid #111; padding-bottom: 14px; }
+      h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin: 24px 0 10px 0; }
+      .cocktails-header { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin: 32px 0 10px 0; }
+      ul { list-style: none; padding: 0; margin: 0; }
+      li.item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; border-bottom: 1px solid #f2f2f2; }
+      .check { width: 18px; height: 18px; border: 2px solid #bbb; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+      .name { font-weight: 600; font-size: 16px; }
+      .qty { color: #7c3aed; font-weight: 700; font-size: 15px; float: right; }
+      .cocktail-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+      .cocktail-rounds { color: #888; font-size: 13px; }
+      @media print {
+        body { padding: 0; font-size: 13pt; }
+        @page { size: A4; margin: 1.8cm 2cm; }
+        h1 { font-size: 22pt; }
+        .meta { font-size: 12pt; }
+        h2 { font-size: 9pt; }
+        .name { font-size: 13pt; }
+        .qty { font-size: 12pt; }
+        li.item { break-inside: avoid; }
+      }
+    </style></head><body>`
+
+    html += `<h1>🎉 ${state.partyName}</h1>`
+    html += `<p class="meta">👥 ${state.guestCount} oaspeți · 🍹 ${state.cocktails.length} cocktail-uri</p>`
+
+    // Shopping list by category
+    Object.entries(ingredientsByCategory).forEach(([category, items]) => {
+      html += `<h2>${getCategoryEmoji(category)} ${getCategoryLabel(category)}</h2><ul>`
+      items.forEach((ing) => {
+        const amount = (ing.amount * state.guestCount)
+        const formatted = amount % 1 === 0 ? String(amount) : amount.toFixed(1)
+        html += `<li class="item"><div class="check"></div><div class="name">${ing.name}</div><div class="qty">${formatted} ${ing.unit}</div></li>`
+      })
+      html += `</ul>`
+    })
+
+    // Cocktails list
+    html += `<p class="cocktails-header">COCKTAIL-URI SELECTATE</p><ul>`
+    state.cocktails.forEach((item) => {
+      const serves = item.cocktail.recipe_json?.serves || 1
+      const totalServings = item.rounds * state.guestCount / serves
+      html += `<li class="cocktail-item"><span>${item.cocktail.title}</span><span class="cocktail-rounds">${item.rounds} runde · ~${Math.ceil(totalServings)} porții</span></li>`
+    })
+    html += `</ul>`
+
+    html += `</body></html>`
+
+    const printWin = window.open('', '_blank', 'width=700,height=900')
+    if (printWin) {
+      printWin.document.write(html)
+      printWin.document.close()
+      printWin.focus()
+      printWin.print()
+    }
+  }, [state, ingredientsByCategory])
+
   return (
     <main
       className="min-h-screen"
@@ -601,7 +663,14 @@ export default function PartyPlanClient() {
                   className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all"
                   style={{ background: '#7c3aed', color: '#fff' }}
                 >
-                  📋 Copiază lista
+                  📋 Copiază
+                </button>
+                <button
+                  onClick={printShoppingList}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all"
+                  style={{ background: '#111', color: '#fff' }}
+                >
+                  🖨️ Printează
                 </button>
                 <button
                   onClick={shareShoppingList}
