@@ -106,13 +106,16 @@ async function worker(workerId, recipes, client, pool, progress) {
     // Skip if already processed (by another worker or previous run)
     if (progress.processedIds.includes(recipe.id)) continue
 
-    const dishName = extractDishName(recipe.slug)
+    // Use title (preserves proper dish name) instead of slug (loses diacritics/context)
+    const dishName = recipe.title
+      ? recipe.title.replace(/\s*\(.*?\)\s*/g, '').replace(/[^\w\s'-]/g, '').trim()
+      : extractDishName(recipe.slug)
     const num = `${tag} [${i + 1}/${recipes.length}]`
 
     process.stdout.write(`${num} "${dishName}" ... `)
 
     try {
-      const result = await client.search(dishName + ' food', { strategy: 'fallback' })
+      const result = await client.search(dishName + ' food recipe', { strategy: 'fallback' })
 
       if (!result && !client.hasCapacity()) {
         console.log(`\n${tag} All APIs limited. Pausing 10 min...`)
@@ -169,18 +172,26 @@ async function main() {
   const pool = new Pool(DB)
   const progress = loadProgress()
 
-  const { rows: recipes } = await pool.query(`
-    SELECT id, slug, title
-    FROM posts
-    WHERE type = 'recipe'
-      AND image_attribution IS NULL
-      AND (
-        hero_image_url LIKE 'https://images.unsplash.com/photo-%'
-        OR hero_image_url LIKE '%sndimg.com%'
-        OR hero_image_url LIKE '%afcdn.com%'
-      )
-    ORDER BY slug
-  `)
+  // Mode: 'missing' = only recipes without any image, 'mismatch' = re-upgrade existing bad images
+  const mode = process.argv[3] || 'missing'
+  let query
+  if (mode === 'mismatch') {
+    query = `
+      SELECT id, slug, title FROM posts
+      WHERE type = 'recipe' AND status = 'active'
+        AND image_attribution IS NULL
+        AND hero_image_url IS NOT NULL AND hero_image_url != ''
+      ORDER BY slug
+    `
+  } else {
+    query = `
+      SELECT id, slug, title FROM posts
+      WHERE type = 'recipe' AND status = 'active'
+        AND (hero_image_url IS NULL OR hero_image_url = '')
+      ORDER BY slug
+    `
+  }
+  const { rows: recipes } = await pool.query(query)
 
   const remaining = recipes.filter(r => !progress.processedIds.includes(r.id))
 
