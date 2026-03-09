@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { COCKTAIL_COLLECTIONS } from '@/lib/cocktail-collections'
 
 export const metadata: Metadata = {
   title: 'Cărți de Cocktailuri | MareChef.ro',
@@ -21,6 +23,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://marechef.ro/cocktailbooks',
   },
+}
+
+interface Cocktail {
+  id: string
+  slug: string
+  title: string
+  hero_image_url: string | null
 }
 
 /* ─── spirit families ───────────────────────────────────────────────────── */
@@ -91,52 +100,39 @@ const SPIRIT_GROUPS = [
 ]
 
 /* ─── featured cocktail collections ─────────────────────────────────────── */
-const COCKTAIL_COLLECTIONS = [
-  {
-    title: 'Cocktailuri Clasice',
-    desc: 'Rețete clasice desăvârșite',
-    emoji: '🍸',
-    count: 32,
-    img: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=600&q=80',
-  },
-  {
-    title: 'Răcoritoare de Vară',
-    desc: 'Ușoare, răcoritoare și fructate',
-    emoji: '☀️',
-    count: 18,
-    img: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80',
-  },
-  {
-    title: 'Încălzitoare de Iarnă',
-    desc: 'Condimentate, calde și reconfortante',
-    emoji: '🔥',
-    count: 14,
-    img: 'https://images.unsplash.com/photo-1578897367052-e0e6b5b0b2b0?w=600&q=80',
-  },
-  {
-    title: 'Băuturi Ușoare',
-    desc: 'Savoare fără exces',
-    emoji: '🌱',
-    count: 21,
-    img: 'https://images.unsplash.com/photo-1497534446932-c925b458314e?w=600&q=80',
-  },
-  {
-    title: 'Cocktailuri de Brunch',
-    desc: 'Mimosa, Bloody Mary și altele',
-    emoji: '🥂',
-    count: 16,
-    img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80',
-  },
-  {
-    title: 'Tiki & Tropicale',
-    desc: 'Evadare cu rom intens',
-    emoji: '🏝️',
-    count: 12,
-    img: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&q=80',
-  },
-]
 
-export default function CocktailBooksPage() {
+interface CollectionWithPreviews {
+  slug: string
+  title: string
+  desc: string
+  emoji: string
+  img: string
+  count: number
+  previews: Cocktail[]
+}
+
+export default async function CocktailBooksPage() {
+  const supabase = createServiceSupabaseClient()
+
+  // Fetch preview cocktails for each collection
+  const collectionsWithPreviews: CollectionWithPreviews[] = await Promise.all(
+    COCKTAIL_COLLECTIONS.map(async (col) => {
+      const { data: cocktails } = await supabase
+        .from('posts')
+        .select('id, slug, title, hero_image_url')
+        .eq('type', 'cocktail')
+        .eq('status', 'active')
+        .in('slug', col.slugs)
+        .limit(4)
+
+      const matchedCocktails = cocktails || []
+      return {
+        ...col,
+        count: col.slugs.length,
+        previews: matchedCocktails,
+      }
+    })
+  )
   return (
     <main
       className="min-h-screen"
@@ -239,60 +235,60 @@ export default function CocktailBooksPage() {
         </section>
 
         {/* ── FEATURED COLLECTIONS ── */}
-        <section>
-          <h2 className="ff text-xl font-bold mb-6" style={{ color: '#111' }}>Colecții Populare</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {COCKTAIL_COLLECTIONS.map((col) => (
-              <Link
-                key={col.title}
-                href={`/search?q=${encodeURIComponent(col.title)}&mode=cocktails`}
-                className="group relative flex flex-col rounded-2xl overflow-hidden border transition-all duration-300"
-                style={{
-                  height: '280px',
-                  background: '#fff',
-                  borderColor: 'rgba(0,0,0,0.08)',
-                  borderWidth: '1px',
-                }}
-              >
-                 {/* Image top - larger */}
-                 <div className="h-[160px] overflow-hidden flex-shrink-0 w-full relative">
-                   <Image
-                     src={col.img}
-                     alt={col.title}
-                     fill
-                     className="object-cover group-hover:scale-105 transition-transform duration-500"
-                     sizes="300px"
-                   />
-                </div>
+         <section>
+           <h2 className="ff text-xl font-bold mb-6" style={{ color: '#111' }}>Colecții Populare</h2>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+             {collectionsWithPreviews.map((col) => (
+               <Link
+                 key={col.slug}
+                 href={`/cocktailbooks/collection/${col.slug}`}
+                 className="group relative flex flex-col rounded-2xl overflow-hidden border transition-all duration-300"
+                 style={{
+                   height: '280px',
+                   background: '#fff',
+                   borderColor: 'rgba(0,0,0,0.08)',
+                   borderWidth: '1px',
+                 }}
+               >
+                  {/* Image top - larger */}
+                  <div className="h-[160px] overflow-hidden flex-shrink-0 w-full relative">
+                    <Image
+                      src={col.img}
+                      alt={col.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="300px"
+                    />
+                 </div>
 
-                {/* Text bottom */}
-                <div className="flex-1 px-4 py-4 flex flex-col justify-between">
-                  <div>
-                    <h3 className="ff font-bold text-lg leading-tight mb-2 flex items-center gap-2" style={{ color: '#111' }}>
-                      <span>{col.emoji}</span>
-                      {col.title}
-                    </h3>
-                    <p style={{ color: '#888' }} className="text-sm leading-relaxed">{col.desc}</p>
-                  </div>
-                  <div className="flex items-end justify-between gap-2 pt-2">
-                    <span
-                      className="text-xs font-semibold px-2.5 py-1 rounded-lg ml-auto flex-shrink-0"
-                      style={{ background: 'rgba(139,92,246,0.15)', color: '#7c3aed' }}
-                    >
-                      {col.count} cocktail-uri
-                    </span>
-                  </div>
-                </div>
+                 {/* Text bottom */}
+                 <div className="flex-1 px-4 py-4 flex flex-col justify-between">
+                   <div>
+                     <h3 className="ff font-bold text-lg leading-tight mb-2 flex items-center gap-2" style={{ color: '#111' }}>
+                       <span>{col.emoji}</span>
+                       {col.title}
+                     </h3>
+                     <p style={{ color: '#888' }} className="text-sm leading-relaxed">{col.desc}</p>
+                   </div>
+                   <div className="flex items-end justify-between gap-2 pt-2">
+                     <span
+                       className="text-xs font-semibold px-2.5 py-1 rounded-lg ml-auto flex-shrink-0"
+                       style={{ background: 'rgba(139,92,246,0.15)', color: '#7c3aed' }}
+                     >
+                       {col.count} cocktail-uri
+                     </span>
+                   </div>
+                 </div>
 
-                {/* Hover border */}
-                <div
-                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  style={{ border: '1px solid rgba(167,139,250,0.4)' }}
-                />
-              </Link>
-            ))}
-          </div>
-        </section>
+                 {/* Hover border */}
+                 <div
+                   className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                   style={{ border: '1px solid rgba(167,139,250,0.4)' }}
+                 />
+               </Link>
+             ))}
+           </div>
+         </section>
 
         {/* ── QUICK LINKS ── */}
         <section>
