@@ -104,11 +104,106 @@ function parseIngredient(ingredientStr: string): { amount: number; unit: string;
   // Common units: cl, ml, oz, linguri, lingurita, liniute, linii, cana, pahar, etc.
   const unitMatch = rest.match(/^([a-zA-ZăâîșțĂÂÎȘȚ]+\.?)\s+(.+)$/)
   if (unitMatch) {
-    return { amount, unit: unitMatch[1], name: unitMatch[2].trim() }
+    return { amount, unit: unitMatch[1], name: translateIngredientName(unitMatch[2].trim()) }
   }
 
   // No unit recognised — treat as piece
-  return { amount, unit: 'bucată', name: rest || str }
+  return { amount, unit: 'bucată', name: translateIngredientName(rest || str) }
+}
+
+/**
+ * Translate common English ingredient names and known bad Romanian translations
+ * into correct bar Romanian.
+ */
+function translateIngredientName(name: string): string {
+  const n = name.trim()
+  const lower = n.toLowerCase()
+
+  // Common direct mappings (case-insensitive key → Romanian value)
+  const MAP: Record<string, string> = {
+    // Dairy
+    'cream': 'frișcă lichidă',
+    'crema': 'frișcă lichidă',
+    'heavy cream': 'frișcă lichidă',
+    'light cream': 'frișcă ușoară',
+    'half and half': 'jumătate frișcă, jumătate lapte',
+    'jumătate și jumătate': 'jumătate frișcă, jumătate lapte',
+    'whipped cream': 'frișcă bătută',
+    // Fruits / garnish
+    'lemon': 'lămâie',
+    'lime': 'limetă',
+    // Herbs — wrong machine translation
+    'monetărie': 'mentă',  // "mint" was translated as a coin-mint
+    // Sweet & sour
+    'dulce și acru': 'mix dulce-acru',
+    'dulce-acru': 'mix dulce-acru',
+    'sweet and sour': 'mix dulce-acru',
+    'sweet & sour': 'mix dulce-acru',
+    // Spirits - English names
+    'light rum': 'rom ușor',
+    'dark rum': 'rom negru',
+    'aged rum': 'rom îmbătrânit',
+    'spiced rum': 'rom condimentat',
+    'blended whisky': 'whisky blended',
+    'scotch': 'scotch whisky',
+    'bourbon': 'bourbon',
+    'rye whisky': 'whisky rye',
+    // Mixers
+    'club soda': 'apă sodă',
+    'soda water': 'apă sodă',
+    'tonic water': 'apă tonică',
+    'ginger beer': 'bere de ghimbir',
+    'ginger ale': 'ginger ale',
+    'cranberry juice': 'suc de afine roșii',
+    'orange juice': 'suc de portocale',
+    'pineapple juice': 'suc de ananas',
+    'lemon juice': 'suc de lămâie',
+    'lime juice': 'suc de limetă',
+    'grapefruit juice': 'suc de grapefruit',
+    'tomato juice': 'suc de roșii',
+    // Liqueurs — brand normalization
+    'amaro muntenegru': 'Amaro Montenegro',
+    'crema de cacao': 'Cremă de Cacao',
+    'creme de cacao': 'Cremă de Cacao',
+    'crème de cacao': 'Cremă de Cacao',
+    'creme de menthe': 'Cremă de Mentă',
+    'crème de menthe': 'Cremă de Mentă',
+    // Bitters
+    'angostura bitters': 'Angostura Bitters',
+    'orange bitters': 'bitters de portocale',
+    // Other bar staples
+    'simple syrup': 'sirop de zahăr',
+    'sugar syrup': 'sirop de zahăr',
+    'grenadine': 'grenadină',
+    'triple sec': 'Triple Sec',
+    'egg white': 'albuș de ou',
+    'egg yolk': 'gălbenuș de ou',
+    'whole egg': 'ou întreg',
+    'coconut cream': 'cremă de cocos',
+    'coconut milk': 'lapte de cocos',
+  }
+
+  // Exact match (case-insensitive)
+  if (MAP[lower]) return MAP[lower]
+
+  // Partial substitutions for compound names (e.g. "Cream" at end of phrase)
+  let result = n
+  result = result.replace(/\bcream\b/gi, 'frișcă lichidă')
+  result = result.replace(/\blemon\b/gi, 'lămâie')
+  result = result.replace(/\blime\b/gi, 'limetă')
+  result = result.replace(/\bmonetărie\b/gi, 'mentă')
+  result = result.replace(/\blight rum\b/gi, 'rom ușor')
+  result = result.replace(/\bdark rum\b/gi, 'rom negru')
+  result = result.replace(/[Dd]ulce[\s-]și[\s-]acru/g, 'mix dulce-acru')
+  result = result.replace(/[Cc]reme de [Cc]acao/g, 'Cremă de Cacao')
+  result = result.replace(/[Cc]rème de [Cc]acao/g, 'Cremă de Cacao')
+  result = result.replace(/[Cc]reme de [Mm]enthe/g, 'Cremă de Mentă')
+  result = result.replace(/[Aa]maro [Mm]untenegru/g, 'Amaro Montenegro')
+  // "a cincea" / "al cincilea" = a fifth (750ml bottle)
+  result = result.replace(/^a\s+cincea\s+/i, 'sticlă (750ml) ')
+  result = result.replace(/^al\s+cincilea\s+/i, 'sticlă (750ml) ')
+
+  return result
 }
 
 /**
@@ -124,8 +219,13 @@ function normalizeToShoppingUnit(amount: number, unit: string): { amount: number
     return { amount, unit: 'picături' }
   }
 
+  // Jigger → ml (1 jigger = 44 ml)
+  if (u === 'jigger' || u === 'jiggers') {
+    return { amount: Math.round(amount * 44), unit: 'ml' }
+  }
+
   // Shots → ml (1 shot ≈ 30 ml)
-  if (u === 'shot' || u === 'shots' || u === 'lovituri') {
+  if (u === 'shot' || u === 'shots' || u === 'lovituri' || u === 'lovitură') {
     return { amount: Math.round(amount * 30), unit: 'ml' }
   }
 
