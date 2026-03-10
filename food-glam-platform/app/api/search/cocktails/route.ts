@@ -103,6 +103,17 @@ export async function GET(req: NextRequest) {
         tags: post.food_tags || [],
         votes: 0, // votes column doesn't exist, use 0
         quality_score: post.quality_score || 0,
+        recipe_json: {
+          ingredients: recipeJson.ingredients || [],
+          serves: recipeJson.serves || 1,
+          spirit: recipeJson.spirit || 'none',
+          category: recipeJson.category || 'non-alcoholic',
+          difficulty: recipeJson.difficulty || 'easy',
+          spiritLabel: recipeJson.spiritLabel || '',
+          glassware: recipeJson.glassware || '',
+          garnish: recipeJson.garnish || '',
+          steps: recipeJson.steps || [],
+        },
         is_tested: post.is_tested || false,
         created_by: {
           id: post.created_by || 'unknown',

@@ -44,42 +44,102 @@ interface AggregatedIngredient {
 }
 
 function parseIngredient(ingredientStr: string): { amount: number; unit: string; name: string } {
-  // Parse strings like "60 ml Gin", "30 ml Fresh lemon juice", "1 Lime wedge"
-  const match = ingredientStr.match(/^([\d.]+)\s*([a-zA-Z\s]*?)\s+(.+)$/)
-  if (match) {
-    const amount = parseFloat(match[1]) || 1
-    const unit = match[2].trim() || 'piece'
-    const name = match[3].trim()
-    return { amount, unit, name }
+  const str = ingredientStr.trim()
+
+  // Match leading amount: mixed fraction "1 1/2", simple fraction "1/2", or decimal/integer "60"
+  const amountMatch = str.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.?\d*)/)
+  if (!amountMatch) {
+    return { amount: 1, unit: 'bucată', name: str }
   }
-  return { amount: 1, unit: 'piece', name: ingredientStr }
+
+  const amountStr = amountMatch[0].trim()
+  const rest = str.slice(amountMatch[0].length).trim()
+
+  // Parse the numeric value
+  let amount = 1
+  if (amountStr.includes('/')) {
+    if (amountStr.includes(' ')) {
+      // Mixed fraction: "1 1/2"
+      const spaceIdx = amountStr.lastIndexOf(' ')
+      const whole = parseInt(amountStr.slice(0, spaceIdx), 10)
+      const [num, den] = amountStr.slice(spaceIdx + 1).split('/').map(Number)
+      amount = whole + num / den
+    } else {
+      // Simple fraction: "3/4"
+      const [num, den] = amountStr.split('/').map(Number)
+      amount = num / den
+    }
+  } else {
+    amount = parseFloat(amountStr) || 1
+  }
+
+  // Parse unit and name from remainder
+  // Handles both Latin units (oz, ml) and Romanian units (lingurita, cana, etc.)
+  const unitMatch = rest.match(/^([a-zA-ZăâîșțĂÂÎȘȚ]+\.?)\s+(.+)$/)
+  if (unitMatch) {
+    return { amount, unit: unitMatch[1], name: unitMatch[2].trim() }
+  }
+
+  // No unit recognised — treat as piece
+  return { amount, unit: 'bucată', name: rest || str }
 }
 
 function categorizeIngredient(name: string): string {
   const lower = name.toLowerCase()
 
-  // Spirits
-  if (['gin', 'vodka', 'rum', 'whisky', 'tequila', 'brandy', 'cognac', 'mezcal'].some(s => lower.includes(s))) {
+  // Spirits — English + Romanian variants
+  if ([
+    'gin', 'vodka', 'vodcă', 'vodca', 'rum', 'whisky', 'whiskey', 'whiski',
+    'tequila', 'brandy', 'cognac', 'mezcal', 'bourbon', 'scotch',
+    'coniac', 'rachiu', 'țuică', 'tuica', 'palincă', 'palinca',
+  ].some(s => lower.includes(s))) {
     return 'spirits'
   }
 
-  // Liqueurs
-  if (['campari', 'aperol', 'vermouth', 'amaretto', 'cointreau', 'triple sec', 'chartreuse', 'maraschino', 'amaro', 'kahlua', 'baileys', 'frangelico', 'chambord', 'benedictine', 'st. germain', 'elderflower'].some(l => lower.includes(l))) {
+  // Liqueurs — English + Romanian variants
+  if ([
+    'campari', 'aperol', 'vermouth', 'vermut', 'amaretto', 'cointreau',
+    'triple sec', 'chartreuse', 'maraschino', 'amaro', 'kahlua', 'baileys',
+    'frangelico', 'chambord', 'benedictine', 'st. germain', 'elderflower',
+    'licor', 'lichior', 'creme de', 'crème de', 'cremă de', 'lillet',
+    'suze', 'aperitiv', 'bitter',
+  ].some(l => lower.includes(l))) {
     return 'liqueurs'
   }
 
-  // Mixers
-  if (['soda', 'tonic', 'cola', 'ginger beer', 'ginger ale', 'juice', 'lemon juice', 'lime juice', 'orange juice', 'cranberry', 'pineapple', 'coconut', 'cream', 'milk', 'egg white', 'club soda', 'sparkling water'].some(m => lower.includes(m))) {
+  // Mixers — English + Romanian
+  if ([
+    'soda', 'tonic', 'cola', 'ginger beer', 'ginger ale',
+    'juice', 'suc de', 'suc ', 'sucul',
+    'coconut', 'cream', 'lapte', 'milk',
+    'egg white', 'albuș', 'albus',
+    'club soda', 'sparkling water', 'apă gazoasă', 'apa gazoasa',
+    'apă sodă', 'apa soda', 'sifon',
+    'espresso', 'cafea', 'coffee',
+    'ceai', 'tea', 'nectar',
+  ].some(m => lower.includes(m))) {
     return 'mixers'
   }
 
-  // Garnishes
-  if (['lime', 'lemon', 'orange', 'cherry', 'olive', 'mint', 'basil', 'rosemary', 'cucumber', 'celery', 'pineapple', 'cinnamon'].some(g => lower.includes(g))) {
+  // Garnishes — English + Romanian
+  if ([
+    'lime', 'lemon', 'lămâie', 'lamaie', 'orange', 'portocal',
+    'cherry', 'cireașă', 'cireasa', 'olive', 'măslină', 'maslina',
+    'mint', 'mentă', 'menta', 'basil', 'busuioc',
+    'rosemary', 'rozmarin', 'cucumber', 'castravete',
+    'celery', 'țelină', 'telina', 'cinnamon', 'scorțișoară', 'scortisoara',
+    'ananas', 'pineapple', 'grapefruit', 'mango', 'fructe',
+  ].some(g => lower.includes(g))) {
     return 'garnishes'
   }
 
   // Syrups & Bitters
-  if (['simple syrup', 'sugar', 'honey', 'grenadine', 'angostura', 'peychauds', 'orange bitters'].some(s => lower.includes(s))) {
+  if ([
+    'simple syrup', 'sirop', 'sugar', 'zahăr', 'zahar',
+    'honey', 'miere', 'grenadine', 'grenadină', 'grenadina',
+    'angostura', 'peychauds', 'orange bitters', 'agave',
+    'orgeat', 'falernum',
+  ].some(s => lower.includes(s))) {
     return 'syrups'
   }
 
@@ -668,13 +728,6 @@ export default function PartyPlanClient() {
                 👥 {state.guestCount} oaspeți · 🍹 {state.cocktails.length} cocktail-uri
               </p>
               <div className="flex gap-2">
-                <button
-                  onClick={copyShoppingList}
-                  className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all"
-                  style={{ background: '#7c3aed', color: '#fff' }}
-                >
-                  📋 Copiază
-                </button>
                 <button
                   onClick={printShoppingList}
                   className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all"
