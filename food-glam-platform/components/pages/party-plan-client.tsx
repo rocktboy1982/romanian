@@ -63,10 +63,17 @@ interface AggregatedIngredient {
 }
 
 function parseIngredient(ingredientStr: string): { amount: number; unit: string; name: string } {
-  const str = ingredientStr.trim()
+  let str = ingredientStr.trim()
 
-  // Match leading amount: mixed fraction "1 1/2", simple fraction "1/2", or decimal/integer "60"
-  const amountMatch = str.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.?\d*)/)
+  // Strip Romanian range expressions: "2 până la 3 linii X" → "3 linii X" (take upper bound)
+  const rangeMatch = str.match(/^\d+[.,]?\d*\s+până\s+la\s+(\d+[.,]?\d*)\s+(.+)$/)
+  if (rangeMatch) {
+    str = `${rangeMatch[1]} ${rangeMatch[2]}`
+  }
+
+  // Match leading amount: mixed fraction "1 1/2", simple fraction "1/2",
+  // comma decimal "4,5", dot decimal "4.5", or plain integer "60"
+  const amountMatch = str.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+[.,]\d+|\d+)/)
   if (!amountMatch) {
     return { amount: 1, unit: 'bucată', name: str }
   }
@@ -89,11 +96,12 @@ function parseIngredient(ingredientStr: string): { amount: number; unit: string;
       amount = num / den
     }
   } else {
-    amount = parseFloat(amountStr) || 1
+    // Handle comma decimal "4,5" → 4.5
+    amount = parseFloat(amountStr.replace(',', '.')) || 1
   }
 
   // Parse unit and name from remainder
-  // Handles both Latin units (oz, ml) and Romanian units (lingurita, cana, etc.)
+  // Common units: cl, ml, oz, linguri, lingurita, liniute, linii, cana, pahar, etc.
   const unitMatch = rest.match(/^([a-zA-ZăâîșțĂÂÎȘȚ]+\.?)\s+(.+)$/)
   if (unitMatch) {
     return { amount, unit: unitMatch[1], name: unitMatch[2].trim() }
