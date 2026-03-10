@@ -10,6 +10,11 @@ interface CocktailData {
   slug: string
   title: string
   hero_image_url: string | null
+  // Flat fields returned by search API
+  ingredients?: string[]
+  serves?: number
+  spirit?: string
+  // Nested object (also returned by search API, and stored in DB)
   recipe_json: {
     ingredients?: string[]
     serves?: number
@@ -17,6 +22,20 @@ interface CocktailData {
     category?: string
     difficulty?: string
   } | null
+}
+
+/** Read ingredients from whichever location has data (recipe_json or flat) */
+function getIngredients(c: CocktailData): string[] {
+  const list = c.recipe_json?.ingredients ?? c.ingredients ?? []
+  return list.filter((s) => s && s.trim() !== '')
+}
+
+function getServes(c: CocktailData): number {
+  return c.recipe_json?.serves ?? c.serves ?? 1
+}
+
+function getSpirit(c: CocktailData): string | undefined {
+  return c.recipe_json?.spirit ?? c.spirit
 }
 
 interface PartyItem {
@@ -150,8 +169,8 @@ function aggregateIngredients(cocktails: PartyItem[]): AggregatedIngredient[] {
   const accumulator: Record<string, AggregatedIngredient> = {}
 
   cocktails.forEach((item) => {
-    const serves = item.cocktail.recipe_json?.serves || 1
-    const ingredients = item.cocktail.recipe_json?.ingredients || []
+    const serves = getServes(item.cocktail)
+    const ingredients = getIngredients(item.cocktail)
     const multiplier = item.rounds / serves // rounds / serves, multiply by guestCount later
 
     ingredients.forEach((ingredientStr) => {
@@ -235,7 +254,7 @@ export default function PartyPlanClient() {
 
         // Detect cocktails that are missing ingredients (saved before API fix)
         const stale = parsed.cocktails.filter(
-          (item) => !item.cocktail.recipe_json?.ingredients?.length
+          (item) => getIngredients(item.cocktail).length === 0
         )
 
         if (stale.length === 0) {
@@ -246,7 +265,7 @@ export default function PartyPlanClient() {
         // Re-fetch full data for stale cocktails by their slugs
         const hydrated = await Promise.all(
           parsed.cocktails.map(async (item) => {
-            if (item.cocktail.recipe_json?.ingredients?.length) return item
+            if (getIngredients(item.cocktail).length > 0) return item
             try {
               const res = await fetch(
                 `/api/search/cocktails?q=${encodeURIComponent(item.cocktail.slug)}&per_page=5`
@@ -463,11 +482,11 @@ export default function PartyPlanClient() {
     } else {
       // Grouped by cocktail — each cocktail with its scaled ingredients
       state.cocktails.forEach((item) => {
-        const serves = item.cocktail.recipe_json?.serves || 1
+        const serves = getServes(item.cocktail)
         const multiplier = (item.rounds * state.guestCount) / serves
         const totalServings = Math.ceil(item.rounds * state.guestCount / serves)
         html += `<h2>🍹 ${item.cocktail.title} <span style="font-weight:400;font-size:10px;text-transform:none;letter-spacing:0">${item.rounds} runde · ~${totalServings} porții</span></h2><ul>`
-        const ingredients = item.cocktail.recipe_json?.ingredients || []
+        const ingredients = getIngredients(item.cocktail)
         ingredients.forEach((ingStr) => {
           const parsed = parseIngredient(ingStr)
           const scaledAmount = parsed.amount * multiplier
@@ -639,9 +658,9 @@ export default function PartyPlanClient() {
                         <p className="text-xs font-semibold line-clamp-2" style={{ color: '#111' }}>
                           {cocktail.title}
                         </p>
-                        {cocktail.recipe_json?.spirit && (
+                        {getSpirit(cocktail) && (
                           <p className="text-[10px] mt-1" style={{ color: '#888' }}>
-                            {cocktail.recipe_json.spirit}
+                            {getSpirit(cocktail)}
                           </p>
                         )}
                       </div>
@@ -696,13 +715,13 @@ export default function PartyPlanClient() {
                         <h3 className="font-semibold text-sm mb-1" style={{ color: '#111' }}>
                           {item.cocktail.title}
                         </h3>
-                        {item.cocktail.recipe_json?.spirit && (
+                        {getSpirit(item.cocktail) && (
                           <p className="text-xs mb-2" style={{ color: '#888' }}>
-                            {item.cocktail.recipe_json.spirit}
+                            {getSpirit(item.cocktail)}
                           </p>
                         )}
                         <p className="text-xs" style={{ color: '#666' }}>
-                          {item.rounds} runde · {Math.round((item.rounds * state.guestCount) / (item.cocktail.recipe_json?.serves || 1))} porții
+                          {item.rounds} runde · {Math.round((item.rounds * state.guestCount) / getServes(item.cocktail))} porții
                         </p>
                       </div>
 
@@ -842,10 +861,10 @@ export default function PartyPlanClient() {
               /* ── Grouped by cocktail ── */
               <div className="space-y-6">
                 {state.cocktails.map((item) => {
-                  const serves = item.cocktail.recipe_json?.serves || 1
+                  const serves = getServes(item.cocktail)
                   const multiplier = (item.rounds * state.guestCount) / serves
                   const totalServings = Math.ceil(item.rounds * state.guestCount / serves)
-                  const ingredients = item.cocktail.recipe_json?.ingredients || []
+                  const ingredients = getIngredients(item.cocktail)
                   return (
                     <div key={item.id} className="p-6 rounded-xl" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
                       <div className="flex items-center justify-between mb-4">
