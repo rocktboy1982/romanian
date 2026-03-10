@@ -111,6 +111,44 @@ function parseIngredient(ingredientStr: string): { amount: number; unit: string;
   return { amount, unit: 'bucată', name: rest || str }
 }
 
+/**
+ * Convert bar-specific measurement units to practical shopping units.
+ * E.g. 60 linii (dashes) → 30 ml, 10 oz → 300 ml, etc.
+ */
+function normalizeToShoppingUnit(amount: number, unit: string): { amount: number; unit: string } {
+  const u = unit.toLowerCase()
+
+  // Dashes → picături (drops), convert to ml only when very large
+  if (u === 'linii' || u === 'liniute' || u === 'liniuțe' || u === 'dash' || u === 'dashes') {
+    if (amount > 50) return { amount: Math.ceil(amount * 0.5), unit: 'ml' }
+    return { amount, unit: 'picături' }
+  }
+
+  // Shots → ml (1 shot ≈ 30 ml)
+  if (u === 'shot' || u === 'shots' || u === 'lovituri') {
+    return { amount: Math.round(amount * 30), unit: 'ml' }
+  }
+
+  // oz → ml (1 oz ≈ 30 ml)
+  if (u === 'oz') {
+    return { amount: Math.round(amount * 30), unit: 'ml' }
+  }
+
+  // cl → ml for consistency (1 cl = 10 ml), but only for large amounts
+  if (u === 'cl' && amount >= 100) {
+    return { amount: Math.round(amount / 100), unit: 'L' }
+  }
+
+  // linguri / lingurita stay as-is (practical units)
+  return { amount, unit }
+}
+
+/** Format a numeric amount for display: no trailing .0, max 1 decimal */
+function formatAmount(n: number): string {
+  if (Number.isInteger(n)) return String(n)
+  return n.toFixed(1).replace(/\.0$/, '')
+}
+
 function categorizeIngredient(name: string): string {
   const lower = name.toLowerCase()
 
@@ -403,8 +441,9 @@ export default function PartyPlanClient() {
     Object.entries(ingredientsByCategory).forEach(([category, items]) => {
       lines.push(`${getCategoryEmoji(category)} ${getCategoryLabel(category)}`)
       items.forEach((ing) => {
-        const amount = (ing.amount * state.guestCount).toFixed(1)
-        lines.push(`  • ${amount} ${ing.unit} ${ing.name}`)
+        const raw = ing.amount * state.guestCount
+        const norm = normalizeToShoppingUnit(raw, ing.unit)
+        lines.push(`  • ${formatAmount(norm.amount)} ${norm.unit} ${ing.name}`)
       })
       lines.push('')
     })
@@ -427,8 +466,9 @@ export default function PartyPlanClient() {
     Object.entries(ingredientsByCategory).forEach(([category, items]) => {
       lines.push(`${getCategoryEmoji(category)} ${getCategoryLabel(category)}`)
       items.forEach((ing) => {
-        const amount = (ing.amount * state.guestCount).toFixed(1)
-        lines.push(`  • ${amount} ${ing.unit} ${ing.name}`)
+        const raw = ing.amount * state.guestCount
+        const norm = normalizeToShoppingUnit(raw, ing.unit)
+        lines.push(`  • ${formatAmount(norm.amount)} ${norm.unit} ${ing.name}`)
       })
       lines.push('')
     })
@@ -481,9 +521,9 @@ export default function PartyPlanClient() {
       Object.entries(ingredientsByCategory).forEach(([category, items]) => {
         html += `<h2>${getCategoryEmoji(category)} ${getCategoryLabel(category)}</h2><ul>`
         items.forEach((ing) => {
-          const amount = (ing.amount * state.guestCount)
-          const formatted = amount % 1 === 0 ? String(amount) : amount.toFixed(1)
-          html += `<li class="item"><div class="check"></div><div class="name">${ing.name}</div><div class="qty">${formatted} ${ing.unit}</div></li>`
+          const raw = ing.amount * state.guestCount
+          const norm = normalizeToShoppingUnit(raw, ing.unit)
+          html += `<li class="item"><div class="check"></div><div class="name">${ing.name}</div><div class="qty">${formatAmount(norm.amount)} ${norm.unit}</div></li>`
         })
         html += `</ul>`
       })
@@ -498,8 +538,8 @@ export default function PartyPlanClient() {
         ingredients.forEach((ingStr) => {
           const parsed = parseIngredient(ingStr)
           const scaledAmount = parsed.amount * multiplier
-          const formatted = scaledAmount % 1 === 0 ? String(Math.round(scaledAmount)) : scaledAmount.toFixed(1)
-          html += `<li class="item"><div class="check"></div><div class="name">${parsed.name}</div><div class="qty">${formatted} ${parsed.unit}</div></li>`
+          const norm = normalizeToShoppingUnit(scaledAmount, parsed.unit)
+          html += `<li class="item"><div class="check"></div><div class="name">${parsed.name}</div><div class="qty">${formatAmount(norm.amount)} ${norm.unit}</div></li>`
         })
         html += `</ul>`
       })
@@ -849,14 +889,15 @@ export default function PartyPlanClient() {
                     </h3>
                     <ul className="space-y-2">
                       {items.map((ing, idx) => {
-                        const totalAmount = (ing.amount * state.guestCount).toFixed(1)
+                        const raw = ing.amount * state.guestCount
+                        const norm = normalizeToShoppingUnit(raw, ing.unit)
                         return (
                           <li key={idx} className="flex items-center justify-between text-sm">
                             <span style={{ color: '#333' }}>
                               {ing.name}
                             </span>
                             <span className="font-semibold" style={{ color: '#7c3aed' }}>
-                              {totalAmount} {ing.unit}
+                              {formatAmount(norm.amount)} {norm.unit}
                             </span>
                           </li>
                         )
@@ -888,12 +929,12 @@ export default function PartyPlanClient() {
                           {ingredients.map((ingStr, idx) => {
                             const parsed = parseIngredient(ingStr)
                             const scaledAmount = parsed.amount * multiplier
-                            const formatted = scaledAmount % 1 === 0 ? String(Math.round(scaledAmount)) : scaledAmount.toFixed(1)
+                            const norm = normalizeToShoppingUnit(scaledAmount, parsed.unit)
                             return (
                               <li key={idx} className="flex items-center justify-between text-sm">
                                 <span style={{ color: '#333' }}>{parsed.name}</span>
                                 <span className="font-semibold" style={{ color: '#7c3aed' }}>
-                                  {formatted} {parsed.unit}
+                                  {formatAmount(norm.amount)} {norm.unit}
                                 </span>
                               </li>
                             )
