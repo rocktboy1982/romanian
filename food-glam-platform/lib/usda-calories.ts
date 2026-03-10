@@ -991,6 +991,58 @@ const UNIT_TO_GRAMS: Record<string, number> = {
   'bag':          200,
   'jar':          350,
   'bottle':       750,
+
+  // ── Romanian measurement units ────────────────────────────────────────────
+  // Volume (tablespoon / teaspoon / cup / glass)
+  'lingurita':     5,   // teaspoon (linguriță — without diacritic)
+  'lingurite':     5,   // teaspoons plural
+  'linguriță':     5,   // teaspoon (with diacritic)
+  'lingurițe':     5,   // teaspoons plural (with diacritic)
+  'lingura':      15,   // tablespoon (lingură — without diacritic)
+  'linguri':      15,   // tablespoons plural
+  'lingură':      15,   // tablespoon (with diacritic)
+  'cana':        240,   // cup (cană — without diacritic)
+  'cani':        240,   // cups plural
+  'cană':        240,   // cup (with diacritic)
+  'pahar':       200,   // glass / cup (~200 ml)
+  'pahare':      200,   // glasses plural
+  // Containers
+  'cutie':       400,   // can / tin (standard 400 g)
+  'cutii':       400,   // cans plural
+  'conserva':    400,   // conserved / canned
+  'conservă':    400,   // canned (with diacritic)
+  'borcan':      350,   // jar
+  'borcane':     350,   // jars plural
+  'sticla':      750,   // bottle (sticlă)
+  'sticlă':      750,   // bottle (with diacritic)
+  'punga':       200,   // bag (pungă)
+  'pungă':       200,   // bag (with diacritic)
+  'pungi':       200,   // bags plural
+  'plic':          7,   // sachet / packet (~1 tbsp powder)
+  // Count / portion units
+  'bucata':      100,   // piece (bucată)
+  'bucată':      100,   // piece (with diacritic)
+  'bucati':      100,   // pieces (bucăți)
+  'bucăți':      100,   // pieces (with diacritic)
+  'felie':        30,   // slice
+  'felii':        30,   // slices
+  'fâșie':        30,   // strip
+  'fasie':        30,   // strip (without diacritic)
+  'crenguita':     5,   // sprig (crenguță)
+  'crenguță':      5,   // sprig (with diacritic)
+  'crenguice':     5,   // sprigs variant
+  'crenguțe':      5,   // sprigs plural (with diacritic)
+  'fir':           5,   // strand / stalk (e.g. fir de pătrunjel)
+  'fire':          5,   // strands
+  'varf':          1,   // tip (of spoon) — pinch equivalent
+  'vârf':          1,   // tip (with diacritic)
+  'praf':          1,   // dash / pinch (of powder)
+  'capatana':    200,   // head (of garlic/cabbage) — căpățână
+  'căpățână':    200,   // head (with diacritics)
+  'capatani':    200,   // heads plural
+  'legatura':     50,   // bunch/bundle (legătură)
+  'legaturi':     50,   // bunches
+  'legătură':     50,   // bunch (with diacritic)
 }
 
 /**
