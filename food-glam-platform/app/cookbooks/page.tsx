@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { REGION_META } from '@/lib/recipe-taxonomy'
@@ -152,14 +153,15 @@ export default async function CookbooksPage() {
 
       {/* ── HERO BAND ── */}
       <div className="relative w-full overflow-hidden" style={{ height: '280px' }}>
-         {/* Background image with dark overlay */}
-         <Image
-           src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80"
-           alt=""
-           fill
-           className="absolute object-cover"
-           sizes="100vw"
-         />
+       {/* Background image with dark overlay */}
+          <FallbackImage
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80"
+            alt=""
+            fill
+            className="absolute object-cover"
+            sizes="100vw"
+            fallbackEmoji="🍽️"
+          />
         <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)' }} />
 
         {/* Hero content */}
@@ -223,16 +225,17 @@ export default async function CookbooksPage() {
                         }}
                       >
                         {/* Image: 95px */}
-                         <div className="h-[95px] overflow-hidden flex-shrink-0 w-full relative">
-                           {img ? (
-                             <Image
-                               src={img}
-                               alt={r.label}
-                               fill
-                               className="object-cover group-hover:scale-105 transition-transform duration-500"
-                               sizes="200px"
-                             />
-                          ) : (
+                          <div className="h-[95px] overflow-hidden flex-shrink-0 w-full relative">
+                            {img ? (
+                              <FallbackImage
+                                src={img}
+                                alt={r.label}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                sizes="200px"
+                                fallbackEmoji="🍽️"
+                              />
+                           ) : (
                             <div
                               className="w-full h-full flex items-center justify-center text-4xl"
                               style={{ background: '#e8e8e8' }}
@@ -296,16 +299,17 @@ export default async function CookbooksPage() {
                   borderWidth: '1px',
                 }}
               >
-                 {/* Image top (60%) */}
-                 <div className="h-[108px] overflow-hidden flex-shrink-0 w-full relative">
-                   <Image
-                     src={col.img}
-                     alt={col.title}
-                     fill
-                     className="object-cover group-hover:scale-104 transition-transform duration-500"
-                     sizes="200px"
-                   />
-                </div>
+                  {/* Image top (60%) */}
+                  <div className="h-[108px] overflow-hidden flex-shrink-0 w-full relative">
+                    <FallbackImage
+                      src={col.img}
+                      alt={col.title}
+                      fill
+                      className="object-cover group-hover:scale-104 transition-transform duration-500"
+                      sizes="200px"
+                      fallbackEmoji="🍽️"
+                    />
+                 </div>
 
                 {/* Text bottom (40%) */}
                 <div className="flex-1 px-3 py-2.5 flex flex-col justify-between">
@@ -353,16 +357,17 @@ export default async function CookbooksPage() {
                     borderColor: 'rgba(0,0,0,0.1)',
                     borderWidth: '1px',
                   }}
-                >
-                   {cuisine.featured_image_url ? (
-                     <Image
-                       src={cuisine.featured_image_url}
-                       alt={cuisine.name}
-                       fill
-                       className="object-cover group-hover:scale-105 transition-transform duration-500"
-                       sizes="200px"
-                     />
-                  ) : (
+                 >
+                    {cuisine.featured_image_url ? (
+                      <FallbackImage
+                        src={cuisine.featured_image_url}
+                        alt={cuisine.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="200px"
+                        fallbackEmoji="🍽️"
+                      />
+                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl" style={{ background: '#e8e8e8' }}>
                       🍽️
                     </div>

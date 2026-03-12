@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -336,15 +337,16 @@ export default function MealPlanCalendarPage() {
                           className="group relative bg-background rounded-md border border-border/60 p-1.5 text-xs hover:border-primary/40 transition-all"
                         >
                           <div className="flex items-start gap-1.5">
-                            {entry.recipe_image && (
-                              <Image
-                                src={entry.recipe_image}
-                                alt=""
-                                width={28}
-                                height={28}
-                                className="rounded object-cover shrink-0"
-                              />
-                            )}
+                             {entry.recipe_image && (
+                               <FallbackImage
+                                 src={entry.recipe_image}
+                                 alt=""
+                                 width={28}
+                                 height={28}
+                                 className="rounded object-cover shrink-0"
+                                 fallbackEmoji="🍽️"
+                               />
+                             )}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium leading-tight line-clamp-2 text-foreground">
                                 {entry.recipe_title || "Rețetă"}
@@ -464,15 +466,16 @@ export default function MealPlanCalendarPage() {
                   onClick={() => handleAddRecipe(recipe)}
                   className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent text-left transition-colors"
                 >
-                  {recipe.hero_image_url ? (
-                    <Image
-                      src={recipe.hero_image_url}
-                      alt=""
-                      width={48}
-                      height={48}
-                      className="rounded-md object-cover shrink-0"
-                    />
-                  ) : (
+                   {recipe.hero_image_url ? (
+                     <FallbackImage
+                       src={recipe.hero_image_url}
+                       alt=""
+                       width={48}
+                       height={48}
+                       className="rounded-md object-cover shrink-0"
+                       fallbackEmoji="🍽️"
+                     />
+                   ) : (
                     <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-lg shrink-0">
                        <span role="img" aria-label="rețetă">&#x1F372;</span>
                     </div>

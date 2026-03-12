@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { MOCK_RECIPES } from '@/lib/mock-data'
@@ -297,12 +298,12 @@ export default function NewPostPage() {
               <div className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden z-10"
                 style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
                 {searchResults.map(recipe => (
-                  <button
-                    key={recipe.id}
-                    onClick={() => handleSelectRecipe(recipe)}
-                    className="w-full flex items-center gap-2 p-2 text-sm hover:bg-black/[0.04] transition-colors border-b border-b-black/[0.06] last:border-b-0"
-                  >
-                    <Image src={recipe.hero_image_url} alt="" width={40} height={40} className="w-10 h-10 rounded object-cover" />
+                   <button
+                     key={recipe.id}
+                     onClick={() => handleSelectRecipe(recipe)}
+                     className="w-full flex items-center gap-2 p-2 text-sm hover:bg-black/[0.04] transition-colors border-b border-b-black/[0.06] last:border-b-0"
+                   >
+                     <FallbackImage src={recipe.hero_image_url} alt="" width={40} height={40} className="w-10 h-10 rounded object-cover" fallbackEmoji="🍽️" />
                     <div className="flex-1 text-left">
                       <p className="text-sm font-semibold truncate">{recipe.title}</p>
                     </div>
@@ -312,11 +313,11 @@ export default function NewPostPage() {
             )}
           </div>
 
-          {/* Attached recipe preview */}
-          {attachedRecipe && (
-            <div className="flex gap-3 p-3 rounded-lg"
-              style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)' }}>
-              <Image src={attachedRecipe.hero_image_url} alt="" width={64} height={64} className="w-16 h-16 rounded object-cover flex-shrink-0" />
+           {/* Attached recipe preview */}
+           {attachedRecipe && (
+             <div className="flex gap-3 p-3 rounded-lg"
+               style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)' }}>
+               <FallbackImage src={attachedRecipe.hero_image_url} alt="" width={64} height={64} className="w-16 h-16 rounded object-cover flex-shrink-0" fallbackEmoji="🍽️" />
               <div className="flex-1">
                 <Link href={`/recipes/${attachedRecipe.slug}`} className="text-sm font-semibold hover:underline">
                   🍽️ {attachedRecipe.title}
@@ -370,11 +371,11 @@ export default function NewPostPage() {
                     className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none"
                     style={inputStyle}
                   />
-                  {productImageUrl && (
-                    <div className="flex-shrink-0 w-12 h-12 rounded flex items-center justify-center overflow-hidden" style={{ background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)' }}>
-                      <Image src={productImageUrl} alt="preview" className="w-full h-full object-cover" onError={() => {}} />
-                    </div>
-                  )}
+                   {productImageUrl && (
+                     <div className="flex-shrink-0 w-12 h-12 rounded flex items-center justify-center overflow-hidden" style={{ background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)' }}>
+                       <FallbackImage src={productImageUrl} alt="preview" className="w-full h-full object-cover" fallbackEmoji="🛍️" />
+                     </div>
+                   )}
                 </div>
               </div>
 

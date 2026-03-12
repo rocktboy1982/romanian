@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
 import { MOCK_RECIPES, MOCK_APPROACHES } from '@/lib/mock-data'
@@ -85,28 +86,29 @@ function TopRecipesTab() {
             <RankBadge rank={i + 1} />
           </div>
 
-           {/* Thumbnail */}
-           <div
-             className="flex-shrink-0 rounded-2xl overflow-hidden relative"
-             style={{ width: 96, height: 96 }}
-           >
-             {recipe.hero_image_url ? (
-               <Image
-                 src={recipe.hero_image_url}
-                 alt=""
-                 fill
-                 className="object-cover group-hover:scale-105 transition-transform duration-300"
-                 sizes="96px"
-               />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-2xl"
-                style={{ background: '#e8e8e8' }}
-              >
-                🍽️
-              </div>
-            )}
-          </div>
+            {/* Thumbnail */}
+            <div
+              className="flex-shrink-0 rounded-2xl overflow-hidden relative"
+              style={{ width: 96, height: 96 }}
+            >
+              {recipe.hero_image_url ? (
+                <FallbackImage
+                  src={recipe.hero_image_url}
+                  alt=""
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="96px"
+                  fallbackEmoji="🍽️"
+                />
+             ) : (
+               <div
+                 className="w-full h-full flex items-center justify-center text-2xl"
+                 style={{ background: '#e8e8e8' }}
+               >
+                 🍽️
+               </div>
+             )}
+           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -193,21 +195,22 @@ function TopChefsTab() {
               <RankBadge rank={i + 1} />
             </div>
 
-            {/* Avatar */}
-            <Link href={`/chefs/${chef.handle}`} className="flex-shrink-0 group">
-               <div
-                 className="rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-orange-500 transition-all relative"
-                 style={{ width: 72, height: 72 }}
-               >
-                 <Image
-                   src={chef.avatar_url}
-                   alt=""
-                   fill
-                   className="object-cover"
-                   sizes="72px"
-                 />
-              </div>
-            </Link>
+             {/* Avatar */}
+             <Link href={`/chefs/${chef.handle}`} className="flex-shrink-0 group">
+                <div
+                  className="rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-orange-500 transition-all relative"
+                  style={{ width: 72, height: 72 }}
+                >
+                  <FallbackImage
+                    src={chef.avatar_url}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="72px"
+                    fallbackEmoji="👨‍🍳"
+                  />
+               </div>
+             </Link>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
@@ -285,28 +288,29 @@ function RisingTab() {
               <RankBadge rank={i + 1} />
             </div>
 
-             {/* Thumbnail */}
-             <div
-               className="flex-shrink-0 rounded-2xl overflow-hidden relative"
-               style={{ width: 96, height: 96 }}
-             >
-               {recipe.hero_image_url ? (
-                 <Image
-                   src={recipe.hero_image_url}
-                   alt=""
-                   fill
-                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                   sizes="96px"
-                 />
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center text-2xl"
-                style={{ background: '#e8e8e8' }}
-                >
-                  🍽️
-                </div>
-              )}
-            </div>
+              {/* Thumbnail */}
+              <div
+                className="flex-shrink-0 rounded-2xl overflow-hidden relative"
+                style={{ width: 96, height: 96 }}
+              >
+                {recipe.hero_image_url ? (
+                  <FallbackImage
+                    src={recipe.hero_image_url}
+                    alt=""
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="96px"
+                    fallbackEmoji="🍽️"
+                  />
+               ) : (
+                 <div
+                   className="w-full h-full flex items-center justify-center text-2xl"
+                 style={{ background: '#e8e8e8' }}
+                 >
+                   🍽️
+                 </div>
+               )}
+             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
@@ -360,24 +364,25 @@ function ByCuisineTab() {
           className="group relative rounded-2xl overflow-hidden"
           style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }}
         >
-           {/* Hero image */}
-           <div className="relative h-44 overflow-hidden">
-             {top.hero_image_url ? (
-               <Image
-                 src={top.hero_image_url}
-                 alt=""
-                 fill
-                 className="object-cover group-hover:scale-105 transition-transform duration-500"
-                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-               />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-3xl"
-                style={{ background: '#222' }}
-              >
-                🌍
-              </div>
-            )}
+            {/* Hero image */}
+            <div className="relative h-44 overflow-hidden">
+              {top.hero_image_url ? (
+                <FallbackImage
+                  src={top.hero_image_url}
+                  alt=""
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  fallbackEmoji="🍽️"
+                />
+             ) : (
+               <div
+                 className="w-full h-full flex items-center justify-center text-3xl"
+                 style={{ background: '#222' }}
+               >
+                 🌍
+               </div>
+             )}
             {/* Dark overlay */}
             <div
               className="absolute inset-0"

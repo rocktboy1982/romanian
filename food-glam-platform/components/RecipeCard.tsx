@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Heart, MessageSquare, Share2, Bookmark } from 'lucide-react'
@@ -133,7 +134,7 @@ export default function RecipeCard({
     <div className="border rounded-xl overflow-hidden flex flex-col bg-card shadow-sm hover:shadow-md transition-shadow h-full">
        {/* Image */}
        <div className="relative">
-         <Image
+         <FallbackImage
            src={hero_image_url}
            alt={title}
            width={400}
@@ -142,6 +143,7 @@ export default function RecipeCard({
            onClick={() => router.push(`/recipes/${slug}`)}
            style={{ cursor: 'pointer' }}
            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+           fallbackEmoji="🍽️"
          />
         {/* Tag badge top-left */}
         {tag && (
@@ -273,17 +275,11 @@ export default function RecipeCard({
           </button>
         </div>
 
-        {/* Creator */}
-        <div className="border-t pt-2 mt-auto flex items-center gap-2">
-           <div className="w-7 h-7 rounded-full bg-stone-200 overflow-hidden flex-shrink-0">
-             {created_by.avatar_url ? (
-               <Image src={created_by.avatar_url} alt={created_by.display_name} width={28} height={28} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-bold">
-                {created_by.display_name[0]}
-              </div>
-            )}
-          </div>
+         {/* Creator */}
+         <div className="border-t pt-2 mt-auto flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-stone-200 overflow-hidden flex-shrink-0">
+              <FallbackImage src={created_by.avatar_url || ''} alt={created_by.display_name} width={28} height={28} className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
+           </div>
           <span className="text-xs text-muted-foreground truncate flex-1">
             {created_by.display_name}
           </span>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
@@ -40,13 +41,14 @@ export default async function CocktailBookDetailPage({ params }: { params: Promi
           <span style={{ color: '#ccc' }}>{cookbook.title}</span>
         </nav>
 
-        {cookbook.cover_image_url && (
-          <Image
-            src={cookbook.cover_image_url}
-            alt={cookbook.title}
-            className="w-full h-48 object-cover rounded-xl mb-6"
-          />
-        )}
+         {cookbook.cover_image_url && (
+           <FallbackImage
+             src={cookbook.cover_image_url}
+             alt={cookbook.title}
+             className="w-full h-48 object-cover rounded-xl mb-6"
+             fallbackEmoji="📖"
+           />
+         )}
 
         <h1 className="text-3xl font-bold mb-1" style={{ color: '#111' }}>{cookbook.title}</h1>
         {cookbook.description && (
@@ -55,14 +57,14 @@ export default async function CocktailBookDetailPage({ params }: { params: Promi
 
         {owner && (
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-full overflow-hidden" style={{ background: '#c8cfe0' }}>
-              {owner.avatar_url ? (
-                <Image src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" />
-              ) : (
-               <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: '#8B1A2B' }}>
-                   {owner.display_name[0]}
-                 </div>
-              )}
+             <div className="w-8 h-8 rounded-full overflow-hidden" style={{ background: '#c8cfe0' }}>
+               {owner.avatar_url ? (
+                 <FallbackImage src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
+               ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: '#8B1A2B' }}>
+                    {owner.display_name[0]}
+                  </div>
+               )}
             </div>
             <span className="text-sm" style={{ color: '#555' }}>By {owner.display_name}</span>
           </div>

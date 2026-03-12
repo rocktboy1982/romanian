@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useFeatureFlags } from "@/components/feature-flags-provider";
 import { useTheme } from "@/components/theme-provider";
 import { supabase } from "@/lib/supabase-client";
@@ -63,9 +64,9 @@ export default function MeClientPage() {
         {/* Avatar */}
         <div className="w-20 h-20 mx-auto rounded-full mb-3 flex items-center justify-center text-3xl select-none font-bold overflow-hidden"
           style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
-          {mockUser?.avatar_url
-            ? <Image src={mockUser.avatar_url} alt="" className="w-full h-full object-cover" />
-            : (mockUser?.display_name?.charAt(0).toUpperCase() ?? '👤')}
+           {mockUser?.avatar_url
+             ? <FallbackImage src={mockUser.avatar_url} alt="" className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
+             : (mockUser?.display_name?.charAt(0).toUpperCase() ?? '👤')}
         </div>
         {mockUser && (
           <div className="mb-3">

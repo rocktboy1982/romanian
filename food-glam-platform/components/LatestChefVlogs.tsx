@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
 import { sanitizeText } from '@/lib/sanitize'
@@ -79,27 +80,28 @@ export default function LatestChefVlogs() {
                i < SORTED_POSTS.length - 1 ? 'border-b border-gray-100 dark:border-white/[0.04]' : ''
              }`}
            >
-            {/* Chef avatar */}
-            <div
-              className="flex-shrink-0 rounded-xl overflow-hidden"
-              style={{ width: 112, height: 112 }}
-            >
-               {chef?.avatar_url ? (
-                 <Image
-                   src={chef.avatar_url}
-                   alt=""
-                   width={112}
-                   height={112}
-                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                 />
-               ) : (
-                 <div
-                   className="w-full h-full flex items-center justify-center text-xl bg-gray-200 dark:bg-[#1a1a1a]"
-                 >
-                  👨‍🍳
-                </div>
-              )}
-            </div>
+             {/* Chef avatar */}
+             <div
+               className="flex-shrink-0 rounded-xl overflow-hidden"
+               style={{ width: 112, height: 112 }}
+             >
+                {chef?.avatar_url ? (
+                  <FallbackImage
+                    src={chef.avatar_url}
+                    alt=""
+                    width={112}
+                    height={112}
+                    fallbackEmoji="👨‍🍳"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-xl bg-gray-200 dark:bg-[#1a1a1a]"
+                  >
+                   👨‍🍳
+                 </div>
+               )}
+             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">

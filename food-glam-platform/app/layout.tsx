@@ -86,6 +86,17 @@ export default function RootLayout({
             <ToastClient>
               <Navigation />
               {children}
+              {/* Global Footer */}
+              <footer className="w-full border-t border-gray-200 dark:border-gray-700 mt-16 py-8 px-4">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  <p>© {new Date().getFullYear()} MareChef.ro — Platformă Culinară</p>
+                  <div className="flex items-center gap-4">
+                    <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      Fotografii furnizate de Pexels
+                    </a>
+                  </div>
+                </div>
+              </footer>
               <CookieConsent />
               {process.env.NODE_ENV !== 'production' && <FeatureFlagPanel />}
             </ToastClient>

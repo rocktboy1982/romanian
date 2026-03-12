@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
@@ -70,13 +71,14 @@ export default async function CuisinePage({ params }: { params: Promise<{ slug: 
                 href={`/recipes/${recipe.slug}`}
                 className="group rounded-xl overflow-hidden border border-border bg-card hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
               >
-                <div className="aspect-[4/3] bg-stone-100 overflow-hidden relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <Image
-                    src={recipe.hero_image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80'}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                 <div className="aspect-[4/3] bg-stone-100 overflow-hidden relative">
+                   {/* eslint-disable-next-line @next/next/no-img-element */}
+                   <FallbackImage
+                     src={recipe.hero_image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80'}
+                     alt={recipe.title}
+                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                     fallbackEmoji="🍽️"
+                   />
                   {recipe.is_tested && (
                     <span className="absolute top-2 right-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-500 text-white">
                       Tested ✓

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter } from 'next/navigation'
 import LatestChefVlogs from '@/components/LatestChefVlogs'
 import TrendingSection from '@/components/TrendingSection'
@@ -245,11 +246,12 @@ export default function Home() {
                 onClick={() => setActiveStory(activeStory === i ? null : i)}
               >
                 <div className="relative">
-                   <Image
+                   <FallbackImage
                       src={chef.avatar}
                       alt={chef.name}
                       width={68}
                       height={68}
+                      fallbackEmoji="👨‍🍳"
                       className={`w-[68px] h-[68px] rounded-full object-cover ${
                         chef.hasStory && activeStory !== i
                           ? 'p-0.5'
@@ -290,7 +292,7 @@ export default function Home() {
               <div className="slide-up mt-4 rounded-2xl overflow-hidden bg-white border border-gray-200 dark:bg-[#1a1a1a] dark:border-white/10">
                 {/* Hero image */}
                  <div className="relative" style={{ height: 200 }}>
-                   <Image src={img} alt={postTitle} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw" />
+                   <FallbackImage src={img} alt={postTitle} fill className="object-cover" fallbackEmoji="🍽️" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 80vw" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)' }} />
                   {/* Close */}
                   <button
@@ -310,9 +312,9 @@ export default function Home() {
 
                 {/* Body */}
                 <div className="p-4">
-                   {/* Chef info row */}
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <Image src={chef.avatar} alt={chef.name} width={36} height={36} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                    {/* Chef info row */}
+                     <div className="flex items-center gap-2.5 mb-3">
+                       <FallbackImage src={chef.avatar} alt={chef.name} width={36} height={36} fallbackEmoji="👨‍🍳" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                      <div className="flex-1 min-w-0">
                        <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight truncate">{chef.name}</p>
                        <p className="text-[11px] text-gray-600 dark:text-gray-400 truncate">{chef.handle} · {(chef.followers / 1000).toFixed(1)}k urmăritori</p>
@@ -436,13 +438,13 @@ export default function Home() {
                       style={{ animationDelay: `${i * 40}ms` }}
                     >
                       {/* image — fixed 280px, always equal */}
-                    <div
-                       className="relative cursor-pointer flex-shrink-0"
-                       style={{ height: 280 }}
-                       onDoubleClick={() => toggleLike(recipe.id)}
-                       onClick={() => router.push(`/recipes/${recipe.slug}`)}
-                     >
-                         <Image src={recipe.hero_image_url} alt={recipe.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                     <div
+                        className="relative cursor-pointer flex-shrink-0"
+                        style={{ height: 280 }}
+                        onDoubleClick={() => toggleLike(recipe.id)}
+                        onClick={() => router.push(`/recipes/${recipe.slug}`)}
+                      >
+                          <FallbackImage src={recipe.hero_image_url} alt={recipe.title} fill className="object-cover" fallbackEmoji="🍽️" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }} />
                         {/* tag badge */}
                         <div className="absolute top-2 left-2">
@@ -468,9 +470,9 @@ export default function Home() {
                           <h3 className="ff-display font-bold text-sm leading-snug mb-1.5 line-clamp-2">{recipe.title}</h3>
                           <div className="flex items-center justify-between">
                              <div className="flex items-center gap-1.5">
-                               {recipe.created_by.avatar_url && (
-                                 <Image src={recipe.created_by.avatar_url} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover border border-white/30" />
-                               )}
+                                {recipe.created_by.avatar_url && (
+                                  <FallbackImage src={recipe.created_by.avatar_url} alt="" width={24} height={24} fallbackEmoji="👨‍🍳" className="w-6 h-6 rounded-full object-cover border border-white/30" />
+                                )}
                               <span className="text-xs text-gray-300 truncate max-w-[72px]">{recipe.created_by.display_name}</span>
                             </div>
                             <button

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import FallbackImage from '@/components/FallbackImage'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { AdInArticle, AdSidebar } from '@/components/ads/ad-placements'
 
@@ -176,23 +177,17 @@ export default async function CocktailDetailPage({ params }: PageProps) {
       className="min-h-screen"
       style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', fontFamily: "'Inter', sans-serif" }}
     >
-      {/* ── Hero ── */}
-      <div className="relative w-full" style={{ maxHeight: 480, overflow: 'hidden' }}>
-        {cocktail.hero_image_url ? (
-          <img
-            src={cocktail.hero_image_url}
+       {/* ── Hero ── */}
+       <div className="relative w-full" style={{ maxHeight: 480, overflow: 'hidden' }}>
+         <FallbackImage
+            src={cocktail.hero_image_url || ''}
             alt={cocktail.title}
             className="w-full object-cover"
             style={{ maxHeight: 480, minHeight: 280 }}
-          />
-        ) : (
-          <div
-            className="w-full h-64 flex items-center justify-center text-5xl"
-            style={{ background: '#c8cfe0' }}
-          >
-            🍹
-          </div>
-        )}
+            fallbackEmoji="🍸"
+            width={1200}
+            height={480}
+         />
         {/* Gradient overlay */}
         <div
           className="absolute inset-0"
@@ -430,13 +425,16 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                       href={`/cocktails/${c.slug}`}
                       className="flex items-start gap-2 p-2 rounded-lg transition-all hover:bg-white/50"
                     >
-                      {c.hero_image_url && (
-                        <img
-                          src={c.hero_image_url}
-                          alt={c.title}
-                          className="w-12 h-12 rounded object-cover flex-shrink-0"
-                        />
-                      )}
+                       {c.hero_image_url && (
+                         <FallbackImage
+                           src={c.hero_image_url}
+                           alt={c.title}
+                           className="w-12 h-12 rounded object-cover flex-shrink-0"
+                           fallbackEmoji="🍸"
+                           width={48}
+                           height={48}
+                         />
+                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold line-clamp-2" style={{ color: '#111' }}>
                           {c.title}

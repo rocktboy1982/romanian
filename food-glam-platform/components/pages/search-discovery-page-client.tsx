@@ -2,6 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Search,
@@ -1011,9 +1012,9 @@ background: 'linear-gradient(135deg, rgba(139,26,43,0.12) 0%, rgba(184,57,78,0.0
                     style={{ animationDelay: `${idx * 40}ms`, animationFillMode: 'both', animationDuration: '300ms' }}
                   >
                     <div className="rounded-xl overflow-hidden flex flex-col h-full border transition-all hover:shadow-lg" style={{ background: 'rgba(255,255,255,0.75)', borderColor: 'rgba(0,0,0,0.1)' }}>
-                      {/* Image */}
-                      <div className="relative">
-                        <Image src={c.hero_image_url} alt={c.title} width={400} height={176} className="w-full h-44 object-cover" />
+                       {/* Image */}
+                       <div className="relative">
+                         <FallbackImage src={c.hero_image_url} alt={c.title} width={400} height={176} className="w-full h-44 object-cover" fallbackEmoji="🍽️" />
                         {/* Category badge */}
                         <span
                           className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold shadow"

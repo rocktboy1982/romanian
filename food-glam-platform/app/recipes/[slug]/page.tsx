@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Script from 'next/script'
 import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -296,27 +297,28 @@ function VideoEmbed({ url }: { url: string }) {
 }
 
 function PhotoGallery({ photos }: { photos: string[] }) {
-  const valid = photos.filter(Boolean)
-  if (valid.length === 0) return null
-  return (
-    <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
-      {valid.map((src, i) => (
-         <div
-           key={i}
-           className="flex-shrink-0 w-48 h-36 rounded-xl overflow-hidden border border-stone-200 shadow-sm snap-start relative"
-         >
-           <Image
-             src={src}
-             alt={`Photo ${i + 1}`}
-             fill
-             className="object-cover hover:scale-105 transition-transform duration-300"
-             sizes="200px"
-           />
-        </div>
-      ))}
-    </div>
-  )
-}
+   const valid = photos.filter(Boolean)
+   if (valid.length === 0) return null
+   return (
+     <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+       {valid.map((src, i) => (
+          <div
+            key={i}
+            className="flex-shrink-0 w-48 h-36 rounded-xl overflow-hidden border border-stone-200 shadow-sm snap-start relative"
+          >
+            <FallbackImage
+              src={src}
+              alt={`Photo ${i + 1}`}
+              fill
+              className="object-cover hover:scale-105 transition-transform duration-300"
+              sizes="200px"
+              fallbackEmoji="🍽️"
+            />
+         </div>
+       ))}
+     </div>
+   )
+ }
 
 /**
  * Helper function to convert time string (e.g., "30 min") to ISO 8601 duration (e.g., "PT30M")
@@ -528,7 +530,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         <main className="min-h-screen pb-24 md:pb-8" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}>
           {/* Hero Section */}
          <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
-           <Image src={heroImage} alt={mockRecipe.title} fill className="object-cover" sizes="100vw" />
+            <FallbackImage src={heroImage} alt={mockRecipe.title} fill className="object-cover" sizes="100vw" fallbackEmoji="🍽️" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
             <div className="container mx-auto max-w-4xl">
@@ -721,14 +723,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
                <Card className="shadow-sm">
                  <CardContent className="p-4">
                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Creat de</p>
-                   <div className="flex items-center gap-3">
-                      {creator.avatar_url ? (
-                        <Image src={creator.avatar_url} alt={creator.display_name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
-                     ) : (
-                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                         <span className="text-sm font-bold text-primary">{creator.display_name.charAt(0).toUpperCase()}</span>
-                       </div>
-                     )}
+                    <div className="flex items-center gap-3">
+                       {creator.avatar_url ? (
+                         <FallbackImage src={creator.avatar_url} alt={creator.display_name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" fallbackEmoji="👨‍🍳" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">{creator.display_name.charAt(0).toUpperCase()}</span>
+                        </div>
+                      )}
                      <div className="flex-1 min-w-0">
                        <p className="font-medium text-sm truncate">{creator.display_name}</p>
                        <p className="text-xs text-muted-foreground">{creator.handle}</p>
@@ -854,16 +856,17 @@ export default async function RecipePage({ params }: RecipePageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
         strategy="afterInteractive"
       />
-      <main className="min-h-screen pb-24 md:pb-8">
-      {/* Hero Section */}
-       <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
-         <Image
-           src={heroImage}
-           alt={post.title}
-           fill
-           className="object-cover"
-           sizes="100vw"
-         />
+       <main className="min-h-screen pb-24 md:pb-8">
+       {/* Hero Section */}
+        <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
+          <FallbackImage
+            src={heroImage}
+            alt={post.title}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            fallbackEmoji="🍽️"
+          />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
@@ -1121,22 +1124,23 @@ export default async function RecipePage({ params }: RecipePageProps) {
                <Card className="shadow-sm">
                  <CardContent className="p-4">
                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Creat de</p>
-                   <div className="flex items-center gap-3">
-                      {creator.avatar_url ? (
-                        <Image
-                          src={creator.avatar_url}
-                          alt={creator.display_name}
-                          width={40}
-                          height={40}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                     ) : (
-                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                         <span className="text-sm font-bold text-primary">
-                           {creator.display_name.charAt(0).toUpperCase()}
-                         </span>
-                       </div>
-                     )}
+                    <div className="flex items-center gap-3">
+                       {creator.avatar_url ? (
+                         <FallbackImage
+                           src={creator.avatar_url}
+                           alt={creator.display_name}
+                           width={40}
+                           height={40}
+                           className="w-10 h-10 rounded-full object-cover"
+                           fallbackEmoji="👨‍🍳"
+                         />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">
+                            {creator.display_name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                      <div className="flex-1 min-w-0">
                        <p className="font-medium text-sm truncate">{creator.display_name}</p>
                        <p className="text-xs text-muted-foreground">@{creator.handle}</p>

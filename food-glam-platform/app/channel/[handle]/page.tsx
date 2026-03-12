@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useParams } from 'next/navigation'
 import { Users, Grid3X3, Play, Image as ImageIcon, BookOpen, Info, UserPlus, UserCheck, UserMinus, Loader2 } from 'lucide-react'
 import RecipeCard from '@/components/RecipeCard'
@@ -225,17 +226,19 @@ export default function ChannelPage() {
 
   return (
     <main className="min-h-screen pb-24">
-      {/* ── Banner ────────────────────────────────────────── */}
-      <div className="relative h-48 md:h-64 overflow-hidden">
-        {profile.banner_url ? (
-          <Image
-            src={profile.banner_url}
-            alt={`${profile.display_name}'s banner`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500" />
-        )}
+       {/* ── Banner ────────────────────────────────────────── */}
+       <div className="relative h-48 md:h-64 overflow-hidden">
+         {profile.banner_url ? (
+           <FallbackImage
+             src={profile.banner_url}
+             alt={`${profile.display_name}'s banner`}
+             className="w-full h-full object-cover"
+             fill
+             fallbackEmoji="🍽️"
+           />
+         ) : (
+           <div className="w-full h-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500" />
+         )}
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
       </div>
@@ -243,20 +246,22 @@ export default function ChannelPage() {
       {/* ── Profile Header ────────────────────────────────── */}
       <div className="container mx-auto px-4 -mt-16 relative z-10">
         <div className="flex flex-col items-center">
-          {/* Avatar */}
-          <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
-            {profile.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt={profile.display_name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-orange-500 text-white text-3xl font-bold">
-                {initials}
-              </div>
-            )}
-          </div>
+           {/* Avatar */}
+           <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+             {profile.avatar_url ? (
+               <FallbackImage
+                 src={profile.avatar_url}
+                 alt={profile.display_name}
+                 className="w-full h-full object-cover"
+                 fill
+                 fallbackEmoji="👨‍🍳"
+               />
+             ) : (
+               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-orange-500 text-white text-3xl font-bold">
+                 {initials}
+               </div>
+             )}
+           </div>
 
           {/* Name & Handle */}
           <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight">
@@ -509,12 +514,14 @@ function ContentGrid({
                key={post.id}
                className="group relative border rounded-lg overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
              >
-               <div className="aspect-square overflow-hidden relative">
-                 <Image
-                   src={post.hero_image_url}
-                   alt={post.title}
-                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                 />
+                <div className="aspect-square overflow-hidden relative">
+                  <FallbackImage
+                    src={post.hero_image_url}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    fallbackEmoji="🍽️"
+                  />
                  {isOwnProfile && (
                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                      <DeleteContentButton

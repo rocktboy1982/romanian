@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { useTheme } from '@/components/theme-provider'
@@ -188,16 +189,16 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
                    className="flex items-center gap-2 text-sm font-medium"
                    style={{ color: theme === 'dark' ? '#ccc' : '#fff' }}
                  >
-                  {user.avatar_url ? (
-                    <Image src={user.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" />
-                  ) : (
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-                    >
-                      {(user.display_name ?? 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                   {user.avatar_url ? (
+                     <FallbackImage src={user.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" fallbackEmoji="👨‍🍳" />
+                   ) : (
+                     <div
+                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                       style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+                     >
+                       {(user.display_name ?? 'U').charAt(0).toUpperCase()}
+                     </div>
+                   )}
                   <span className="hidden lg:inline">{user.display_name ?? 'User'}</span>
                 </Link>
                  <button

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 
 /* ─── types ─────────────────────────────────────────────────────────────── */
@@ -925,17 +926,17 @@ export default function AdminClient() {
                           <input type="checkbox" checked={selectedContent.has(item.id)}
                             onChange={() => toggleSelectContent(item.id)} style={{ accentColor: '#ff9500' }} />
                         </label>
-                         <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
-                           <Image src={item.hero_image_url} alt="" fill className="object-cover" sizes="48px" />
-                        </div>
+                          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
+                            <FallbackImage src={item.hero_image_url} alt="" fill className="object-cover" sizes="48px" fallbackEmoji="🍽️" />
+                         </div>
                         <div className="min-w-0">
                           <div className="font-semibold text-sm truncate">{item.title}</div>
-                          <div className="text-xs truncate flex items-center gap-1.5 mt-0.5" style={{ color: '#666' }}>
-                             {item.created_by.avatar_url && (
-                               <Image src={item.created_by.avatar_url} alt="" width={16} height={16} className="w-4 h-4 rounded-full object-cover" />
-                            )}
-                            {item.created_by.display_name}
-                          </div>
+                           <div className="text-xs truncate flex items-center gap-1.5 mt-0.5" style={{ color: '#666' }}>
+                              {item.created_by.avatar_url && (
+                                <FallbackImage src={item.created_by.avatar_url} alt="" width={16} height={16} className="w-4 h-4 rounded-full object-cover" fallbackEmoji="👨‍🍳" />
+                             )}
+                             {item.created_by.display_name}
+                           </div>
                         </div>
                         <Badge status={item.status} />
                         <span className="text-sm" style={{ color: '#888' }}>❤️ {item.votes}</span>
@@ -969,11 +970,11 @@ export default function AdminClient() {
                           )}
                         </div>
                       </div>
-                      {previewItem?.id === item.id && (
-                         <div className="mx-3 mb-3 rounded-2xl p-5 flex gap-5"
-                           style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.1)' }}>
-                           <Image src={item.hero_image_url} alt="" width={160} height={128} className="object-cover rounded-xl flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
+                       {previewItem?.id === item.id && (
+                          <div className="mx-3 mb-3 rounded-2xl p-5 flex gap-5"
+                            style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <FallbackImage src={item.hero_image_url} alt="" width={160} height={128} className="object-cover rounded-xl flex-shrink-0" fallbackEmoji="🍽️" />
+                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-2">
                               <span className="ff-display font-bold text-lg">{item.title}</span>
                               <Badge status={item.status} />

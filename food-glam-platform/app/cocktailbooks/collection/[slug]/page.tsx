@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
@@ -109,15 +110,16 @@ export default async function CollectionPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* ── HERO SECTION ── */}
-      <div className="relative w-full overflow-hidden" style={{ height: '280px' }}>
-        <Image
-          src={collection.img}
-          alt={collection.title}
-          fill
-          className="absolute object-cover"
-          sizes="100vw"
-        />
+       {/* ── HERO SECTION ── */}
+       <div className="relative w-full overflow-hidden" style={{ height: '280px' }}>
+         <FallbackImage
+           src={collection.img}
+           alt={collection.title}
+           fill
+           className="absolute object-cover"
+           sizes="100vw"
+           fallbackEmoji="🍸"
+         />
         <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.50)' }} />
 
         <div className="relative h-full flex flex-col justify-end px-8 py-8 max-w-7xl mx-auto w-full">
@@ -159,17 +161,18 @@ export default async function CollectionPage({ params }: PageProps) {
                   className="rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg"
                   style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}
                 >
-                  {/* Image */}
-                  <div className="relative w-full" style={{ height: '240px' }}>
-                    {cocktail.hero_image_url ? (
-                      <Image
-                        src={cocktail.hero_image_url}
-                        alt={cocktail.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    ) : (
+                   {/* Image */}
+                   <div className="relative w-full" style={{ height: '240px' }}>
+                     {cocktail.hero_image_url ? (
+                       <FallbackImage
+                         src={cocktail.hero_image_url}
+                         alt={cocktail.title}
+                         fill
+                         className="object-cover"
+                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                         fallbackEmoji="🍸"
+                       />
+                     ) : (
                       <div
                         className="w-full h-full flex items-center justify-center text-4xl"
                         style={{ background: 'rgba(0,0,0,0.05)' }}

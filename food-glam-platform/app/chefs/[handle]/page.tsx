@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
@@ -173,14 +174,15 @@ export default function ChefPage() {
      <div style={{ minHeight: '100vh', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', fontFamily: "'Inter', sans-serif" }}>
        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');.ff-display{font-family:'Syne',sans-serif;}`}</style>
 
-      {/* ── Banner ── */}
-      <div className="relative" style={{ height: 220 }}>
-        <Image
-          src={profile.banner_url}
-          alt=""
-          fill
-          className="object-cover"
-        />
+       {/* ── Banner ── */}
+       <div className="relative" style={{ height: 220 }}>
+         <FallbackImage
+           src={profile.banner_url}
+           alt=""
+           fill
+           className="object-cover"
+           fallbackEmoji="🍽️"
+         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(245,245,245,0.97) 100%)' }} />
 
          {/* back button */}
@@ -195,14 +197,15 @@ export default function ChefPage() {
 
       {/* ── Profile header ── */}
       <div className="px-4 relative max-w-5xl mx-auto" style={{ marginTop: -56 }}>
-        {/* avatar + tier star */}
-        <div className="relative inline-block mb-3">
-           <Image
-             src={profile.avatar_url}
-             alt={profile.display_name}
-             className="rounded-full object-cover border-4"
-             style={{ width: 88, height: 88, borderColor: 'hsl(var(--background))' }}
-           />
+         {/* avatar + tier star */}
+         <div className="relative inline-block mb-3">
+            <FallbackImage
+              src={profile.avatar_url}
+              alt={profile.display_name}
+              className="rounded-full object-cover border-4"
+              style={{ width: 88, height: 88, borderColor: 'hsl(var(--background))' }}
+              fallbackEmoji="👨‍🍳"
+            />
            {profile.tier !== 'user' && (
              <span
                className="absolute bottom-0 right-0 flex items-center justify-center rounded-full"
@@ -328,13 +331,15 @@ export default function ChefPage() {
                                 className="group flex rounded-2xl overflow-hidden transition-all hover:ring-1 hover:ring-white/10"
                                 style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)', height: 416 }}
                               >
-                                {/* Image — left */}
-                                <Link href={`/recipes/${item.data.slug}`} className="relative overflow-hidden flex-shrink-0" style={{ flex: '1.3', minWidth: 0 }}>
-                                  <Image
-                                    src={item.data.hero_image_url}
-                                    alt={item.data.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                  />
+                                 {/* Image — left */}
+                                 <Link href={`/recipes/${item.data.slug}`} className="relative overflow-hidden flex-shrink-0" style={{ flex: '1.3', minWidth: 0 }}>
+                                   <FallbackImage
+                                     src={item.data.hero_image_url}
+                                     alt={item.data.title}
+                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                     fill
+                                     fallbackEmoji="🍽️"
+                                   />
                                    <div className="absolute top-2 left-2">
                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(255,149,0,0.9)', backdropFilter: 'blur(4px)' }}>
                        🍽️ Rețetă
@@ -377,11 +382,11 @@ export default function ChefPage() {
                                 className="rounded-2xl overflow-hidden p-4"
                                 style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }}
                               >
-                                {item.data.attachedRecipe && (
-                                  <div className="mb-3 rounded-lg overflow-hidden" style={{ height: 80 }}>
-                                    <Image src={item.data.attachedRecipe.hero_image_url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" />
-                                  </div>
-                                )}
+                                 {item.data.attachedRecipe && (
+                                   <div className="mb-3 rounded-lg overflow-hidden" style={{ height: 80 }}>
+                                     <FallbackImage src={item.data.attachedRecipe.hero_image_url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" fallbackEmoji="🍽️" />
+                                   </div>
+                                 )}
 
                                 <p className="text-sm leading-relaxed mb-3" style={{ color: '#333', whiteSpace: 'pre-wrap' }}>
                                   {sanitizeText(item.data.body)}
@@ -403,10 +408,10 @@ export default function ChefPage() {
                                       <span className="absolute top-0 right-0 px-2 py-0.5 text-xs font-bold rounded-full" style={{ background: 'rgba(212,160,23,0.3)', color: '#d4a017' }}>
                                         {item.data.sponsoredProduct.disclosure}
                                       </span>
-                                      <div className="flex gap-3 items-start pr-16">
-                                        {item.data.sponsoredProduct.imageUrl && (
-                                          <Image src={sanitizeUrl(item.data.sponsoredProduct.imageUrl)} alt="" className="w-16 h-16 rounded flex-shrink-0 object-cover" onError={() => {}} />
-                                        )}
+                                       <div className="flex gap-3 items-start pr-16">
+                                         {item.data.sponsoredProduct.imageUrl && (
+                                           <FallbackImage src={sanitizeUrl(item.data.sponsoredProduct.imageUrl)} alt="" className="w-16 h-16 rounded flex-shrink-0 object-cover" fallbackEmoji="🛍️" />
+                                         )}
                                         <div className="flex-1 min-w-0">
                                           <p className="font-semibold text-sm" style={{ color: '#111' }}>{item.data.sponsoredProduct.name}</p>
                                           <p className="text-xs leading-relaxed mt-1" style={{ color: '#666' }}>{item.data.sponsoredProduct.description}</p>

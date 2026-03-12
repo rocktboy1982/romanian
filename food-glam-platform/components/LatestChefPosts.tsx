@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
 import type { ChefBlogPost, ChefProfile } from '@/lib/mock-chef-data'
@@ -59,14 +60,15 @@ export default function LatestChefPosts() {
                 className="flex-shrink-0 rounded-2xl overflow-hidden relative group"
                 style={{ width: 200, height: 260, background: '#1a1a1a', scrollSnapAlign: 'start', display: 'block' }}
               >
-               {/* cover */}
-                 <Image
-                   src={post.hero_image_url}
-                   alt={post.title}
-                   fill
-                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                 />
+                {/* cover */}
+                  <FallbackImage
+                    src={post.hero_image_url}
+                    alt={post.title}
+                    fill
+                    fallbackEmoji="🍽️"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
 
                 {/* gradient overlay */}
                 <div
@@ -78,18 +80,19 @@ export default function LatestChefPosts() {
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   {/* chef row */}
                   {post.chef && (
-                    <Link
-                      href={`/chefs/${post.chef.handle}`}
-                      className="flex items-center gap-1.5 mb-2"
-                      onClick={e => e.stopPropagation()}
-                    >
-                       <Image
-                         src={post.chef.avatar_url}
-                         alt={post.chef.display_name}
-                         width={20}
-                         height={20}
-                         className="w-5 h-5 rounded-full object-cover border border-white/30 flex-shrink-0"
-                       />
+                     <Link
+                       href={`/chefs/${post.chef.handle}`}
+                       className="flex items-center gap-1.5 mb-2"
+                       onClick={e => e.stopPropagation()}
+                     >
+                        <FallbackImage
+                          src={post.chef.avatar_url}
+                          alt={post.chef.display_name}
+                          width={20}
+                          height={20}
+                          fallbackEmoji="👨‍🍳"
+                          className="w-5 h-5 rounded-full object-cover border border-white/30 flex-shrink-0"
+                        />
                       <span className="text-[11px] font-semibold truncate" style={{ color: '#ccc' }}>
                         {post.chef.display_name}
                       </span>

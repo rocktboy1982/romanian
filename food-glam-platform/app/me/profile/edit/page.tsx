@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { MOCK_CHEF_PROFILES } from '@/lib/mock-chef-data'
@@ -122,14 +123,14 @@ export default function EditProfilePage() {
     <div className="min-h-screen" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', fontFamily: "'Inter',sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');.ff{font-family:'Syne',sans-serif;}`}</style>
 
-      {/* Banner preview */}
-      <div className="relative w-full" style={{ height: 160 }}>
-        {bannerUrl ? (
-          <Image src={bannerUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#ff4d6d22,#ff950022)' }} />
-        )}
-        <div className="absolute inset-0" style={{ background: 'rgba(245,245,245,0.55)' }} />
+       {/* Banner preview */}
+       <div className="relative w-full" style={{ height: 160 }}>
+         {bannerUrl ? (
+           <FallbackImage src={bannerUrl} alt="" className="w-full h-full object-cover" fallbackEmoji="🍽️" />
+         ) : (
+           <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#ff4d6d22,#ff950022)' }} />
+         )}
+         <div className="absolute inset-0" style={{ background: 'rgba(245,245,245,0.55)' }} />
         <button
           onClick={() => router.back()}
           className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-sm font-semibold backdrop-blur"
@@ -142,10 +143,10 @@ export default function EditProfilePage() {
       {/* Avatar preview */}
       <div className="px-5 max-w-xl mx-auto" style={{ marginTop: -40 }}>
         <div className="mb-5">
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt="" className="w-20 h-20 rounded-full object-cover border-4"
-              style={{ borderColor: '#dde3ee' }} />
-          ) : (
+           {avatarUrl ? (
+             <FallbackImage src={avatarUrl} alt="" className="w-20 h-20 rounded-full object-cover border-4"
+               style={{ borderColor: '#dde3ee' }} fallbackEmoji="👨‍🍳" />
+           ) : (
             <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-4"
               style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff', borderColor: '#dde3ee' }}>
               {displayName.charAt(0).toUpperCase() || '?'}

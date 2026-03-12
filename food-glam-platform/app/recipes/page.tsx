@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import FallbackImage from '@/components/FallbackImage'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { AdBanner } from '@/components/ads/ad-placements'
 
@@ -167,23 +168,16 @@ export default async function RecipesPage() {
                        href={`/recipes/${recipe.slug}`}
                        className="recipe-card rounded-2xl overflow-hidden flex flex-col bg-white border border-gray-200 dark:bg-[#1a1a1a] dark:border-white/[0.08]"
                      >
-                      {/* Image */}
-                      <div className="relative w-full" style={{ height: '240px' }}>
-                        {recipe.hero_image_url ? (
-                          <Image
-                            src={recipe.hero_image_url}
-                            alt={recipe.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          />
-                        ) : (
-                           <div
-                             className="w-full h-full flex items-center justify-center text-4xl bg-gray-100 dark:bg-white/[0.05]"
-                           >
-                             🍽️
-                           </div>
-                        )}
+                       {/* Image */}
+                       <div className="relative w-full" style={{ height: '240px' }}>
+                         <FallbackImage
+                           src={recipe.hero_image_url || ''}
+                           alt={recipe.title}
+                           fill
+                           className="object-cover"
+                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                           fallbackEmoji="🍽️"
+                         />
                         <div
                           className="absolute inset-0"
                           style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }}

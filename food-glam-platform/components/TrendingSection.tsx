@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import { MOCK_TRENDING } from '@/lib/mock-data'
 
@@ -180,10 +181,11 @@ export default function TrendingSection() {
               >
                  {/* Hero image */}
                  {item.hero_image_url ? (
-                   <Image
+                   <FallbackImage
                      src={item.hero_image_url}
                      alt=""
                      fill
+                     fallbackEmoji={item._type === 'cocktail' ? '🍹' : '🍽️'}
                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                    />
