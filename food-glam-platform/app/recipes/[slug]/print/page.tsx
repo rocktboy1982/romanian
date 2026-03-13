@@ -15,9 +15,13 @@ interface RecipeJson {
   total_time?: string;
   prep_time?: string;
   cook_time?: string;
+  prep_time_minutes?: number;
+  cook_time_minutes?: number;
   ingredient_sections?: IngredientSection[];
+  ingredients?: string[];
   recipeIngredient?: string[];
   steps?: string[];
+  instructions?: string[];
   recipeInstructions?: string[];
   nutrition_per_serving?: {
     calories?: number;
@@ -382,11 +386,13 @@ export default async function PrintRecipePage({ params }: PrintPageProps) {
 
   const ingredientSections: IngredientSection[] = recipeData.ingredient_sections
     ? recipeData.ingredient_sections
-    : recipeData.recipeIngredient
-      ? [{ ingredients: recipeData.recipeIngredient }]
-      : []
+    : recipeData.ingredients
+      ? [{ ingredients: recipeData.ingredients }]
+      : recipeData.recipeIngredient
+        ? [{ ingredients: recipeData.recipeIngredient }]
+        : []
 
-  const steps: string[] = recipeData.steps || recipeData.recipeInstructions || []
+  const steps: string[] = recipeData.instructions || recipeData.steps || recipeData.recipeInstructions || []
 
   const approach = Array.isArray(post.approaches)
     ? (post.approaches as Array<{ name: string }>)[0]
@@ -402,9 +408,9 @@ export default async function PrintRecipePage({ params }: PrintPageProps) {
       region={approach?.name}
       creatorName={creator?.display_name}
       creatorHandle={creator?.handle}
-      totalTime={recipeData.total_time}
-      prepTime={recipeData.prep_time}
-      cookTime={recipeData.cook_time}
+      totalTime={recipeData.total_time || (recipeData.prep_time_minutes && recipeData.cook_time_minutes ? `${recipeData.prep_time_minutes + recipeData.cook_time_minutes} min` : null)}
+      prepTime={recipeData.prep_time || (recipeData.prep_time_minutes ? `${recipeData.prep_time_minutes} min` : null)}
+      cookTime={recipeData.cook_time || (recipeData.cook_time_minutes ? `${recipeData.cook_time_minutes} min` : null)}
       servings={recipeData.servings ?? 4}
       dietTags={post.diet_tags ?? []}
       ingredientSections={ingredientSections}
