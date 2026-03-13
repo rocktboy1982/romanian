@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import FallbackImage from '@/components/FallbackImage'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -29,8 +28,8 @@ export default function EditProfilePage() {
   const [bio, setBio] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
+  const [gdriveInput, setGdriveInput] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -95,45 +94,37 @@ export default function EditProfilePage() {
     )
   }
 
-  async function handleAvatarUpload(file: File) {
-    if (!profile) return
+  function parseGoogleDriveUrl(url: string): string | null {
+    // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+    const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
+    if (fileMatch) return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`
 
+    // https://drive.google.com/open?id=FILE_ID
+    const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/)
+    if (openMatch) return `https://lh3.googleusercontent.com/d/${openMatch[1]}`
+
+    // Already a direct googleusercontent link
+    if (url.includes('lh3.googleusercontent.com/d/')) return url.trim()
+
+    return null
+  }
+
+  function handleGdriveLink(input: string) {
+    setGdriveInput(input)
     setAvatarError(null)
 
-    // Validate file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
-      setAvatarError('Imaginea trebuie să fie mai mică de 2MB')
+    if (!input.trim()) {
+      // Clear avatar if input emptied
+      setAvatarUrl(profile?.avatar_url ?? null)
       return
     }
 
-    // Show preview immediately
-    const previewUrl = URL.createObjectURL(file)
-    setAvatarUrl(previewUrl)
-    setAvatarUploading(true)
-
-    try {
-      const ext = file.name.split('.').pop()
-      const path = `${profile.id}/avatar.${ext}`
-
-      const { error } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type })
-
-      if (error) {
-        setAvatarError('Eroare la încărcarea imaginii')
-        setAvatarUrl(profile.avatar_url)
-        setAvatarUploading(false)
-        return
-      }
-
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
-      setAvatarUrl(urlData.publicUrl)
-      setAvatarUploading(false)
-    } catch (err) {
-      console.error('Avatar upload error:', err)
-      setAvatarError('Eroare la încărcarea imaginii')
-      setAvatarUrl(profile.avatar_url)
-      setAvatarUploading(false)
+    const directUrl = parseGoogleDriveUrl(input.trim())
+    if (directUrl) {
+      setAvatarUrl(directUrl)
+    } else {
+      setAvatarError('Link invalid. Folosește un link Google Drive de partajare.')
+      setAvatarUrl(profile?.avatar_url ?? null)
     }
   }
 
@@ -226,25 +217,11 @@ export default function EditProfilePage() {
         </button>
       </div>
 
-      {/* Avatar upload */}
+      {/* Avatar via Google Drive link */}
       <div className="px-5 max-w-xl mx-auto" style={{ marginTop: -40 }}>
         <div className="mb-5">
-          <input
-            type="file"
-            id="avatar-input"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={(e) => {
-              const file = e.currentTarget.files?.[0]
-              if (file) handleAvatarUpload(file)
-            }}
-            style={{ display: 'none' }}
-          />
-          <button
-            onClick={() => document.getElementById('avatar-input')?.click()}
-            disabled={avatarUploading}
-            className="relative group cursor-pointer disabled:opacity-50"
-            style={{ position: 'relative' }}
-          >
+          {/* Avatar preview */}
+          <div className="mb-3">
             {avatarUrl ? (
               <FallbackImage
                 src={avatarUrl}
@@ -265,34 +242,21 @@ export default function EditProfilePage() {
                 {displayName.charAt(0).toUpperCase() || '?'}
               </div>
             )}
-            {/* Camera overlay */}
-            <div
-              className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: 'rgba(0,0,0,0.5)' }}
-            >
-              <span style={{ fontSize: 24 }}>📷</span>
-            </div>
-            {/* Loading spinner */}
-            {avatarUploading && (
-              <div
-                className="absolute inset-0 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(0,0,0,0.5)' }}
-              >
-                <div
-                  style={{
-                    width: 16,
-                    height: 16,
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    borderTop: '2px solid white',
-                    borderRadius: '50%',
-                    animation: 'spin 0.8s linear infinite',
-                  }}
-                />
-              </div>
-            )}
-          </button>
-          <p className="text-xs mt-2" style={{ color: '#888' }}>
-            Schimbă fotografia
+          </div>
+
+          {/* Google Drive link input */}
+          <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: '#555' }}>
+            Fotografie de profil
+          </label>
+          <input
+            type="url"
+            value={gdriveInput}
+            onChange={(e) => handleGdriveLink(e.target.value)}
+            placeholder="Lipește link Google Drive (ex. https://drive.google.com/file/d/...)"
+            style={inputStyle('avatar_url')}
+          />
+          <p className="text-xs mt-1.5" style={{ color: '#888' }}>
+            Partajează o imagine din Google Drive → Copiază linkul → Lipește-l aici
           </p>
           {avatarError && (
             <p className="text-xs mt-1" style={{ color: '#ff4d6d' }}>
