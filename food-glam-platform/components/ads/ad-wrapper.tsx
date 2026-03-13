@@ -32,8 +32,9 @@ export default function AdWrapper({ children, fallback = null }: AdWrapperProps)
   // While resolving auth state, suppress ads to avoid flash
   if (loading) return <>{fallback}</>
 
+  // TODO: Re-enable once ad revenue is stable
   // Logged-in users don't see ads
-  if (isLoggedIn) return null
+  // if (isLoggedIn) return null
 
   return <>{children}</>
 }
