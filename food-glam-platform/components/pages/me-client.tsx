@@ -30,6 +30,7 @@ export default function MeClientPage() {
   const [user, setUser] = useState<{ email?: string; user_metadata?: { full_name?: string }; id: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mockUser, setMockUser] = useState<MockUser | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Load mock user from localStorage
   useEffect(() => {
@@ -87,208 +88,329 @@ export default function MeClientPage() {
     };
   }, []);
 
-   if (loading) {
-     return <div className="container mx-auto px-4 py-8">Se încarcă profilul...</div>;
-   }
+  if (loading) {
+    return <div className="container mx-auto px-4 py-8">Se încarcă profilul...</div>;
+  }
 
   const toggle = (key: string, current: boolean) => {
     setOverride?.(key, !current);
   };
 
   return (
-    <main className="min-h-screen" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}><div className="container mx-auto px-4 py-8 flex flex-col gap-8 max-w-xl">
-       <section className="text-center">
-         <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: "'Syne', sans-serif" }}>Profil</h1>
-         <p className="mb-4 text-sm" style={{ color: '#777' }}>Gestionează-ți contul, modurile și setările.</p>
-         {/* Avatar */}
-         <div className="w-20 h-20 mx-auto rounded-full mb-3 flex items-center justify-center text-3xl select-none font-bold overflow-hidden"
-           style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
-            {(profile?.avatar_url || mockUser?.avatar_url)
-              ? <FallbackImage src={profile?.avatar_url || mockUser?.avatar_url || ''} alt="" className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
-              : ((profile?.display_name || mockUser?.display_name)?.charAt(0).toUpperCase() ?? '👤')}
-         </div>
-         {(profile || mockUser) && (
-           <div className="mb-3">
-             <p className="text-lg font-bold" style={{ color: 'hsl(var(--foreground))' }}>{profile?.display_name || mockUser?.display_name}</p>
-             <p className="text-sm" style={{ color: '#888' }}>@{profile?.handle || mockUser?.handle}</p>
-             <div className="flex flex-col gap-2 mt-2">
-               <Link
-                 href={`/chefs/${profile?.handle || mockUser?.handle}`}
-                 className="inline-block text-xs font-semibold px-4 py-1.5 rounded-full"
-                 style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-               >
+    <main className="min-h-screen" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}>
+      <div className="container mx-auto px-4 py-6 pb-24 flex flex-col gap-6 max-w-2xl">
+        
+        {/* ===== PROFILE CARD (COMPACT) ===== */}
+        <section className="flex flex-col gap-3">
+          {(profile || mockUser) ? (
+            <>
+              {/* Profile header: Avatar + Name + Handle in one row */}
+              <div className="flex items-center gap-4">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg select-none font-bold overflow-hidden flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+                >
+                  {(profile?.avatar_url || mockUser?.avatar_url)
+                    ? <FallbackImage src={profile?.avatar_url || mockUser?.avatar_url || ''} alt="" className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
+                    : ((profile?.display_name || mockUser?.display_name)?.charAt(0).toUpperCase() ?? '👤')}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
+                    {profile?.display_name || mockUser?.display_name}
+                  </p>
+                  <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    @{profile?.handle || mockUser?.handle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Profile links */}
+              <div className="flex flex-col gap-2 text-sm">
+                <Link
+                  href={`/chefs/${profile?.handle || mockUser?.handle}`}
+                  className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
+                >
                   Vezi profilul bucătarului →
-               </Link>
-               {user && (
-                 <Link
-                   href="/me/profile/edit"
-                   className="inline-block text-xs font-semibold px-4 py-1.5 rounded-full"
-                   style={{ background: 'rgba(255,77,109,0.15)', color: '#ff4d6d' }}
-                 >
-                   Editează profilul
-                 </Link>
-               )}
-             </div>
-           </div>
-         )}
-        <div className="mb-4">
-          <SignInButton />
-        </div>
-        {user && (
-          <div className="mt-2 text-sm">
-            Autentificat ca <strong>{user.email || user.user_metadata?.full_name || user.id}</strong>
-          </div>
-        )}
-      </section>
-
-       {/* Mode toggles */}
-       <section className="border rounded-xl p-5 flex flex-col gap-4">
-         <h2 className="text-xl font-bold">Moduri</h2>
-         <p className="text-sm text-muted-foreground -mt-2">
-           Funcțiile avansate sunt ascunse dacă nu sunt activate — aplicația rămâne simplă în mod implicit.
-         </p>
-
-         {/* Health Mode */}
-         <div className="flex items-center justify-between gap-4 py-2 border-b">
-           <div>
-             <div className="font-medium">Modul Sănătate</div>
-             <div className="text-xs text-muted-foreground">
-               Obiective de greutate, ținte de calorii, totaluri de macronutrienți, măsurători corporale.
-             </div>
-           </div>
-          <button
-            onClick={() => toggle("healthMode", healthMode)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-              healthMode ? "bg-primary" : "bg-muted-foreground/30"
-            }`}
-            aria-pressed={healthMode}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                healthMode ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-
-         {/* Power Mode */}
-         <div className="flex items-center justify-between gap-4 py-2">
-           <div>
-             <div className="font-medium">Modul Avansat</div>
-             <div className="text-xs text-muted-foreground">
-               Cămară, motor nutrițional, micronutrienți, înregistrare alimente, post, setări avansate.
-             </div>
-           </div>
-          <button
-            onClick={() => toggle("powerMode", powerMode)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-              powerMode ? "bg-primary" : "bg-muted-foreground/30"
-            }`}
-            aria-pressed={powerMode}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                powerMode ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-      </section>
-
-       {/* Quick links when modes are on */}
-       {(healthMode || powerMode) && (
-         <section className="flex flex-col gap-2">
-           <h2 className="text-xl font-bold">Funcții avansate</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {healthMode && (
-              <Link href="/health" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                🏥 Obiective sănătate
-              </Link>
-            )}
-            {powerMode && (
-              <Link href="/advanced" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                ⚡ Funcții avansate
-              </Link>
-            )}
-            {powerMode && (
-              <Link href="/pantry" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                🥫 Cămară
-              </Link>
-            )}
-            {powerMode && (
-              <Link href="/nutrition-engine" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                🔬 Motor nutrițional
-              </Link>
-            )}
-            {powerMode && (
-              <Link href="/food-logging" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                📓 Jurnal alimentar
-              </Link>
-            )}
-            {powerMode && (
-              <Link href="/hydration" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-                💧 Hidratare
-              </Link>
-            )}
-          </div>
+                </Link>
+                {user && (
+                  <Link
+                    href="/me/profile/edit"
+                    className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
+                  >
+                    Editează →
+                  </Link>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <SignInButton />
+            </div>
+          )}
         </section>
-      )}
 
-       <section className="flex flex-col gap-2">
-         <h2 className="text-xl font-bold">Setări</h2>
-        <div className="grid grid-cols-2 gap-2">
-          <Link href="/me/settings/budget" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-            💰 Buget
-          </Link>
-          <Link href="/allergies" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-            ⚠️ Alergii
-          </Link>
-          <Link href="/habits" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-            📅 Obiceiuri
-          </Link>
-          <Link href="/privacy" className="rounded-lg border p-3 hover:bg-muted transition-colors text-sm font-medium text-center">
-            🔒 Confidențialitate
-          </Link>
-        </div>
-       </section>
+        {/* ===== QUICK ACTIONS ===== */}
+        {user && (
+          <section className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide opacity-60 px-2">Acțiuni rapide</h2>
+            <nav className="flex flex-col gap-1">
+              <Link
+                href="/me/posts"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  background: 'rgba(255, 77, 109, 0.08)',
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">📝</span>
+                <span className="text-sm font-medium">Rețetele mele</span>
+              </Link>
+              <Link
+                href="/me/preferred"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">⭐</span>
+                <span className="text-sm font-medium">Preferate</span>
+              </Link>
+              <Link
+                href="/me/cookbook"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">📖</span>
+                <span className="text-sm font-medium">Cartea mea de bucate</span>
+              </Link>
+              <Link
+                href="/me/shopping-lists"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">🛒</span>
+                <span className="text-sm font-medium">Liste de cumpărături</span>
+              </Link>
+              <Link
+                href="/plan"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">📅</span>
+                <span className="text-sm font-medium">Planul de masă</span>
+              </Link>
+              <Link
+                href="/submit/recipe"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <span className="text-lg">🍽️</span>
+                <span className="text-sm font-medium">Adaugă rețetă</span>
+              </Link>
+              <Link
+                href="/submit/cocktail"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))'
+                }}
+              >
+                <span className="text-lg">🍹</span>
+                <span className="text-sm font-medium">Adaugă băutură</span>
+              </Link>
+            </nav>
+          </section>
+        )}
 
-       {/* Theme section */}
-       <section className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}>
-         <h2 className="font-semibold text-base mb-4" style={{ color: '#111' }}>Aspect</h2>
-         <div className="flex gap-3">
-           <button
-             onClick={() => setTheme('dark')}
-             className="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all"
-              style={{
-                borderColor: theme === 'dark' ? '#8B1A2B' : 'rgba(0,0,0,0.08)',
-                background: theme === 'dark' ? 'rgba(139,26,43,0.08)' : '#f9f9f9',
-              }}
-           >
-             <span style={{ fontSize: 28 }}>🌙</span>
-              <span className="text-sm font-semibold" style={{ color: theme === 'dark' ? '#8B1A2B' : '#666' }}>Întunecat</span>
-           </button>
-           <button
-             onClick={() => setTheme('light')}
-             className="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all"
-              style={{
-                borderColor: theme === 'light' ? '#8B1A2B' : 'rgba(0,0,0,0.08)',
-                background: theme === 'light' ? 'rgba(139,26,43,0.08)' : '#f9f9f9',
-              }}
-           >
-             <span style={{ fontSize: 28 }}>☀️</span>
-              <span className="text-sm font-semibold" style={{ color: theme === 'light' ? '#8B1A2B' : '#666' }}>Luminos</span>
-           </button>
-         </div>
-         <p className="text-xs mt-3" style={{ color: '#999' }}>Preferința este salvată local în browser.</p>
-       </section>
+        {/* ===== SETTINGS & MODES (ACCORDION) ===== */}
+        <section className="flex flex-col gap-0 rounded-lg overflow-hidden border" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          {/* Accordion header */}
+          <button
+            onClick={() => setSettingsOpen(!settingsOpen)}
+            className="h-12 px-4 flex items-center justify-between font-semibold text-sm transition-colors hover:opacity-80"
+            style={{ background: 'rgba(255, 77, 109, 0.08)', color: 'hsl(var(--foreground))' }}
+          >
+            <span>Setări și moduri</span>
+            <span style={{ transform: settingsOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms' }}>
+              ▼
+            </span>
+          </button>
 
-        <section>
-           <h2 className="text-xl font-bold mb-2">Configurare inițială</h2>
-         <p className="text-muted-foreground text-sm mb-3">Stabilește preferințele tale de gust, alergii și obiective dietetice.</p>
-         <button className="bg-secondary text-secondary-foreground px-4 py-2 rounded font-medium hover:bg-secondary/80 transition-colors text-sm">
-           Începe onboarding-ul
-         </button>
-       </section>
-    </div></main>
+          {/* Accordion content */}
+          {settingsOpen && (
+            <div className="flex flex-col gap-0 p-0">
+              {/* Health Mode Toggle */}
+              <div className="flex items-center justify-between gap-4 px-4 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Modul Sănătate</div>
+                  <div className="text-xs opacity-60">Obiective, calorii, macronutrienți</div>
+                </div>
+                <button
+                  onClick={() => toggle("healthMode", healthMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none flex-shrink-0`}
+                  style={{
+                    background: healthMode ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.1)'
+                  }}
+                  aria-pressed={healthMode}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform`}
+                    style={{
+                      transform: healthMode ? 'translateX(24px)' : 'translateX(4px)'
+                    }}
+                  />
+                </button>
+              </div>
+
+              {/* Power Mode Toggle */}
+              <div className="flex items-center justify-between gap-4 px-4 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Modul Avansat</div>
+                  <div className="text-xs opacity-60">Cămară, nutriții, avansate</div>
+                </div>
+                <button
+                  onClick={() => toggle("powerMode", powerMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none flex-shrink-0`}
+                  style={{
+                    background: powerMode ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.1)'
+                  }}
+                  aria-pressed={powerMode}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform`}
+                    style={{
+                      transform: powerMode ? 'translateX(24px)' : 'translateX(4px)'
+                    }}
+                  />
+                </button>
+              </div>
+
+              {/* Theme Toggle (Compact) */}
+              <div className="px-4 py-3 border-t flex items-center gap-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Aspect</div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      theme === 'dark' ? 'opacity-100' : 'opacity-50'
+                    }`}
+                    style={{
+                      background: theme === 'dark' ? 'rgba(255, 77, 109, 0.2)' : 'transparent',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                  >
+                    🌙 Întunecat
+                  </button>
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      theme === 'light' ? 'opacity-100' : 'opacity-50'
+                    }`}
+                    style={{
+                      background: theme === 'light' ? 'rgba(255, 77, 109, 0.2)' : 'transparent',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                  >
+                    ☀️ Luminos
+                  </button>
+                </div>
+              </div>
+
+              {/* Settings Links */}
+              <div className="border-t px-2 py-2 flex flex-col gap-1" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <Link
+                  href="/me/settings/budget"
+                  className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                >
+                  💰 Buget
+                </Link>
+                <Link
+                  href="/allergies"
+                  className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                >
+                  ⚠️ Alergii
+                </Link>
+                <Link
+                  href="/habits"
+                  className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                >
+                  📅 Obiceiuri
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                >
+                  🔒 Confidențialitate
+                </Link>
+              </div>
+
+              {/* Advanced Feature Links (Conditional) */}
+              {(healthMode || powerMode) && (
+                <div className="border-t px-2 py-2 flex flex-col gap-1" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                  <div className="px-2 py-1 text-xs font-semibold uppercase opacity-50">Funcții avansate</div>
+                  {healthMode && (
+                    <Link
+                      href="/health"
+                      className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                    >
+                      🏥 Sănătate
+                    </Link>
+                  )}
+                  {powerMode && (
+                    <>
+                      <Link
+                        href="/advanced"
+                        className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        ⚡ Funcții avansate
+                      </Link>
+                      <Link
+                        href="/pantry"
+                        className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        🥫 Cămară
+                      </Link>
+                      <Link
+                        href="/nutrition-engine"
+                        className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        🔬 Motor nutrițional
+                      </Link>
+                      <Link
+                        href="/food-logging"
+                        className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        📓 Jurnal alimentar
+                      </Link>
+                      <Link
+                        href="/hydration"
+                        className="px-2 py-2 rounded text-sm opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        💧 Hidratare
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
