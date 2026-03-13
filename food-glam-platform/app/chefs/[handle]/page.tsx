@@ -7,7 +7,34 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
 import { sanitizeText, sanitizeUrl } from '@/lib/sanitize'
-import type { ChefProfile, ChefBlogPost } from '@/lib/mock-chef-data'
+import type { ChefTier } from '@/components/TierStar'
+
+interface ProfileData {
+  id: string
+  handle: string
+  display_name: string
+  bio: string
+  avatar_url: string | null
+  banner_url: string | null
+  follower_count: number
+  following_count: number
+  post_count: number
+  is_following: boolean
+  is_own_profile: boolean
+  tier?: ChefTier
+}
+
+interface PostItem {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  hero_image_url: string
+  votes: number
+  comments: number
+  created_at: string
+  type?: string
+}
 
 interface MockUser {
   id: string
@@ -68,16 +95,17 @@ export default function ChefPage() {
   const router = useRouter()
   const handle = typeof params?.handle === 'string' ? params.handle : ''
 
-  const [profile, setProfile] = useState<ChefProfile | null>(null)
-  const [posts, setPosts] = useState<ChefBlogPost[]>([])
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [posts, setPosts] = useState<PostItem[]>([])
   const [vlogEntries, setVlogEntries] = useState<VlogEntry[]>([])
   const [mockUser, setMockUser] = useState<MockUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
   const [hydrated, setHydrated] = useState(false)
+  const [isOwner, setIsOwner] = useState(false)
 
-  // Load mock user
+  // Load mock user and check real auth
   useEffect(() => {
     const userStr = localStorage.getItem('mock_user')
     if (userStr) {
@@ -88,31 +116,135 @@ export default function ChefPage() {
     setHydrated(true)
   }, [])
 
-  // Load API posts + merge localStorage profile override
+  // Load profile: try real API first, fall back to mock
   useEffect(() => {
     if (!handle) return
-    fetch(`/api/chefs/${handle}/posts`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) { setLoading(false); return }
-        const base: ChefProfile = data.profile
-         try {
-           const raw = localStorage.getItem(`chef_profile_override_${handle}`)
-           if (raw) {
-             const ov = JSON.parse(raw)
-             if (ov.display_name) base.display_name = sanitizeText(ov.display_name)
-             if (ov.bio)          base.bio          = sanitizeText(ov.bio)
-             if (ov.avatar_url)   base.avatar_url   = sanitizeUrl(ov.avatar_url)
-             if (ov.banner_url)   base.banner_url   = sanitizeUrl(ov.banner_url)
-           }
-         } catch { /* ignore */ }
-        setProfile(base)
-        setPosts(data.posts)
-        setIsFollowing(data.profile.is_following)
-        setFollowerCount(data.profile.follower_count)
+
+    const loadProfile = async () => {
+      try {
+        // Try real API first
+        const realRes = await fetch(`/api/profiles/${handle}`)
+        if (realRes.ok) {
+          const realData = await realRes.json()
+          const profileData: ProfileData = {
+            ...realData.profile,
+            tier: 'user' as ChefTier,
+          }
+          setProfile(profileData)
+          setIsFollowing(realData.profile.is_following)
+          setFollowerCount(realData.profile.follower_count)
+          setIsOwner(realData.profile.is_own_profile)
+          setLoading(false)
+          return
+        }
+      } catch (err) {
+        console.error('Real profile fetch error:', err)
+      }
+
+      // Fall back to mock API
+      try {
+        const mockRes = await fetch(`/api/chefs/${handle}/posts`)
+        if (!mockRes.ok) {
+          setLoading(false)
+          return
+        }
+        const mockData = await mockRes.json()
+        if (mockData.error) {
+          setLoading(false)
+          return
+        }
+
+        const mockProfile: ProfileData = {
+          id: mockData.profile.id,
+          handle: mockData.profile.handle,
+          display_name: mockData.profile.display_name,
+          bio: mockData.profile.bio,
+          avatar_url: mockData.profile.avatar_url,
+          banner_url: mockData.profile.banner_url,
+          follower_count: mockData.profile.follower_count,
+          following_count: mockData.profile.following_count,
+          post_count: mockData.profile.post_count,
+          is_following: mockData.profile.is_following,
+          is_own_profile: mockData.profile.is_own_profile,
+          tier: mockData.profile.tier || 'user',
+        }
+
+        try {
+          const raw = localStorage.getItem(`chef_profile_override_${handle}`)
+          if (raw) {
+            const ov = JSON.parse(raw)
+            if (ov.display_name) mockProfile.display_name = sanitizeText(ov.display_name)
+            if (ov.bio) mockProfile.bio = sanitizeText(ov.bio)
+            if (ov.avatar_url) mockProfile.avatar_url = sanitizeUrl(ov.avatar_url)
+            if (ov.banner_url) mockProfile.banner_url = sanitizeUrl(ov.banner_url)
+          }
+        } catch {}
+
+        setProfile(mockProfile)
+        setIsFollowing(mockData.profile.is_following)
+        setFollowerCount(mockData.profile.follower_count)
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      } catch (err) {
+        console.error('Mock profile fetch error:', err)
+        setLoading(false)
+      }
+    }
+
+    loadProfile()
+  }, [handle])
+
+  // Load posts: try real API first, fall back to mock
+  useEffect(() => {
+    if (!handle) return
+
+    const loadPosts = async () => {
+      try {
+        // Try real API first
+        const realRes = await fetch(`/api/profiles/${handle}/posts`)
+        if (realRes.ok) {
+          const realData = await realRes.json()
+          const formattedPosts: PostItem[] = realData.posts.map((p: Record<string, unknown>) => ({
+            id: p.id,
+            slug: p.slug,
+            title: p.title,
+            summary: p.summary || '',
+            hero_image_url: p.hero_image_url,
+            votes: p.votes || 0,
+            comments: p.comments || 0,
+            created_at: p.created_at,
+            type: p.type,
+          }))
+          setPosts(formattedPosts)
+          return
+        }
+      } catch (err) {
+        console.error('Real posts fetch error:', err)
+      }
+
+      // Fall back to mock API
+      try {
+        const mockRes = await fetch(`/api/chefs/${handle}/posts`)
+        if (!mockRes.ok) return
+        const mockData = await mockRes.json()
+        if (mockData.error) return
+
+        const mockPosts: PostItem[] = mockData.posts.map((p: Record<string, unknown>) => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          summary: p.description || '',
+          hero_image_url: p.hero_image_url,
+          votes: p.votes || 0,
+          comments: p.comments || 0,
+          created_at: p.created_at,
+        }))
+        setPosts(mockPosts)
+      } catch (err) {
+        console.error('Mock posts fetch error:', err)
+      }
+    }
+
+    loadPosts()
   }, [handle])
 
   // Load vlog entries from localStorage
@@ -123,24 +255,8 @@ export default function ChefPage() {
       try {
         const entries = JSON.parse(entriesStr) as VlogEntry[]
         setVlogEntries(entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
-      } catch { /* ignore */ }
+      } catch {}
     }
-    // Re-apply profile override once localStorage is accessible
-    setProfile(prev => {
-       if (!prev) return prev
-       try {
-         const raw = localStorage.getItem(`chef_profile_override_${handle}`)
-         if (!raw) return prev
-         const ov = JSON.parse(raw)
-         return {
-           ...prev,
-           ...(ov.display_name && { display_name: sanitizeText(ov.display_name) }),
-           ...(ov.bio          && { bio:          sanitizeText(ov.bio) }),
-           ...(ov.avatar_url   && { avatar_url:   sanitizeUrl(ov.avatar_url) }),
-           ...(ov.banner_url   && { banner_url:   sanitizeUrl(ov.banner_url) }),
-         }
-       } catch { return prev }
-     })
   }, [handle, hydrated])
 
   /* ── loading skeleton ── */
@@ -174,15 +290,15 @@ export default function ChefPage() {
      <div style={{ minHeight: '100vh', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', fontFamily: "'Inter', sans-serif" }}>
        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');.ff-display{font-family:'Syne',sans-serif;}`}</style>
 
-       {/* ── Banner ── */}
-       <div className="relative" style={{ height: 220 }}>
-         <FallbackImage
-           src={profile.banner_url}
-           alt=""
-           fill
-           className="object-cover"
-           fallbackEmoji="🍽️"
-         />
+        {/* ── Banner ── */}
+        <div className="relative" style={{ height: 220 }}>
+          <FallbackImage
+            src={profile.banner_url || ''}
+            alt=""
+            fill
+            className="object-cover"
+            fallbackEmoji="🍽️"
+          />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(245,245,245,0.97) 100%)' }} />
 
          {/* back button */}
@@ -197,68 +313,68 @@ export default function ChefPage() {
 
       {/* ── Profile header ── */}
       <div className="px-4 relative max-w-5xl mx-auto" style={{ marginTop: -56 }}>
-         {/* avatar + tier star */}
-         <div className="relative inline-block mb-3">
-            <FallbackImage
-              src={profile.avatar_url}
-              alt={profile.display_name}
-              className="rounded-full object-cover border-4"
-              style={{ width: 88, height: 88, borderColor: 'hsl(var(--background))' }}
-              fallbackEmoji="👨‍🍳"
-            />
-           {profile.tier !== 'user' && (
-             <span
-               className="absolute bottom-0 right-0 flex items-center justify-center rounded-full"
-               style={{ width: 24, height: 24, background: 'hsl(var(--background))', border: '2px solid hsl(var(--background))' }}
-            >
-              <TierStar tier={profile.tier} size={16} />
-            </span>
-          )}
+          {/* avatar + tier star */}
+          <div className="relative inline-block mb-3">
+             <FallbackImage
+               src={profile.avatar_url || ''}
+               alt={profile.display_name}
+               className="rounded-full object-cover border-4"
+               style={{ width: 88, height: 88, borderColor: 'hsl(var(--background))' }}
+               fallbackEmoji="👨‍🍳"
+             />
+            {profile.tier && profile.tier !== 'user' && (
+              <span
+                className="absolute bottom-0 right-0 flex items-center justify-center rounded-full"
+                style={{ width: 24, height: 24, background: 'hsl(var(--background))', border: '2px solid hsl(var(--background))' }}
+             >
+               <TierStar tier={profile.tier} size={16} />
+             </span>
+           )}
         </div>
 
-        {/* name + tier label */}
-        <div className="flex items-start justify-between gap-3 mb-1">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="ff-display text-2xl font-bold leading-tight">{profile.display_name}</h1>
-        {profile.tier !== 'user' && (
-          <span
-            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={profile.tier === 'pro'
-              ? { background: 'rgba(255,77,109,0.15)', color: '#c0392b', border: '1px solid rgba(255,77,109,0.3)' }
-              : { background: 'rgba(100,100,100,0.1)', color: '#555', border: '1px solid rgba(0,0,0,0.15)' }}
-          >
-            {TIER_LABEL[profile.tier]}
-          </span>
-              )}
-            </div>
-            <p className="text-sm" style={{ color: '#888' }}>@{profile.handle}</p>
-          </div>
+         {/* name + tier label */}
+         <div className="flex items-start justify-between gap-3 mb-1">
+           <div>
+             <div className="flex items-center gap-2 flex-wrap">
+               <h1 className="ff-display text-2xl font-bold leading-tight">{profile.display_name}</h1>
+         {profile.tier && profile.tier !== 'user' && (
+           <span
+             className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+             style={profile.tier === 'pro'
+               ? { background: 'rgba(255,77,109,0.15)', color: '#c0392b', border: '1px solid rgba(255,77,109,0.3)' }
+               : { background: 'rgba(100,100,100,0.1)', color: '#555', border: '1px solid rgba(0,0,0,0.15)' }}
+           >
+             {TIER_LABEL[profile.tier] || 'Bucătar Casnic'}
+           </span>
+               )}
+             </div>
+             <p className="text-sm" style={{ color: '#888' }}>@{profile.handle}</p>
+           </div>
 
-          {/* owner: edit profile | others: follow */}
-           {mockUser && mockUser.handle === handle ? (
-             <Link
-               href="/me/profile/edit"
-               className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all"
-               style={{ background: 'rgba(0,0,0,0.06)', color: '#333', border: '1px solid rgba(0,0,0,0.15)' }}
-             >
-               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-               Editează profilul
-             </Link>
-           ) : (
-             <button
-               onClick={() => {
-                 setIsFollowing(f => !f)
-                 setFollowerCount(c => isFollowing ? c - 1 : c + 1)
-               }}
-               className="flex-shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all"
-               style={isFollowing
-                 ? { background: 'rgba(0,0,0,0.08)', color: '#333', border: '1px solid rgba(0,0,0,0.15)' }
-                 : { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-             >
-               {isFollowing ? '✓ Urmărești' : '+ Urmărește'}
-             </button>
-           )}
+         {/* owner: edit profile | others: follow */}
+            {isOwner || (mockUser && mockUser.handle === handle) ? (
+              <Link
+                href="/me/profile/edit"
+                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all"
+                style={{ background: 'rgba(0,0,0,0.06)', color: '#333', border: '1px solid rgba(0,0,0,0.15)' }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Editează profilul
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsFollowing(f => !f)
+                  setFollowerCount(c => isFollowing ? c - 1 : c + 1)
+                }}
+                className="flex-shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all"
+                style={isFollowing
+                  ? { background: 'rgba(0,0,0,0.08)', color: '#333', border: '1px solid rgba(0,0,0,0.15)' }
+                  : { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+              >
+                {isFollowing ? '✓ Urmărești' : '+ Urmărește'}
+              </button>
+            )}
         </div>
 
         {/* bio */}
@@ -298,12 +414,12 @@ export default function ChefPage() {
         ) : (
           <div className="pb-20">
             {/* Merge and sort all items by date (newest first) */}
-            {(() => {
-              type DisplayItem = { type: 'post'; data: ChefBlogPost; date: string } | { type: 'vlog'; data: VlogEntry; date: string }
-              const allItems: DisplayItem[] = [
-                ...posts.map(p => ({ type: 'post' as const, data: p, date: p.created_at.split('T')[0] })),
-                ...vlogEntries.map(v => ({ type: 'vlog' as const, data: v, date: v.date }))
-              ]
+             {(() => {
+               type DisplayItem = { type: 'post'; data: PostItem; date: string } | { type: 'vlog'; data: VlogEntry; date: string }
+               const allItems: DisplayItem[] = [
+                 ...posts.map(p => ({ type: 'post' as const, data: p, date: p.created_at.split('T')[0] })),
+                 ...vlogEntries.map(v => ({ type: 'vlog' as const, data: v, date: v.date }))
+               ]
               allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               
               // Group by date
@@ -355,9 +471,9 @@ export default function ChefPage() {
                                         {item.data.title}
                                       </h3>
                                     </Link>
-                                    <p className="text-base leading-relaxed line-clamp-3" style={{ color: '#666' }}>
-                                      {item.data.description}
-                                    </p>
+                                     <p className="text-base leading-relaxed line-clamp-3" style={{ color: '#666' }}>
+                                       {item.data.summary}
+                                     </p>
                                   </div>
                                   <div className="flex items-center justify-between mt-2">
                                     <div className="flex items-center gap-3 text-sm" style={{ color: '#999' }}>
