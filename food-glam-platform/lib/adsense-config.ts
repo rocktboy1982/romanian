@@ -13,7 +13,7 @@
 
 /** AdSense publisher ID (ca-pub-XXXXXXXXXXXXXXXX) */
 export const ADSENSE_PUB_ID =
-  process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || 'ca-pub-0000000000000000'
+  process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || 'ca-pub-1860386577458088'
 
 /** Whether ads are enabled globally. Flip to false to kill all ads instantly. */
 export const ADS_ENABLED =
