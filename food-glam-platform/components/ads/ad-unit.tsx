@@ -51,6 +51,11 @@ export default function AdUnit({ slot, format = 'auto', layout, className = '', 
   const slotId = AD_SLOTS[slot]
   const isDev = process.env.NODE_ENV === 'development'
 
+  // Skip rendering if slot ID is a placeholder — Auto Ads handles placement instead.
+  // Once real ad units are created in AdSense, replace placeholder IDs in env vars.
+  const PLACEHOLDER_SLOTS = ['1234567890', '2345678901', '3456789012', '4567890123']
+  if (!isDev && PLACEHOLDER_SLOTS.includes(slotId)) return null
+
   // In development, show a placeholder instead of real AdSense
   if (isDev) {
     return (
@@ -73,7 +78,7 @@ export default function AdUnit({ slot, format = 'auto', layout, className = '', 
   }
 
   return (
-    <div className={className} style={style}>
+    <div className={className} style={{ overflow: 'hidden', maxWidth: '100%', ...style }}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
