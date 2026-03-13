@@ -28,6 +28,9 @@ export default function EditProfilePage() {
   const [handle, setHandle] = useState('')
   const [bio, setBio] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -56,6 +59,7 @@ export default function EditProfilePage() {
           setDisplayName(data.profile.display_name)
           setHandle(data.profile.handle)
           setBio(data.profile.bio || '')
+          setAvatarUrl(data.profile.avatar_url)
         }
       } catch (err) {
         console.error('Error loading profile:', err)
@@ -91,20 +95,65 @@ export default function EditProfilePage() {
     )
   }
 
+  async function handleAvatarUpload(file: File) {
+    if (!profile) return
+
+    setAvatarError(null)
+
+    // Validate file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('Imaginea trebuie să fie mai mică de 2MB')
+      return
+    }
+
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file)
+    setAvatarUrl(previewUrl)
+    setAvatarUploading(true)
+
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `${profile.id}/avatar.${ext}`
+
+      const { error } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type })
+
+      if (error) {
+        setAvatarError('Eroare la încărcarea imaginii')
+        setAvatarUrl(profile.avatar_url)
+        setAvatarUploading(false)
+        return
+      }
+
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+      setAvatarUrl(urlData.publicUrl)
+      setAvatarUploading(false)
+    } catch (err) {
+      console.error('Avatar upload error:', err)
+      setAvatarError('Eroare la încărcarea imaginii')
+      setAvatarUrl(profile.avatar_url)
+      setAvatarUploading(false)
+    }
+  }
+
   async function handleSave() {
+    if (!profile) return
+
     setErrors({})
     setLoading(true)
 
     try {
-      const res = await fetch('/api/profiles/me', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          display_name: displayName.trim(),
-          handle: handle.trim(),
-          bio: bio.trim(),
-        }),
-      })
+       const res = await fetch('/api/profiles/me', {
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           display_name: displayName.trim(),
+           handle: handle.trim(),
+           bio: bio.trim(),
+           ...(avatarUrl !== profile.avatar_url ? { avatar_url: avatarUrl } : {}),
+         }),
+       })
 
       const data = await res.json()
 
@@ -153,7 +202,7 @@ export default function EditProfilePage() {
         fontFamily: "'Inter',sans-serif",
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');.ff{font-family:'Syne',sans-serif;}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');.ff{font-family:'Syne',sans-serif;}@keyframes spin{to{transform:rotate(360deg);}}`}</style>
 
       {/* Banner preview */}
       <div className="relative w-full" style={{ height: 160 }}>
@@ -177,28 +226,78 @@ export default function EditProfilePage() {
         </button>
       </div>
 
-      {/* Avatar preview */}
+      {/* Avatar upload */}
       <div className="px-5 max-w-xl mx-auto" style={{ marginTop: -40 }}>
         <div className="mb-5">
-          {profile.avatar_url ? (
-            <FallbackImage
-              src={profile.avatar_url}
-              alt=""
-              className="w-20 h-20 rounded-full object-cover border-4"
-              style={{ borderColor: '#dde3ee' }}
-              fallbackEmoji="👨‍🍳"
-            />
-          ) : (
+          <input
+            type="file"
+            id="avatar-input"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0]
+              if (file) handleAvatarUpload(file)
+            }}
+            style={{ display: 'none' }}
+          />
+          <button
+            onClick={() => document.getElementById('avatar-input')?.click()}
+            disabled={avatarUploading}
+            className="relative group cursor-pointer disabled:opacity-50"
+            style={{ position: 'relative' }}
+          >
+            {avatarUrl ? (
+              <FallbackImage
+                src={avatarUrl}
+                alt=""
+                className="w-20 h-20 rounded-full object-cover border-4"
+                style={{ borderColor: '#dde3ee' }}
+                fallbackEmoji="👨‍🍳"
+              />
+            ) : (
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-4"
+                style={{
+                  background: 'linear-gradient(135deg,#ff4d6d,#ff9500)',
+                  color: '#fff',
+                  borderColor: '#dde3ee',
+                }}
+              >
+                {displayName.charAt(0).toUpperCase() || '?'}
+              </div>
+            )}
+            {/* Camera overlay */}
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-4"
-              style={{
-                background: 'linear-gradient(135deg,#ff4d6d,#ff9500)',
-                color: '#fff',
-                borderColor: '#dde3ee',
-              }}
+              className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
             >
-              {displayName.charAt(0).toUpperCase() || '?'}
+              <span style={{ fontSize: 24 }}>📷</span>
             </div>
+            {/* Loading spinner */}
+            {avatarUploading && (
+              <div
+                className="absolute inset-0 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.5)' }}
+              >
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTop: '2px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                  }}
+                />
+              </div>
+            )}
+          </button>
+          <p className="text-xs mt-2" style={{ color: '#888' }}>
+            Schimbă fotografia
+          </p>
+          {avatarError && (
+            <p className="text-xs mt-1" style={{ color: '#ff4d6d' }}>
+              {avatarError}
+            </p>
           )}
         </div>
 

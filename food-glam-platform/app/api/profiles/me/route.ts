@@ -39,7 +39,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json()
-    const { display_name, handle, bio } = body
+    const { display_name, handle, bio, avatar_url } = body
 
     const errors: Record<string, string> = {}
 
@@ -100,11 +100,12 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ errors }, { status: 400 })
     }
 
-    // Build update object with only provided fields
-    const updateData: Record<string, string> = {}
-    if (display_name !== undefined) updateData.display_name = display_name.trim()
-    if (handle !== undefined) updateData.handle = handle.trim()
-    if (bio !== undefined) updateData.bio = bio.trim()
+     // Build update object with only provided fields
+     const updateData: Record<string, string> = {}
+     if (display_name !== undefined) updateData.display_name = display_name.trim()
+     if (handle !== undefined) updateData.handle = handle.trim()
+     if (bio !== undefined) updateData.bio = bio.trim()
+     if (avatar_url !== undefined) updateData.avatar_url = avatar_url
 
     // Use service client to bypass RLS
     const serviceSupabase = createServiceSupabaseClient()
