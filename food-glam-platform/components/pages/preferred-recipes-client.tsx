@@ -2,10 +2,9 @@
 
 import Image from 'next/image'
 import FallbackImage from '@/components/FallbackImage'
-import React, { useState, useMemo, useRef } from "react"
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { usePreferredRecipes, type PreferredRecipe, type RecipeInput } from "@/lib/preferred-recipes"
-import { MOCK_RECIPES } from "@/lib/mock-data"
 
 // ── Group chefs found in preferred list ───────────────────────────────────────
 
@@ -30,7 +29,23 @@ function groupByChef(preferred: PreferredRecipe[]): ChefGroup[] {
   return Object.values(map).sort((a, b) => b.count - a.count)
 }
 
-// ── Add from search panel ─────────────────────────────────────────────────────
+// ── Search result shape from /api/search/recipes ──────────────────────────────
+
+interface SearchRecipe {
+  id: string
+  slug: string
+  title: string
+  summary: string | null
+  hero_image_url: string
+  region: string
+  approach_slug: string
+  votes: number
+  dietTags: string[]
+  foodTags: string[]
+  created_by: { id: string; display_name: string; handle: string; avatar_url: string | null }
+}
+
+// ── Add from search panel (real API) ──────────────────────────────────────────
 
 function AddFromSearch({
   existing,
@@ -40,20 +55,40 @@ function AddFromSearch({
   onAdd: (recipe: RecipeInput) => void
 }) {
   const [query, setQuery] = useState("")
+  const [results, setResults] = useState<SearchRecipe[]>([])
+  const [searching, setSearching] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return MOCK_RECIPES.slice(0, 12)
-    return MOCK_RECIPES.filter(
-      (r) =>
-        r.title.toLowerCase().includes(q) ||
-        r.region?.toLowerCase().includes(q) ||
-        r.dietTags?.some((t) => t.toLowerCase().includes(q)) ||
-        r.foodTags?.some((t) => t.toLowerCase().includes(q)) ||
-        r.created_by?.display_name?.toLowerCase().includes(q)
-    )
-  }, [query])
+  const fetchRecipes = useCallback(async (q: string) => {
+    setSearching(true)
+    try {
+      const params = new URLSearchParams({ per_page: '24' })
+      if (q.trim()) params.set('q', q.trim())
+      const res = await fetch(`/api/search/recipes?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setResults(data.recipes || [])
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSearching(false)
+    }
+  }, [])
+
+  // Fetch on mount (popular recipes) and on query change (debounced)
+  useEffect(() => {
+    fetchRecipes('')
+  }, [fetchRecipes])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      fetchRecipes(query)
+    }, 350)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [query, fetchRecipes])
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -63,13 +98,15 @@ function AddFromSearch({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Caută după titlu, regiune, dietă, chef…"
+        placeholder="Caută după titlu, regiune, dietă, chef..."
         className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
         autoFocus
       />
 
-       {results.length === 0 ? (
-         <p className="text-sm text-muted-foreground text-center py-6">Nicio rețetă găsită</p>
+      {searching ? (
+        <p className="text-sm text-muted-foreground text-center py-6">Se caută...</p>
+      ) : results.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-6">Nicio rețetă găsită</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto pr-1">
           {results.map((recipe) => {
@@ -93,7 +130,7 @@ function AddFromSearch({
                 <div className="p-2">
                   <p className="text-xs font-medium line-clamp-2 leading-snug">{recipe.title}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">{recipe.region}</p>
-                  <p className="text-[10px] text-muted-foreground">by {recipe.created_by?.display_name}</p>
+                  <p className="text-[10px] text-muted-foreground">{recipe.created_by?.display_name}</p>
                 </div>
                 <button
                   onClick={() => { if (!isIn) onAdd(recipe as RecipeInput) }}
@@ -115,7 +152,7 @@ function AddFromSearch({
 
       {/* Bulk-add by chef */}
       {query.trim() && results.length > 0 && (() => {
-        const chef = results[0].created_by
+        const chef = results[0]?.created_by
         if (!chef) return null
         const sameChef = results.filter((r) => r.created_by?.id === chef.id)
         if (sameChef.length < 2) return null
@@ -131,12 +168,12 @@ function AddFromSearch({
                className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
                  allIn
                    ? "border-amber-300 text-amber-400 cursor-default"
-                   : "border-amber-400 text-amber-600 hover:bg-amber-50"
+                   : "border-amber-400 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                }`}
              >
                {allIn ? "Toate adăugate ✓" : `+ Adaugă toate ${sameChef.length}`}
              </button>
-          </div>
+           </div>
         )
       })()}
     </div>
@@ -248,42 +285,7 @@ export default function PreferredRecipesClient() {
             existing={preferredIds}
             onAdd={(recipe) => addRecipe(recipe, "manual")}
           />
-          {/* Bulk-add by chef from mock data */}
-           <div className="mt-4 rounded-2xl border border-border bg-card p-5">
-             <h3 className="font-semibold text-sm mb-3">Adaugă toate rețetele unui chef</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Array.from(new Map(MOCK_RECIPES.map((r) => [r.created_by.id, r.created_by])).values()).map((chef) => {
-                const chefRecipes = MOCK_RECIPES.filter((r) => r.created_by.id === chef.id)
-                const allIn = chefRecipes.every((r) => preferredIds.has(r.id))
-                const someIn = chefRecipes.some((r) => preferredIds.has(r.id))
-                return (
-                  <div key={chef.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background">
-                      <FallbackImage src={chef.avatar_url} alt={chef.display_name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" fallbackEmoji="👨‍🍳" />
-                     <div className="flex-1 min-w-0">
-                       <p className="text-xs font-semibold line-clamp-1">{chef.display_name}</p>
-                       <p className="text-[10px] text-muted-foreground">{chef.handle} · {chefRecipes.length} rețet{chefRecipes.length !== 1 ? "e" : "ă"}</p>
-                       {someIn && !allIn && (
-                         <p className="text-[10px] text-amber-600">{chefRecipes.filter((r) => preferredIds.has(r.id)).length} deja adăugate</p>
-                       )}
-                     </div>
-                     <button
-                       onClick={() => allIn
-                         ? removeByChef(chef.id)
-                         : addByChef(chefRecipes as RecipeInput[], chef)
-                       }
-                       className={`shrink-0 text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
-                         allIn
-                           ? "border-red-200 text-red-400 hover:bg-red-50"
-                           : "border-amber-400 text-amber-600 hover:bg-amber-50"
-                       }`}
-                     >
-                       {allIn ? "Elimină toate" : someIn ? "Adaugă restul" : "Adaugă toate"}
-                     </button>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          {/* Bulk-add by chef — uses chefs already in preferred list */}
         </div>
       )}
 
