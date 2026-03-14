@@ -423,7 +423,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
       {/* ── Mobile slide-down menu ───────────────────────────────────────── */}
        {mobileOpen && (
          <div
-           className="md:hidden fixed top-[57px] left-0 right-0 z-40 py-4"
+            className="md:hidden fixed top-[57px] left-0 right-0 z-[45] py-4"
 style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.15)' }}
           >
           {NAV_ITEMS.map(item => (
