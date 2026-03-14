@@ -225,8 +225,29 @@ export default function Home() {
         {/* ════════════════════════════════════════════════════════
             STORIES STRIP  (Instagram-style)
         ════════════════════════════════════════════════════════ */}
-        <section className="px-4 pt-10 pb-4">
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2" style={{ scrollSnapType: 'x mandatory' }}>
+        <section className="px-4 pt-10 pb-4 relative">
+          {/* Quick actions — top right, same level as story avatars */}
+          <div className="absolute top-10 right-4 flex items-center gap-2 z-10 pt-2">
+            <Link
+              href="/me/scan"
+              className="flex flex-col items-center gap-1"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/[0.12] transition-colors">
+                <span className="text-base">📷</span>
+              </div>
+              <span className="text-[9px] text-gray-500">Scanează</span>
+            </Link>
+            <Link
+              href="/me/grocery"
+              className="flex flex-col items-center gap-1"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/[0.07] border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/[0.12] transition-colors">
+                <span className="text-base">🛒</span>
+              </div>
+              <span className="text-[9px] text-gray-500">Magazin</span>
+            </Link>
+          </div>
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2 pr-24" style={{ scrollSnapType: 'x mandatory' }}>
 
             {/* "Add story" button */}
             <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
