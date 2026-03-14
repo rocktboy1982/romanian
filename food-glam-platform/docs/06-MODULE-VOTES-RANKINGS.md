@@ -1,1 +1,0 @@
-# Module: Votes + Rankings## Purpose Casino-like engagement loop via voting and leaderboards. ## DB`votes`-id -post_id -user_id -value (+1 or -1) -created_at Unique: (post_id, user_id) ## Leaderboards-Top Today / Week / All-time -Filter by approach and content type ## Acceptance criteria-Vote once per post per user. -Leaderboards reflect vote totals by time window.

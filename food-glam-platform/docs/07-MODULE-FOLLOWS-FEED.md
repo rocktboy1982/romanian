@@ -1,1 +1,0 @@
-# Module: Follows + Feed## DB`follows`-follower_id -followed_id -created_at Unique: (follower_id, followed_id) ## Routes-`/feed` shows posts from followed creators ## Acceptance criteria-Follow/unfollow works and feed populates.

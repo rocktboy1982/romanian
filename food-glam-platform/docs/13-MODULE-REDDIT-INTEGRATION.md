@@ -1,1 +1,0 @@
-# Module: Reddit Integration (Optional)## Options A) Reddit OAuth login (complex on free tiers depending on auth provider) B) Reddit discussion linking per recipe/channel (easy) ## Recommended MVP-Store optional `reddit_thread_url` per post -Show "Discuss on Reddit" button ## Acceptance criteria-Posts can link to Reddit discussion.

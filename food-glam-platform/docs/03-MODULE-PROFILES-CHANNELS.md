@@ -1,1 +1,0 @@
-# Module: Profiles + Creator Channels## Purpose Each user has a channel page like YouTube. ## DB`profiles`-id (uuid, pk = auth user) -handle (text unique) -display_name -bio -avatar_url -banner_url -created_at ## Routes-`/channel/[handle]`-Tabs: Shorts | Recipes | Images | Collections | Community | About ## Acceptance criteria-Every user has a channel page.
