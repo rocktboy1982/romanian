@@ -15,6 +15,19 @@ interface EmagShopItem {
   selected: boolean
 }
 
+/* ── Affiliate Config ─────────────────────────────────────────────────────── */
+
+// Profitshare affiliate code for eMAG program
+// Set this after registering at https://profitshare.ro → apply for eMAG program
+// Format: your unique affiliate code from Profitshare dashboard
+const PROFITSHARE_AFF_CODE = process.env.NEXT_PUBLIC_PROFITSHARE_AFF_CODE || ''
+
+function wrapAffiliateUrl(targetUrl: string): string {
+  if (!PROFITSHARE_AFF_CODE) return targetUrl
+  const unique = `marechef_${Date.now()}`
+  return `https://event.2performant.com/events/click?ad_type=quicklink&aff_code=${PROFITSHARE_AFF_CODE}&unique=${unique}&redirect_to=${encodeURIComponent(targetUrl)}`
+}
+
 /* ── Constants ────────────────────────────────────────────────────────────── */
 
 const STORAGE_KEY = 'marechef_emag_shop_items'
@@ -152,7 +165,8 @@ function getEmagSearchUrl(itemName: string, totalQty: number = 0, unit: string =
     .replace(/[()]/g, '')
     .trim()
     .replace(/\s+/g, '+')
-  return `https://www.emag.ro/search/${encodeURIComponent(query)}`
+  const directUrl = `https://www.emag.ro/search/${encodeURIComponent(query)}`
+  return wrapAffiliateUrl(directUrl)
 }
 
 function getCategoryIcon(category: string): string {
