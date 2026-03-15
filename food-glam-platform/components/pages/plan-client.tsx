@@ -7,6 +7,7 @@ import IngredientLink from '@/components/ui/ingredient-link'
 import { useFeatureFlags } from "@/components/feature-flags-provider"
 import { useUserTier } from '@/lib/use-user-tier'
 import ProPaywallModal from '@/components/ui/pro-paywall-modal'
+import { isAlcoholicIngredient, getEmagSearchUrl, getBauturiSearchUrl } from '@/lib/normalize-for-search'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -998,17 +999,9 @@ export default function PlanClient() {
                           </div>
                           <div className="divide-y divide-border">
                             {items.map((item) => {
-                              const alcoholKeywords = ['vodka', 'vodcă', 'rom', 'rum', 'gin', 'whisky', 'whiskey', 'bourbon', 'scotch', 'tequila', 'mezcal', 'cognac', 'brandy', 'coniac', 'vermut', 'vermouth', 'campari', 'aperol', 'angostura', 'bitter', 'cointreau', 'triple sec', 'curaçao', 'curacao', 'kahlua', 'baileys', 'amaretto', 'absint', 'chartreuse', 'fernet', 'limoncello', 'prosecco', 'champagne', 'șampanie', 'bere', 'beer', 'vin', 'wine', 'lichior', 'liqueur', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'jägermeister', 'grand marnier']
-                              const isAlcohol = alcoholKeywords.some(kw => item.name.toLowerCase().includes(kw))
-                              
-                              const normalizedName = item.name
-                                .replace(/^\d+\s*/, '')
-                                .replace(/\b(ml|g|kg|linguri|linguriță|cană|buc|bucată|bucăți)\b/gi, '')
-                                .replace(/\b(de|of)\b/gi, '')
-                                .trim()
-
-                              const emagUrl = `https://www.emag.ro/search/${encodeURIComponent(normalizedName.replace(/\s+/g, '+'))}`
-                              const bauturiUrl = `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(normalizedName)}`
+                              const isAlcohol = isAlcoholicIngredient(item.name)
+                              const emagUrl = getEmagSearchUrl(item.name)
+                              const bauturiUrl = getBauturiSearchUrl(item.name)
 
                               return (
                                 <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors">

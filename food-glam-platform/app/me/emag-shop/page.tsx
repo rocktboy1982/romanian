@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { normalizeIngredientForSearch, isAlcoholicIngredient, getEmagSearchUrl as buildEmagUrl, getBauturiSearchUrl as buildBauturiUrl } from '@/lib/normalize-for-search'
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
@@ -45,14 +46,10 @@ const BAUTURI: Vendor = {
   searchUrl: (q) => `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
 }
 
-// Alcohol detection
-const ALCOHOL_KEYWORDS = ['vodka', 'vodcă', 'rom ', 'rum ', 'gin ', 'gin,', 'whiskey', 'whisky', 'tequila', 'lichior', 'vin ', 'vin,', 'bere', 'prosecco', 'champagne', 'șampanie', 'bitter', 'angostura', 'aperol', 'campari', 'vermouth', 'vermut', 'triple sec', 'cointreau', 'kahlua', 'baileys', 'amaretto', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'absint', 'cognac', 'brandy', 'mezcal', 'scotch', 'bourbon', 'chartreuse', 'curaçao', 'maraschino', 'absinthe', 'jägermeister', 'limoncello', 'fernet']
-
 function isAlcoholic(item: ShopItem): boolean {
-  const lower = ` ${item.name.toLowerCase()} `
   const cat = item.category.toLowerCase()
   return cat.includes('spirtoase') || cat.includes('lichior') || cat.includes('alcool') ||
-    ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))
+    isAlcoholicIngredient(item.name)
 }
 
 /* ── Constants & Normalization ────────────────────────────────────────────── */
@@ -68,73 +65,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altele': '🛒',
 }
 
-const STRIP_UNITS = new Set([
-  'g', 'kg', 'ml', 'l', 'dl',
-  'lingura', 'lingură', 'linguri',
-  'lingurita', 'linguriță', 'lingurițe', 'lingurite',
-  'cana', 'cană', 'cani', 'căni',
-  'pahar', 'pahare', 'felie', 'felii',
-  'bucata', 'bucată', 'bucati', 'bucăți',
-  'legatura', 'legătură', 'legaturi',
-  'catel', 'cățel', 'catei', 'căței',
-  'fir', 'fire', 'varf', 'vârf', 'pumn', 'pumni',
-  'pachet', 'pachete', 'cutie', 'cutii',
-  'conserva', 'conservă', 'plic',
-  'frunza', 'frunză', 'frunze', 'foaie', 'foi',
-  'strop', 'praf', 'ramurica', 'rămurică',
-  'crenguita', 'crenguță',
-  'cup', 'cups', 'tbsp', 'tsp', 'tablespoon', 'teaspoon',
-  'oz', 'ounce', 'lb', 'pound',
-  'pinch', 'dash', 'bunch', 'clove', 'cloves',
-  'slice', 'slices', 'piece', 'pieces', 'sprig', 'sprigs',
-])
-
-const STRIP_ADJECTIVES = /\b(proaspăt|proaspătă|proaspete|tocat|tocată|tocate|topit|topită|topite|tăiat|tăiată|tăiate|feliat|feliată|feliate|măcinat|măcinată|prăjit|prăjită|ras|rasă|fiert|fiartă|mărunt|fin|mare|mediu|mic|fresh|frozen|dried|chopped|diced|minced|sliced)\b/gi
-
-function normalizeForSearch(raw: string): string {
-  let s = raw.trim()
-  s = s.replace(/^[\d\s\/.,½⅓⅔¼¾⅛-]+/, '').trim()
-  const words = s.split(/\s+/)
-  let startIdx = 0
-  while (startIdx < words.length && STRIP_UNITS.has(words[startIdx].toLowerCase())) startIdx++
-  if (startIdx > 0 && words[startIdx]?.toLowerCase() === 'de') startIdx++
-  s = words.slice(startIdx).join(' ')
-  s = s.replace(/\(.*?\)/g, '').replace(/,.*$/, '')
-  s = s.replace(STRIP_ADJECTIVES, '')
-  s = s.replace(/\s+/g, ' ').trim()
-  return s || raw.trim()
-}
-
-const SMALL_UNITS = new Set([
-  'lingurita', 'linguriță', 'lingurițe', 'lingurite',
-  'lingura', 'lingură', 'linguri',
-  'varf', 'vârf', 'pumn', 'pumni', 'strop', 'praf',
-  'fir', 'fire', 'catel', 'cățel', 'catei', 'căței',
-  'frunza', 'frunză', 'frunze', 'foaie', 'foi',
-  'ramurica', 'rămurică', 'crenguita', 'crenguță',
-  'buc', 'bucata', 'bucată', 'bucati', 'bucăți',
-  'felie', 'felii', 'cana', 'cană', 'cani', 'căni',
-  'pahar', 'pahare', 'pachet', 'pachete',
-  'cutie', 'cutii', 'conserva', 'conservă', 'plic',
-  'legatura', 'legătură', 'legaturi',
-  'pinch', 'dash', 'sprig', 'sprigs', 'clove', 'cloves',
-  'slice', 'slices', 'piece', 'pieces',
-  'cup', 'cups', 'can', 'cans',
-  'tsp', 'teaspoon', 'teaspoons',
-  'tbsp', 'tablespoon', 'tablespoons',
-])
-
-const WEIGHT_UNITS = new Set(['g', 'kg', 'ml', 'l', 'dl', 'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds'])
-
-function buildSearchQuery(itemName: string, totalQty: number, unit: string): string {
-  const name = normalizeForSearch(itemName)
-  const unitLower = unit.toLowerCase()
-  if (WEIGHT_UNITS.has(unitLower) && totalQty > 0) {
-    const qty = totalQty % 1 === 0 ? String(totalQty) : totalQty.toFixed(0)
-    return `${qty}${unitLower} ${name}`
-  }
-  return name
-}
+// Normalization imported from @/lib/normalize-for-search
 
 /* ── Component ────────────────────────────────────────────────────────────── */
 
@@ -151,7 +82,7 @@ export default function ShopPage() {
       const linkMap: Array<{ itemIdx: number; vendorId: string }> = []
 
       shopItems.forEach((item, itemIdx) => {
-        const query = buildSearchQuery(item.name, item.totalQty, item.unit)
+        const query = normalizeIngredientForSearch(item.name)
         // Always generate eMAG link
         allLinks.push({ name: `emag:${query}`, url: EMAG.searchUrl(query) })
         linkMap.push({ itemIdx, vendorId: 'emag' })
@@ -230,7 +161,7 @@ export default function ShopPage() {
 
   const getItemUrl = (item: ShopItem, vendor: Vendor): string => {
     if (item.affiliateUrls[vendor.id]) return item.affiliateUrls[vendor.id]
-    return vendor.searchUrl(buildSearchQuery(item.name, item.totalQty, item.unit))
+    return vendor.searchUrl(normalizeIngredientForSearch(item.name))
   }
 
   const openItem = (item: ShopItem, vendor: Vendor) => {
