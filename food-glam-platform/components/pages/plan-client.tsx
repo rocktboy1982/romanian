@@ -7,7 +7,7 @@ import IngredientLink from '@/components/ui/ingredient-link'
 import { useFeatureFlags } from "@/components/feature-flags-provider"
 import { useUserTier } from '@/lib/use-user-tier'
 import ProPaywallModal from '@/components/ui/pro-paywall-modal'
-import { isAlcoholicIngredient, getEmagSearchUrl, getBauturiSearchUrl } from '@/lib/normalize-for-search'
+import { isAlcoholicIngredient, getEmagSearchUrl, getBauturiSearchUrl, parseIngredientString } from '@/lib/normalize-for-search'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,17 +75,19 @@ type Ingredient = { name: string; qty: number; unit: string; category: string; s
 function getIngredients(recipe: Recipe): Ingredient[] {
   if (!recipe.ingredients || recipe.ingredients.length === 0) {
     return [
-      { name: "Ingrediente", qty: 1, unit: "porție", category: "Cămară", subtypeNote: "vezi pagina rețetei" }
+      { name: "Ingrediente", qty: 1, unit: "porție", category: "Altele", subtypeNote: "vezi pagina rețetei" }
     ]
   }
-  // Map raw ingredient strings to structured format
-  return recipe.ingredients.map((ingredientStr) => ({
-    name: ingredientStr,
-    qty: 1,
-    unit: "buc",
-    category: "Necategorizat",
-    subtypeNote: ""
-  }))
+  return recipe.ingredients.map((ingredientStr) => {
+    const parsed = parseIngredientString(ingredientStr)
+    return {
+      name: parsed.name,
+      qty: parsed.qty,
+      unit: parsed.unit,
+      category: parsed.category,
+      subtypeNote: "",
+    }
+  })
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

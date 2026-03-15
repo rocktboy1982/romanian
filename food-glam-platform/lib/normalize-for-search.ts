@@ -48,7 +48,7 @@ const UNITS = new Set([
   'cup', 'cups',
   'tbsp', 'tablespoon', 'tablespoons',
   'tsp', 'teaspoon', 'teaspoons',
-  'oz', 'ounce', 'ounces',
+  'oz', 'ounce', 'ounces', 'uncii', 'uncie',
   'lb', 'lbs', 'pound', 'pounds',
   'pinch', 'dash', 'bunch',
   'clove', 'cloves',
@@ -172,6 +172,127 @@ const ALCOHOL_KEYWORDS = [
 export function isAlcoholicIngredient(name: string): boolean {
   const lower = ` ${name.toLowerCase()} `
   return ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))
+}
+
+/**
+ * Parse a raw ingredient string into { qty, unit, name, category }.
+ * Used by the shopping list builder to separate quantity from product.
+ *
+ * "2 căni lapte degresat" → { qty: 2, unit: "căni", name: "lapte degresat" }
+ * "1/2 linguriță praf de usturoi" → { qty: 0.5, unit: "linguriță", name: "praf de usturoi" }
+ * "500g varză, tăiată fâșii" → { qty: 500, unit: "g", name: "varză" }
+ * "3 ouă" → { qty: 3, unit: "buc", name: "ouă" }
+ * "sare și piper" → { qty: 1, unit: "buc", name: "sare și piper" }
+ */
+export function parseIngredientString(raw: string): { qty: number; unit: string; name: string; category: string } {
+  let s = raw.trim()
+
+  // Remove parenthetical notes first
+  s = s.replace(/\(.*?\)/g, '').trim()
+
+  // Remove everything after comma
+  const commaIdx = s.indexOf(',')
+  if (commaIdx > 3) s = s.substring(0, commaIdx)
+
+  s = s.trim()
+
+  // Step 1: Extract leading number (integers, fractions, unicode fractions, decimals, ranges)
+  let qty = 0
+  let rest = s
+
+  // Replace unicode fractions
+  rest = rest.replace(/½/g, ' 1/2').replace(/⅓/g, ' 1/3').replace(/⅔/g, ' 2/3')
+    .replace(/¼/g, ' 1/4').replace(/¾/g, ' 3/4').replace(/⅛/g, ' 1/8').trim()
+
+  const numMatch = rest.match(/^([\d\s\/.,\-–]+)/)
+  if (numMatch) {
+    const numStr = numMatch[1].trim()
+    rest = rest.slice(numMatch[0].length).trim()
+
+    // Parse the number
+    if (numStr.includes('/')) {
+      const parts = numStr.split(/\s+/)
+      let total = 0
+      for (const part of parts) {
+        if (part.includes('/')) {
+          const [num, denom] = part.split('/')
+          const n = parseFloat(num)
+          const d = parseFloat(denom)
+          if (!isNaN(n) && !isNaN(d) && d !== 0) total += n / d
+        } else {
+          const v = parseFloat(part.replace(',', '.'))
+          if (!isNaN(v)) total += v
+        }
+      }
+      qty = total
+    } else if (numStr.includes('-') || numStr.includes('–')) {
+      // Range: take higher value
+      const rangeParts = numStr.split(/[-–]/)
+      qty = parseFloat(rangeParts[rangeParts.length - 1].replace(',', '.')) || 1
+    } else {
+      qty = parseFloat(numStr.replace(',', '.')) || 0
+    }
+  }
+
+  if (qty === 0) qty = 1 // default
+
+  // Step 2: Try to match a known unit word at the start of rest
+  const words = rest.split(/\s+/).filter(Boolean)
+  let unit = 'buc'
+  let nameStartIdx = 0
+
+  if (words.length > 0 && UNITS.has(words[0].toLowerCase())) {
+    unit = words[0]
+    nameStartIdx = 1
+    // Skip preposition after unit ("de", "of")
+    if (words[nameStartIdx] && PREPOSITIONS.has(words[nameStartIdx].toLowerCase())) {
+      nameStartIdx++
+    }
+  } else if (words.length > 0) {
+    // Check for units glued to number: "500g" → already split by numMatch
+    // No unit found — default to "buc"
+  }
+
+  // Step 3: Build the product name from remaining words
+  let name = words.slice(nameStartIdx).join(' ')
+
+  // Strip cooking adjectives
+  name = name.split(/\s+/).filter(w => !COOKING_ADJECTIVES.has(w.toLowerCase())).join(' ')
+
+  // Clean orphaned prepositions
+  const nameWords = name.split(/\s+/).filter(Boolean)
+  while (nameWords.length > 1 && PREPOSITIONS.has(nameWords[0].toLowerCase())) nameWords.shift()
+  while (nameWords.length > 1 && PREPOSITIONS.has(nameWords[nameWords.length - 1].toLowerCase())) nameWords.pop()
+  name = nameWords.join(' ').trim()
+
+  if (!name || name.length < 2) name = raw.replace(/\(.*?\)/g, '').replace(/,.*$/, '').replace(/^[\d\s\/.,½⅓⅔¼¾⅛-]+/, '').trim()
+
+  // Step 4: Guess category from the ingredient name
+  const category = guessCategory(name)
+
+  return { qty, unit, name, category }
+}
+
+function guessCategory(name: string): string {
+  const lower = name.toLowerCase()
+  if (/lapte|smântân|brânz|cheddar|mozza|iaurt|frișc|parmezan|mascarpone|gorgonzola|cream|ricotta/.test(lower)) return 'Lactate'
+  if (/carne|pui|pulp|piept|vita|porc|miel|curcan|bacon|prosciutto|pancetta/.test(lower)) return 'Carne'
+  if (/ceap|usturoi|morcov|ardei|roși|cartof|dovl|varză|spanac|fasol|mazăr|linte|năut|vinete/.test(lower)) return 'Legume'
+  if (/măr |mere|banană|lămâi|lime|portocal|căpșun|afin|zmeură|cireș|ananas|mango|pere|piersic|kiwi|fruct/.test(lower)) return 'Fructe'
+  if (/sare|piper|boia|oregano|cimbru|rozmarin|curcuma|ghimbir|scorțișoară|dafin|chimion|coriandru|vanilie|nucșoar|condiment|garam|chili/.test(lower)) return 'Condimente'
+  if (/fain|pâine|chifle|cozonac|aluat|crustă|pesmet/.test(lower)) return 'Panificație'
+  if (/orez|paste |tăiței|penne|spaghetti|fusilli|mălai|griș|ovăz|quinoa|couscous/.test(lower)) return 'Cereale'
+  if (/ulei|untură|măslin/.test(lower)) return 'Uleiuri'
+  if (/conserv|sos de|bulion|passata/.test(lower)) return 'Conserve'
+  if (/ou[ăa]?\b|ouă|albuș|gălbenuș/.test(lower)) return 'Ouă'
+  if (/pește|somon|ton |cod |crap|sardine|anșoa|creveț/.test(lower)) return 'Pește'
+  if (/ciocolat|cacao|zahăr|miere|sirop|caramel/.test(lower)) return 'Dulciuri'
+  if (/unt\b/.test(lower)) return 'Lactate'
+  if (/vodka|vodcă|gin\b|rom\b|rum\b|whisky|tequila|cognac|bere|vin\b|lichior|bitter|vermut|prosecco|champagne/.test(lower)) return 'Spirtoase'
+  if (/apă|suc |sifon|tonic|sprite|cola|cafea|ceai|espresso/.test(lower)) return 'Băuturi'
+  if (/gheață|gheata/.test(lower)) return 'Gheață'
+  if (/nuc[ăi]|migdal|caju|alun|semințe|susan/.test(lower)) return 'Nuci'
+  return 'Altele'
 }
 
 // Generate eMAG search URL
