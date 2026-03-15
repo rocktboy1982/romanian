@@ -16,7 +16,7 @@ interface ShopItem {
   affiliateUrls: Record<string, string>
 }
 
-/* ── Vendor Configuration ─────────────────────────────────────────────────── */
+/* ── Vendors (only verified working searches) ─────────────────────────────── */
 
 interface Vendor {
   id: string
@@ -25,95 +25,34 @@ interface Vendor {
   color: string
   icon: string
   searchUrl: (q: string) => string
-  bestFor: string[]
 }
 
-const VENDORS: Vendor[] = [
-  {
-    id: 'bauturialcoolice',
-    name: 'BauturiAlcoolice.ro',
-    shortName: 'Băuturi',
-    color: '#7b2d8e',
-    icon: '🍷',
-    searchUrl: (q) => `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
-    bestFor: ['Spirtoase', 'Lichioruri', 'Vin', 'Bere', 'Băuturi alcoolice'],
-  },
-  {
-    id: 'unicorn',
-    name: 'Unicorn Naturals',
-    shortName: 'Unicorn',
-    color: '#6bb536',
-    icon: '🦄',
-    searchUrl: (q) => `https://unicorn-naturals.ro/?s=${encodeURIComponent(q)}`,
-    bestFor: ['Bio', 'Naturale', 'Miere', 'Siropuri'],
-  },
-  {
-    id: 'scufita',
-    name: 'Scufița Roșie',
-    shortName: 'Scufița',
-    color: '#d44040',
-    icon: '🧺',
-    searchUrl: (q) => `https://scufita-rosie.ro/?s=${encodeURIComponent(q)}`,
-    bestFor: ['Condimente', 'Naturale', 'Ceaiuri'],
-  },
-  {
-    id: 'vegis',
-    name: 'Vegis.ro',
-    shortName: 'Vegis',
-    color: '#3aa655',
-    icon: '🌿',
-    searchUrl: (q) => `https://vegis.ro/search?q=${encodeURIComponent(q)}`,
-    bestFor: ['Vegan', 'Bio', 'Sănătos', 'Fără gluten'],
-  },
-  {
-    id: 'parmashop',
-    name: 'ParmaShop.ro',
-    shortName: 'Parma',
-    color: '#c8860a',
-    icon: '🇮🇹',
-    searchUrl: (q) => `https://www.parmashop.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
-    bestFor: ['Paste', 'Ulei de măsline', 'Parmezan', 'Delicatese'],
-  },
-  {
-    id: 'nosugar',
-    name: 'NoSugarShop.ro',
-    shortName: 'NoSugar',
-    color: '#e85d75',
-    icon: '🍬',
-    searchUrl: (q) => `https://www.nosugarshop.ro/?s=${encodeURIComponent(q)}`,
-    bestFor: ['Fără zahăr', 'Keto', 'Diabet'],
-  },
-  {
-    id: 'emag',
-    name: 'eMAG.ro',
-    shortName: 'eMAG',
-    color: '#f7c948',
-    icon: '🛒',
-    searchUrl: (q) => `https://www.emag.ro/search/${encodeURIComponent(q.replace(/\s+/g, '+'))}`,
-    bestFor: ['General'],
-  },
-]
-
-const ALCOHOL_KEYWORDS = ['vodka', 'vodcă', 'rom', 'rum', 'gin', 'whiskey', 'whisky', 'tequila', 'lichior', 'vin', 'bere', 'prosecco', 'champagne', 'șampanie', 'bitter', 'angostura', 'aperol', 'campari', 'vermouth', 'vermut', 'triple sec', 'cointreau', 'kahlua', 'baileys', 'amaretto', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'absint', 'cognac', 'brandy']
-
-function isAlcoholic(name: string): boolean {
-  const lower = name.toLowerCase()
-  return ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))
+const EMAG: Vendor = {
+  id: 'emag',
+  name: 'eMAG.ro',
+  shortName: 'eMAG',
+  color: '#f7c948',
+  icon: '🛒',
+  searchUrl: (q) => `https://www.emag.ro/search/${encodeURIComponent(q.replace(/\s+/g, '+'))}`,
 }
 
-function getBestVendorForItem(item: ShopItem): Vendor {
-  if (isAlcoholic(item.name) || item.category === 'Spirtoase' || item.category === 'Lichioruri' || item.category === 'Băuturi alcoolice') {
-    return VENDORS.find(v => v.id === 'bauturialcoolice')!
-  }
-  // For food items, default to first non-alcohol vendor (highest commission)
-  return VENDORS.find(v => v.id === 'unicorn')!
+const BAUTURI: Vendor = {
+  id: 'bauturialcoolice',
+  name: 'BauturiAlcoolice.ro',
+  shortName: 'Băuturi',
+  color: '#7b2d8e',
+  icon: '🍷',
+  searchUrl: (q) => `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
 }
 
-function getVendorsForItem(item: ShopItem): Vendor[] {
-  if (isAlcoholic(item.name) || item.category === 'Spirtoase' || item.category === 'Lichioruri' || item.category === 'Băuturi alcoolice') {
-    return VENDORS.filter(v => v.id === 'bauturialcoolice' || v.id === 'emag')
-  }
-  return VENDORS.filter(v => v.id !== 'bauturialcoolice')
+// Alcohol detection
+const ALCOHOL_KEYWORDS = ['vodka', 'vodcă', 'rom ', 'rum ', 'gin ', 'gin,', 'whiskey', 'whisky', 'tequila', 'lichior', 'vin ', 'vin,', 'bere', 'prosecco', 'champagne', 'șampanie', 'bitter', 'angostura', 'aperol', 'campari', 'vermouth', 'vermut', 'triple sec', 'cointreau', 'kahlua', 'baileys', 'amaretto', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'absint', 'cognac', 'brandy', 'mezcal', 'scotch', 'bourbon', 'chartreuse', 'curaçao', 'maraschino', 'absinthe', 'jägermeister', 'limoncello', 'fernet']
+
+function isAlcoholic(item: ShopItem): boolean {
+  const lower = ` ${item.name.toLowerCase()} `
+  const cat = item.category.toLowerCase()
+  return cat.includes('spirtoase') || cat.includes('lichior') || cat.includes('alcool') ||
+    ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))
 }
 
 /* ── Constants & Normalization ────────────────────────────────────────────── */
@@ -203,7 +142,6 @@ export default function ShopPage() {
   const [items, setItems] = useState<ShopItem[]>([])
   const [hydrated, setHydrated] = useState(false)
   const [affiliateLoading, setAffiliateLoading] = useState(false)
-  const [activeVendor, setActiveVendor] = useState<string>('smart')
 
   const generateAffiliateLinks = useCallback(async (shopItems: ShopItem[]) => {
     if (shopItems.length === 0) return
@@ -214,11 +152,14 @@ export default function ShopPage() {
 
       shopItems.forEach((item, itemIdx) => {
         const query = buildSearchQuery(item.name, item.totalQty, item.unit)
-        const vendors = getVendorsForItem(item)
-        vendors.forEach(vendor => {
-          allLinks.push({ name: `${vendor.id}:${query}`, url: vendor.searchUrl(query) })
-          linkMap.push({ itemIdx, vendorId: vendor.id })
-        })
+        // Always generate eMAG link
+        allLinks.push({ name: `emag:${query}`, url: EMAG.searchUrl(query) })
+        linkMap.push({ itemIdx, vendorId: 'emag' })
+        // Also generate BauturiAlcoolice link for alcohol items
+        if (isAlcoholic(item)) {
+          allLinks.push({ name: `bauturi:${query}`, url: BAUTURI.searchUrl(query) })
+          linkMap.push({ itemIdx, vendorId: 'bauturialcoolice' })
+        }
       })
 
       const batchSize = 50
@@ -287,21 +228,13 @@ export default function ShopPage() {
     setItems(prev => prev.map(item => ({ ...item, selected: !allSelected })))
   }
 
-  const getItemUrl = (item: ShopItem, vendorId: string): string => {
-    if (item.affiliateUrls[vendorId]) return item.affiliateUrls[vendorId]
-    const vendor = VENDORS.find(v => v.id === vendorId)
-    if (!vendor) return '#'
+  const getItemUrl = (item: ShopItem, vendor: Vendor): string => {
+    if (item.affiliateUrls[vendor.id]) return item.affiliateUrls[vendor.id]
     return vendor.searchUrl(buildSearchQuery(item.name, item.totalQty, item.unit))
   }
 
-  const resolveVendor = (item: ShopItem): Vendor => {
-    if (activeVendor === 'smart') return getBestVendorForItem(item)
-    return VENDORS.find(v => v.id === activeVendor) || VENDORS[VENDORS.length - 1]
-  }
-
-  const openSingleItem = (item: ShopItem) => {
-    const vendor = resolveVendor(item)
-    window.open(getItemUrl(item, vendor.id), '_blank', 'noopener')
+  const openItem = (item: ShopItem, vendor: Vendor) => {
+    window.open(getItemUrl(item, vendor), '_blank', 'noopener')
   }
 
   const openAllSelected = () => {
@@ -309,9 +242,9 @@ export default function ShopPage() {
     if (selected.length === 0) return
     const batch = selected.slice(0, 10)
     batch.forEach((item, i) => {
-      const vendor = resolveVendor(item)
+      const vendor = isAlcoholic(item) ? BAUTURI : EMAG
       setTimeout(() => {
-        window.open(getItemUrl(item, vendor.id), '_blank', 'noopener')
+        window.open(getItemUrl(item, vendor), '_blank', 'noopener')
       }, i * 300)
     })
     if (selected.length > 10) {
@@ -355,36 +288,10 @@ export default function ShopPage() {
           {selectedCount} / {totalCount}
         </span>
       </div>
-      <p className="text-muted-foreground text-sm mb-4">
-        Alege magazinul, apoi apasă pe un produs pentru a-l căuta acolo.
+      <p className="text-muted-foreground text-sm mb-5">
+        Apasă pe butonul unui produs pentru a-l căuta în magazin. Băuturile alcoolice au și opțiunea BauturiAlcoolice.ro.
         {affiliateLoading && <span className="ml-2 text-amber-500 text-xs">Se pregătesc link-urile...</span>}
       </p>
-
-      {/* Vendor selector */}
-      <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-3 mb-4">
-        <button
-          onClick={() => setActiveVendor('smart')}
-          className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
-            activeVendor === 'smart' ? 'border-amber-500 bg-amber-500/10 text-amber-600 shadow-sm' : 'border-border opacity-60 hover:opacity-100'
-          }`}
-        >
-          <span>✨</span>
-          <span>Automat</span>
-        </button>
-        {VENDORS.map(vendor => (
-          <button
-            key={vendor.id}
-            onClick={() => setActiveVendor(vendor.id)}
-            className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
-              activeVendor === vendor.id ? 'shadow-sm' : 'border-border opacity-60 hover:opacity-100'
-            }`}
-            style={activeVendor === vendor.id ? { color: vendor.color, borderColor: vendor.color, backgroundColor: `${vendor.color}10` } : {}}
-          >
-            <span>{vendor.icon}</span>
-            <span className="whitespace-nowrap">{vendor.shortName}</span>
-          </button>
-        ))}
-      </div>
 
       {/* Select all */}
       <div className="flex items-center justify-between mb-4">
@@ -404,7 +311,7 @@ export default function ShopPage() {
             </div>
             <div className="divide-y divide-border">
               {categoryItems.map(item => {
-                const vendor = resolveVendor(item)
+                const alcohol = isAlcoholic(item)
                 return (
                   <div key={item.id} className={`flex items-center gap-3 px-4 py-3 transition-colors ${item.selected ? '' : 'opacity-40'}`}>
                     {/* Checkbox */}
@@ -430,16 +337,31 @@ export default function ShopPage() {
                       </p>
                     </div>
 
-                    {/* Single vendor button */}
-                    <button
-                      onClick={() => openSingleItem(item)}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
-                      style={{ backgroundColor: `${vendor.color}15`, color: vendor.color, border: `1px solid ${vendor.color}30` }}
-                      title={`Caută pe ${vendor.name}`}
-                    >
-                      <span>{vendor.icon}</span>
-                      <span>{vendor.shortName}</span>
-                    </button>
+                    {/* Vendor buttons */}
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      {/* BauturiAlcoolice — only for alcohol */}
+                      {alcohol && (
+                        <button
+                          onClick={() => openItem(item, BAUTURI)}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
+                          style={{ backgroundColor: '#7b2d8e15', color: '#7b2d8e', border: '1px solid #7b2d8e30' }}
+                          title="Caută pe BauturiAlcoolice.ro"
+                        >
+                          <span>🍷</span>
+                          <span className="hidden sm:inline">Băuturi</span>
+                        </button>
+                      )}
+                      {/* eMAG — always */}
+                      <button
+                        onClick={() => openItem(item, EMAG)}
+                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
+                        style={{ backgroundColor: '#f7c94815', color: '#b8960a', border: '1px solid #f7c94830' }}
+                        title="Caută pe eMAG.ro"
+                      >
+                        <span>🛒</span>
+                        <span className="hidden sm:inline">eMAG</span>
+                      </button>
+                    </div>
                   </div>
                 )
               })}
@@ -448,7 +370,7 @@ export default function ShopPage() {
         ))}
       </div>
 
-      {/* Bottom bar — compact */}
+      {/* Bottom bar */}
       <div className="sticky bottom-0 left-0 right-0 mt-6 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background to-transparent">
         <button
           onClick={openAllSelected}
@@ -458,12 +380,12 @@ export default function ShopPage() {
           }`}
         >
           {selectedCount > 0
-            ? `Deschide ${selectedCount} produse (${activeVendor === 'smart' ? 'automat' : VENDORS.find(v => v.id === activeVendor)?.shortName || 'eMAG'})`
+            ? `Deschide ${selectedCount} produse online`
             : 'Selectează produse'
           }
         </button>
         <p className="text-[10px] text-muted-foreground text-center mt-1.5">
-          Se deschide câte un tab per produs
+          Alcool → BauturiAlcoolice.ro · Restul → eMAG.ro
         </p>
       </div>
     </main>
