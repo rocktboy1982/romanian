@@ -997,6 +997,31 @@ export default function PartyPlanClient() {
                    📤 Partajează
                  </button>
                </div>
+               {/* Buy online button */}
+               <button
+                 onClick={() => {
+                   const shopItems = aggregatedIngredients.map(ing => {
+                     const raw = ing.amount * state.guestCount
+                     const unitLower = ing.unit.toLowerCase()
+                     const isVolume = ['ml', 'l', 'dl', 'cl', 'oz'].includes(unitLower)
+                     const isWeight = ['g', 'kg', 'lb'].includes(unitLower)
+                     return {
+                       id: `${ing.name}__${ing.unit}`,
+                       name: ing.name,
+                       totalQty: isVolume || isWeight ? raw : Math.ceil(raw),
+                       unit: ing.unit,
+                       category: ing.category,
+                       fromRecipes: ing.sources,
+                     }
+                   })
+                   localStorage.setItem('marechef_emag_shop_items', JSON.stringify(shopItems))
+                   window.open('/me/emag-shop', '_blank')
+                 }}
+                 className="w-full px-4 py-3 rounded-lg font-semibold text-sm transition-all"
+                 style={{ background: '#7b2d8e', color: '#fff' }}
+               >
+                 🛒 Cumpără online
+               </button>
              </div>
 
                {/* Grouping toggle */}
