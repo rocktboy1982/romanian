@@ -392,19 +392,9 @@ export default function PlanClient() {
   const [shopScope, setShopScope] = useState<ShoppingScope>({ type: "week", weekIndex: 0 })
   const [shopGrouping, setShopGrouping] = useState<"category" | "recipe" | "day">("category")
   const [shopItems, setShopItems] = useState<ShoppingItem[]>([])
-  const [shopGenerated, setShopGenerated] = useState(false)
   const [shopRangeFrom, setShopRangeFrom] = useState(0)
   const [shopRangeTo, setShopRangeTo] = useState(0)
   const [shopSaveState, setShopSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-
-  // Match-to-store state (inline in shopping view)
-  const [savedListId, setSavedListId] = useState<string | null>(null)
-  const [matchStep, setMatchStep] = useState<'generate' | 'list' | 'match'>('generate')
-  const [matchVendor, setMatchVendor] = useState('bringo')
-  const [matchBudget, setMatchBudget] = useState<'budget' | 'normal' | 'premium'>('normal')
-  const [matchResults, setMatchResults] = useState<Array<{ ingredientRef: string; product: { name: string; packageSize: string; pricePerUnit: number; pricePerBaseUnit?: number; baseUnitLabel?: string } | null; substitution?: { substitute: string } | null }>>([])
-  const [matchTotal, setMatchTotal] = useState<number | null>(null)
-  const [matching, setMatching] = useState(false)
   // Persist planner to localStorage whenever it changes (only non-empty weeks)
   useEffect(() => {
     try {
@@ -539,11 +529,6 @@ export default function PlanClient() {
         : { type: 'week', weekIndex: currentWeek }
     const items = buildShoppingList(planner, resolvedScope)
     setShopItems(items)
-    setShopGenerated(true)
-    setMatchStep('list')
-    setSavedListId(null)
-    setMatchResults([])
-    setMatchTotal(null)
     setShopSaveState('idle')
     setShopSaveError('')
   }, [planner, shopScope, shopRangeFrom, shopRangeTo, currentWeek])
@@ -610,10 +595,8 @@ export default function PlanClient() {
         console.error('[saveToShoppingList] some items failed:', failed.length, 'of', results.length)
       }
 
-      setShopSaveState('saved')
-      setSavedListId(created.id)
-      setMatchStep('match')
-      setTimeout(() => setShopSaveState('idle'), 4000)
+       setShopSaveState('saved')
+       setTimeout(() => setShopSaveState('idle'), 4000)
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       console.error('[saveToShoppingList] error:', msg)
@@ -654,6 +637,13 @@ export default function PlanClient() {
     return map
   }, [shopItems, shopGrouping])
 
+  // Auto-generate shopping list when switching to shopping view
+  useEffect(() => {
+    if (view === 'shopping') {
+      generateShoppingList()
+    }
+  }, [view, generateShoppingList])
+
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <>
@@ -677,14 +667,14 @@ export default function PlanClient() {
            >
              📅 Planificator
            </button>
-           <button
-             onClick={() => { setView("shopping"); setShopGenerated(false); setMatchStep('generate'); setSavedListId(null); setMatchResults([]); setMatchTotal(null) }}
-             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-               view === "shopping" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
-             }`}
-           >
-             🛒 Lista de cumpărături
-           </button>
+            <button
+              onClick={() => setView("shopping")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                view === "shopping" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted"
+              }`}
+            >
+              🛒 Lista de cumpărături
+            </button>
            <Link
              href="/me/shopping-lists"
              className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors"
@@ -959,833 +949,232 @@ export default function PlanClient() {
       {/* ══════════════════════════ SHOPPING LIST VIEW ════════════════════════ */}
       {view === "shopping" && (
         <div style={{ maxWidth: '1000px' }}>
-          {/* Helper function to make match API calls */}
-          {(() => {
-            const handleMatch = async () => {
-              if (!savedListId) return
-              setMatching(true)
-              setMatchResults([])
-              setMatchTotal(null)
-              try {
-                let mockUserId = 'anonymous'
-                try {
-                  const stored = localStorage.getItem('mock_user')
-                  if (stored) {
-                    const parsed = JSON.parse(stored) as { id?: string }
-                    if (parsed.id) mockUserId = parsed.id
-                  }
-                } catch { /* ignore */ }
-
-                // Call match API
-                const ingredientRefs = shopItems.map((item) => `${item.name}__${item.unit}`)
-                const matchRes = await fetch('/api/grocery/match', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-mock-user-id': mockUserId },
-                  body: JSON.stringify({
-                    ingredients: ingredientRefs,
-                    vendor_id: matchVendor,
-                    budget_tier: matchBudget,
-                  }),
-                })
-                if (!matchRes.ok) throw new Error('Match failed')
-                const matchData = await matchRes.json() as { matches: Array<{ ingredientRef: string; product: { name: string; packageSize: string; pricePerUnit: number; pricePerBaseUnit?: number; baseUnitLabel?: string } | null; substitution?: { substitute: string } | null }>; estimatedTotal: number }
-                setMatchResults(matchData.matches)
-                setMatchTotal(matchData.estimatedTotal)
-              } catch (err) {
-                console.error('[handleMatch] error:', err)
-              } finally {
-                setMatching(false)
-              }
-            }
-
-            const handleCheckout = async () => {
-              if (!savedListId) return
-              setMatching(true)
-              try {
-                let mockUserId = 'anonymous'
-                try {
-                  const stored = localStorage.getItem('mock_user')
-                  if (stored) {
-                    const parsed = JSON.parse(stored) as { id?: string }
-                    if (parsed.id) mockUserId = parsed.id
-                  }
-                } catch { /* ignore */ }
-
-                // Prepare cart items
-                const cartItems = shopItems.map((item) => {
-                  const match = matchResults.find((m) => m.ingredientRef === `${item.name}__${item.unit}`)
-                  return {
-                    product: match?.product,
-                    quantity: item.totalQty,
-                    ingredientRef: `${item.name}__${item.unit}`,
-                  }
-                })
-
-                const checkoutRes = await fetch('/api/grocery/checkout', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-mock-user-id': mockUserId },
-                  body: JSON.stringify({
-                    vendor_id: matchVendor,
-                    items: cartItems,
-                    budget_tier: matchBudget,
-                  }),
-                })
-                if (!checkoutRes.ok) throw new Error('Checkout failed')
-                const checkoutData = await checkoutRes.json() as { checkoutUrl?: string; estimatedTotal?: number; handoffMessage?: string }
-                if (checkoutData.checkoutUrl) {
-                  window.open(checkoutData.checkoutUrl, '_blank')
-                }
-              } catch (err) {
-                console.error('[handleCheckout] error:', err)
-              } finally {
-                setMatching(false)
-              }
-            }
-
-            return (
-              <div>
-                {/* STEP 1: GENERATE */}
-                {matchStep === 'generate' && !shopGenerated && (
-                  <div style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    padding: 24,
-                    marginBottom: 24,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 20,
-                  }}>
-                    <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>📋 Generează lista de cumpărături</h2>
-
-                    {/* Scope selector */}
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, marginBottom: 12, color: '#333' }}>Interval de timp</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                        {([{ label: 'Azi', icon: '📅' }, { label: 'Săptămâna asta', icon: '📆' }, { label: 'Interval săptămâni', icon: '🗓️' }] as const).map(({ label, icon }) => {
-                          const isSelected = (
-                            (shopScope.type === 'day' && label === 'Azi') ||
-                            (shopScope.type === 'week' && label === 'Săptămâna asta') ||
-                            (shopScope.type === 'range' && label === 'Interval săptămâni')
-                          )
-                          return (
-                            <button
-                              key={label}
-                              onClick={() => {
-                                 if (label === 'Azi') setShopScope({ type: 'day', weekIndex: currentWeek, day: DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] })
-                                 else if (label === 'Săptămâna asta') setShopScope({ type: 'week', weekIndex: currentWeek })
-                                 else setShopScope({ type: 'range', from: shopRangeFrom, to: shopRangeTo })
-                               }}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                padding: '8px 14px',
-                                borderRadius: 10,
-                                border: isSelected ? '2px solid #111' : '2px solid #e5e5e5',
-                                background: isSelected ? '#111' : '#fff',
-                                color: isSelected ? '#fff' : '#333',
-                                fontSize: 13,
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                              onMouseOver={(e) => {
-                                if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = '#f9f9f9'
-                              }}
-                              onMouseOut={(e) => {
-                                if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = '#fff'
-                              }}
-                            >
-                              {icon} {label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Range pickers if needed */}
-                    {shopScope.type === 'range' && (
-                       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                         <div>
-                           <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 6 }}>De la săptămâna</label>
-                          <select
-                            value={shopRangeFrom}
-                            onChange={(e) => setShopRangeFrom(Number(e.target.value))}
-                            style={{
-                              border: '1px solid #ddd',
-                              borderRadius: 8,
-                              padding: '8px 10px',
-                              fontSize: 13,
-                              background: '#fff',
-                              color: '#333',
-                            }}
-                          >
-                            {Array.from({ length: TOTAL_WEEKS }, (_, i) => (
-                              <option key={i} value={i}>W{i + 1} · {weekLabel(i)}</option>
-                            ))}
-                          </select>
-                        </div>
-                         <span style={{ color: '#999', fontSize: 13 }}>până la</span>
-                         <div>
-                           <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 6 }}>Până la săptămâna</label>
-                          <select
-                            value={shopRangeTo}
-                            onChange={(e) => setShopRangeTo(Number(e.target.value))}
-                            style={{
-                              border: '1px solid #ddd',
-                              borderRadius: 8,
-                              padding: '8px 10px',
-                              fontSize: 13,
-                              background: '#fff',
-                              color: '#333',
-                            }}
-                          >
-                            {Array.from({ length: TOTAL_WEEKS }, (_, i) => (
-                              <option key={i} value={i} disabled={i < shopRangeFrom}>W{i + 1} · {weekLabel(i)}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Group by selector */}
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, marginBottom: 12, color: '#333' }}>Group by</p>
-                      <div style={{ display: 'flex', gap: 10 }}>
+           {(() => {
+             return (
+              <div className="space-y-6">
+                {shopItems.length === 0 ? (
+                  <div className="rounded-2xl border border-border bg-card p-12 text-center">
+                    <p className="text-4xl mb-4">🛒</p>
+                    <p className="text-sm font-medium text-foreground mb-2">Nu sunt mese planificate pentru acest interval</p>
+                    <p className="text-xs text-muted-foreground">Adaugă feluri de mâncare în planificator mai întâi</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Grouping toggle */}
+                    <div className="rounded-2xl border border-border bg-card p-4">
+                      <div className="flex flex-wrap gap-2">
                         {(['category', 'recipe', 'day'] as const).map((g) => {
                           const isSelected = shopGrouping === g
+                          const labels = {
+                            category: '🗂️ pe categorii',
+                            recipe: '🍽️ pe rețete',
+                            day: '📅 pe zile',
+                          }
                           return (
                             <button
                               key={g}
                               onClick={() => setShopGrouping(g)}
-                              style={{
-                                padding: '8px 14px',
-                                borderRadius: 10,
-                                border: isSelected ? '2px solid #111' : '2px solid #e5e5e5',
-                                background: isSelected ? '#111' : '#fff',
-                                color: isSelected ? '#fff' : '#333',
-                                fontSize: 13,
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                              onMouseOver={(e) => {
-                                if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = '#f9f9f9'
-                              }}
-                              onMouseOut={(e) => {
-                                if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = '#fff'
-                              }}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                isSelected
+                                  ? 'bg-foreground text-background border-foreground'
+                                  : 'border-border text-muted-foreground hover:bg-muted'
+                              }`}
                             >
-                              {g === 'category' ? '🗂️ Category' : g === 'recipe' ? '🍽️ Recipe' : '📅 Day'}
+                              {labels[g]}
                             </button>
                           )
                         })}
                       </div>
                     </div>
 
-                    {/* Generate button */}
-                    <button
-                      onClick={() => {
-                        generateShoppingList()
-                        setMatchStep('list')
-                      }}
-                      style={{
-                        width: '100%', padding: '14px 20px', borderRadius: 14,
-                        background: '#111', color: '#fff', fontSize: 15, fontWeight: 700,
-                        border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                      }}
-                      onMouseOver={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#333' }}
-                      onMouseOut={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#111' }}
-                    >
-                      Generează lista de cumpărături
-                    </button>
-                    <button
-                      onClick={() => {
-                        // Use the already-computed groupedItems based on current shopGrouping
-                        if (shopItems.length === 0) { alert('Nu sunt mese planificate pentru acest interval.'); return }
-
-                        const scopeLabel = shopScope.type === 'day' ? `Astăzi (${shopScope.day})`
-                          : shopScope.type === 'range' ? `Săptămânile ${shopRangeFrom + 1}\u2013${shopRangeTo + 1}`
-                          : `Săptămâna ${currentWeek + 1}`
-                        const groupLabel = shopGrouping === 'category' ? 'pe categorii'
-                          : shopGrouping === 'recipe' ? 'pe rețete' : 'pe zile'
-
-                        let html = `<!DOCTYPE html><html><head><title>Listă de cumpărături</title><style>
-                          * { box-sizing: border-box; margin: 0; padding: 0; }
-                          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 780px; margin: 0 auto; padding: 32px 40px; color: #111; font-size: 16px; line-height: 1.5; }
-                          h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
-                          .scope { font-size: 15px; color: #555; margin-bottom: 28px; border-bottom: 2px solid #111; padding-bottom: 14px; }
-                          h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin: 24px 0 10px 0; }
-                          ul { list-style: none; padding: 0; margin: 0; }
-                          li.item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; border-bottom: 1px solid #f2f2f2; }
-                          .check { width: 18px; height: 18px; border: 2px solid #bbb; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
-                          .name { font-weight: 600; font-size: 16px; }
-                          .qty { color: #555; font-size: 15px; }
-                          .note { color: #aa7700; font-style: italic; font-size: 13px; }
-                          .meta { font-size: 12px; color: #aaa; padding: 2px 0 6px 30px; }
-                          @media print {
-                            body { padding: 0; font-size: 13pt; }
-                            @page { size: A4; margin: 1.8cm 2cm; }
-                            h1 { font-size: 22pt; }
-                            .scope { font-size: 12pt; }
-                            h2 { font-size: 9pt; }
-                            .name { font-size: 13pt; }
-                            .qty { font-size: 12pt; }
-                            .note { font-size: 11pt; }
-                            .meta { font-size: 10pt; }
-                            li.item { break-inside: avoid; }
-                          }
-                        </style></head><body>`
-                        html += `<h1>\uD83D\uDED2 List\u0103 de cump\u0103r\u0103turi</h1>`
-                        html += `<p class="scope">${scopeLabel} \u00B7 ${shopItems.length} produse \u00B7 ${groupLabel}</p>`
-
-                        Object.entries(groupedItems).sort(([a], [b]) => a.localeCompare(b)).forEach(([group, items]) => {
-                          html += `<h2>${group}</h2><ul>`
-                          items.forEach((item) => {
-                            const qty = item.totalQty % 1 === 0 ? String(item.totalQty) : item.totalQty.toFixed(1)
-                            html += `<li class="item"><div class="check"></div><div><span class="name">${item.name}</span> <span class="qty">${qty} ${item.unit}</span>${item.subtypeNote ? ` <span class="note">(${item.subtypeNote})</span>` : ''}</div></li>`
-                            // Show context based on grouping mode
-                            if (shopGrouping === 'category' && item.fromRecipes.length > 0) {
-                              html += `<div class="meta">${item.fromRecipes.join(' &middot; ')}</div>`
-                            } else if (shopGrouping === 'recipe' && item.fromDays.length > 0) {
-                              html += `<div class="meta">${item.fromDays.join(' &middot; ')}</div>`
-                            } else if (shopGrouping === 'day' && item.fromRecipes.length > 0) {
-                              html += `<div class="meta">${item.fromRecipes.join(' &middot; ')}</div>`
-                            }
-                          })
-                          html += `</ul>`
-                        })
-                        html += `</body></html>`
-                        const printWin = window.open('', '_blank', 'width=700,height=900')
-                        if (printWin) {
-                          printWin.document.write(html)
-                          printWin.document.close()
-                          printWin.focus()
-                          printWin.print()
-                        }
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 20px',
-                        borderRadius: 14,
-                        background: '#fff',
-                        color: '#111',
-                        fontSize: 14,
-                        fontWeight: 600,
-                        border: '2px solid #ddd',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        marginTop: 10,
-                      }}
-                      onMouseOver={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = '#111'
-                        ;(e.currentTarget as HTMLButtonElement).style.background = '#f9f9f9'
-                      }}
-                      onMouseOut={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = '#ddd'
-                        ;(e.currentTarget as HTMLButtonElement).style.background = '#fff'
-                      }}
-                    >
-                      Printează lista
-                    </button>
-
-                    {/* eMAG shopping button */}
-                    <button
-                      onClick={() => {
-                        if (shopItems.length === 0) return
-                        // Save items to localStorage for the eMAG shop page
-                        const emagItems = shopItems.map(item => ({
-                          id: item.id,
-                          name: item.name,
-                          totalQty: item.totalQty,
-                          unit: item.unit,
-                          category: item.category,
-                          fromRecipes: item.fromRecipes,
-                        }))
-                        localStorage.setItem('marechef_emag_shop_items', JSON.stringify(emagItems))
-                        window.open('/me/emag-shop', '_blank')
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 20px',
-                        borderRadius: 14,
-                        background: '#f7c948',
-                        color: '#111',
-                        fontSize: 14,
-                        fontWeight: 600,
-                        border: '2px solid #e6b93d',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        marginTop: 10,
-                      }}
-                      onMouseOver={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.background = '#e6b93d'
-                      }}
-                      onMouseOut={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.background = '#f7c948'
-                      }}
-                    >
-                      🛒 Cumpără pe eMAG
-                    </button>
-                  </div>
-                )}
-
-                {/* STEP 2: LIST & SAVE */}
-                {matchStep === 'list' && shopGenerated && (
-                  <div style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    padding: 24,
-                    marginBottom: 24,
-                  }}>
-                    {shopItems.length === 0 ? (
-                      <div style={{ textAlign: 'center', paddingTop: 40, paddingBottom: 40, color: '#999' }}>
-                        <p style={{ fontSize: 32, marginBottom: 12 }}>🛒</p>
-                        <p style={{ fontSize: 14, fontWeight: 500, color: '#666' }}>No meals planned for this range</p>
-                        <p style={{ fontSize: 12, marginTop: 6, color: '#999' }}>Add dishes to your planner first</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid #eee' }}>
-                          <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>
-                            {shopItems.filter((i) => !i.checked).length} produse rămase
-                          </h3>
-                          <button
-                            onClick={() => setShopItems((prev) => prev.map((i) => ({ ...i, checked: false })))}
-                            style={{
-                              fontSize: 12,
-                              color: '#999',
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '4px 8px',
-                              transition: 'color 0.2s',
-                            }}
-                            onMouseOver={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.color = '#333'
-                            }}
-                            onMouseOut={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.color = '#999'
-                            }}
-                          >
-                            Debifează tot
-                          </button>
-                        </div>
-
-                        {Object.entries(groupedItems).map(([group, items]) => (
-                          <div key={group} style={{ marginBottom: 14 }}>
-                            <h4 style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              textTransform: 'uppercase',
-                              letterSpacing: 1,
-                              color: '#999',
-                              marginBottom: 6,
-                              paddingBottom: 4,
-                              borderBottom: '1px solid #eee',
-                              margin: '0 0 6px 0',
-                            }}>
+                    {/* Items list */}
+                    <div className="space-y-4">
+                      {Object.entries(groupedItems).map(([group, items]) => (
+                        <div key={group} className="rounded-2xl border border-border bg-card overflow-hidden">
+                          <div className="bg-muted/50 border-b border-border px-4 py-2">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                               {group}
-                            </h4>
-                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              {items.map((item) => (
-                                <li
-                                  key={item.id}
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: 8,
-                                    padding: '4px 6px',
-                                    borderRadius: 6,
-                                    background: item.checked ? '#f9f9f9' : 'transparent',
-                                    opacity: item.checked ? 0.5 : 1,
-                                    transition: 'all 0.2s',
-                                  }}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={item.checked}
-                                    onChange={() => toggleCheck(item.id)}
-                                    style={{
-                                      marginTop: 1,
-                                      width: 16,
-                                      height: 16,
-                                      cursor: 'pointer',
-                                      flexShrink: 0,
-                                      accentColor: '#111',
-                                    }}
-                                  />
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                      <span style={{
-                                        fontSize: 13,
-                                        fontWeight: 500,
-                                        color: '#111',
-                                        textDecoration: item.checked ? 'line-through' : 'none',
-                                      }}>
-                                        <IngredientLink ingredient={item.name} variant="light" style={{ fontSize: 13, fontWeight: 500, textDecoration: item.checked ? 'line-through' : undefined }} />
-                                      </span>
-                                      <span style={{ fontSize: 11, color: '#888' }}>
-                                        {item.totalQty % 1 === 0 ? item.totalQty : item.totalQty.toFixed(1)} {item.unit}
-                                      </span>
+                            </h3>
+                          </div>
+                          <div className="divide-y divide-border">
+                            {items.map((item) => {
+                              const alcoholKeywords = ['vodka', 'vodcă', 'rom', 'rum', 'gin', 'whisky', 'whiskey', 'bourbon', 'scotch', 'tequila', 'mezcal', 'cognac', 'brandy', 'coniac', 'vermut', 'vermouth', 'campari', 'aperol', 'angostura', 'bitter', 'cointreau', 'triple sec', 'curaçao', 'curacao', 'kahlua', 'baileys', 'amaretto', 'absint', 'chartreuse', 'fernet', 'limoncello', 'prosecco', 'champagne', 'șampanie', 'bere', 'beer', 'vin', 'wine', 'lichior', 'liqueur', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'jägermeister', 'grand marnier']
+                              const isAlcohol = alcoholKeywords.some(kw => item.name.toLowerCase().includes(kw))
+                              
+                              const normalizedName = item.name
+                                .replace(/^\d+\s*/, '')
+                                .replace(/\b(ml|g|kg|linguri|linguriță|cană|buc|bucată|bucăți)\b/gi, '')
+                                .replace(/\b(de|of)\b/gi, '')
+                                .trim()
+
+                              const emagUrl = `https://www.emag.ro/search/${encodeURIComponent(normalizedName.replace(/\s+/g, '+'))}`
+                              const bauturiUrl = `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(normalizedName)}`
+
+                              return (
+                                <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors">
+                                  <div className="flex items-start gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={item.checked}
+                                      onChange={() => toggleCheck(item.id)}
+                                      className="mt-1 w-4 h-4 cursor-pointer flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <span className={`text-sm font-medium ${item.checked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                          <IngredientLink ingredient={item.name} variant="light" />
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {item.totalQty % 1 === 0 ? item.totalQty : item.totalQty.toFixed(1)} {item.unit}
+                                        </span>
+                                      </div>
+                                      {item.subtypeNote && (
+                                        <input
+                                          type="text"
+                                          value={item.subtypeNote}
+                                          onChange={(e) => updateSubtype(item.id, e.target.value)}
+                                          placeholder="+ tip / notă"
+                                          className="text-xs bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded px-2 py-1 italic mb-1 w-full"
+                                        />
+                                      )}
+                                      <p className="text-[10px] text-muted-foreground leading-tight">
+                                        {shopGrouping === 'recipe'
+                                          ? item.fromDays.join(' · ')
+                                          : shopGrouping === 'day'
+                                            ? item.fromRecipes.join(' · ')
+                                            : item.fromRecipes.join(' · ')}
+                                      </p>
                                     </div>
-                                    {item.subtypeNote && (
-                                      <input
-                                        type="text"
-                                        value={item.subtypeNote}
-                                        onChange={(e) => updateSubtype(item.id, e.target.value)}
-                                        placeholder="+ type / note"
-                                        style={{
-                                          fontSize: 11,
-                                          color: '#866a00',
-                                          background: '#fff3cd',
-                                          border: '1px solid #eed484',
-                                          borderRadius: 4,
-                                          padding: '1px 6px',
-                                          fontStyle: 'italic',
-                                        }}
-                                      />
-                                    )}
-                                    <p style={{ fontSize: 10, color: '#aaa', margin: '1px 0 0 0', lineHeight: 1.2 }}>
-                                      {shopGrouping === 'recipe'
-                                        ? item.fromDays.join(' · ')
-                                        : shopGrouping === 'day'
-                                          ? item.fromRecipes.join(' · ')
-                                          : item.fromRecipes.join(' · ')}
-                                    </p>
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <a
+                                        href={emagUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-colors"
+                                        title="Caută pe eMAG"
+                                      >
+                                        🛒
+                                      </a>
+                                      {isAlcohol && (
+                                        <a
+                                          href={bauturiUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-700 dark:text-purple-400 hover:bg-purple-500/20 transition-colors"
+                                          title="Caută pe BauturiAlcoolice"
+                                        >
+                                          🍷
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
-                                </li>
-                              ))}
-                            </ul>
+                                </div>
+                              )
+                            })}
                           </div>
-                        ))}
-
-                        {/* Save & Match buttons */}
-                        <div style={{
-                          display: 'flex',
-                          gap: 12,
-                          marginTop: 24,
-                          paddingTop: 16,
-                          borderTop: '1px solid #eee',
-                        }}>
-                          <button
-                            onClick={() => {
-                              const text = shopItems.map(
-                                (i) => `${i.checked ? '\u2713' : '\u2610'} ${i.name} \u2014 ${i.totalQty}${i.unit}${i.subtypeNote ? ` (${i.subtypeNote})` : ''}`
-                              ).join('\n')
-                              navigator.clipboard.writeText(text).catch(() => {})
-                            }}
-                            style={{
-                              padding: '10px 16px',
-                              borderRadius: 10,
-                              background: '#f3f3f3',
-                              color: '#333',
-                              fontSize: 13,
-                              fontWeight: 500,
-                              border: 'none',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseOver={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.background = '#e8e8e8'
-                            }}
-                            onMouseOut={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.background = '#f3f3f3'
-                            }}
-                          >
-                            📋 Copiază
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (shopItems.length === 0) return
-                              const emagItems = shopItems.map(item => ({
-                                id: item.id,
-                                name: item.name,
-                                totalQty: item.totalQty,
-                                unit: item.unit,
-                                category: item.category,
-                                fromRecipes: item.fromRecipes,
-                              }))
-                              localStorage.setItem('marechef_emag_shop_items', JSON.stringify(emagItems))
-                              window.open('/me/emag-shop', '_blank')
-                            }}
-                            style={{
-                              padding: '10px 16px',
-                              borderRadius: 10,
-                              background: '#f7c948',
-                              color: '#111',
-                              fontSize: 13,
-                              fontWeight: 600,
-                              border: 'none',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseOver={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.background = '#e6b93d'
-                            }}
-                            onMouseOut={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.background = '#f7c948'
-                            }}
-                          >
-                            🛒 eMAG
-                          </button>
-                          <button
-                            onClick={saveToShoppingList}
-                            disabled={shopSaveState === 'saving'}
-                            style={{
-                              flex: 1,
-                              padding: '12px 16px',
-                              borderRadius: 10,
-                              background: shopSaveState === 'saved' ? '#1a7f37' : '#111',
-                              color: '#fff',
-                              fontSize: 14,
-                              fontWeight: 700,
-                              border: 'none',
-                              cursor: shopSaveState === 'saving' ? 'not-allowed' : 'pointer',
-                              opacity: shopSaveState === 'saving' ? 0.6 : 1,
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseOver={(e) => {
-                              if (shopSaveState !== 'saving') {
-                                (e.currentTarget as HTMLButtonElement).style.background = shopSaveState === 'saved' ? '#1a7f37' : '#333'
-                              }
-                            }}
-                            onMouseOut={(e) => {
-                              if (shopSaveState !== 'saving') {
-                                (e.currentTarget as HTMLButtonElement).style.background = shopSaveState === 'saved' ? '#1a7f37' : '#111'
-                              }
-                            }}
-                          >
-                            {shopSaveState === 'saving' ? '⏳ Se salvează…' : shopSaveState === 'saved' ? '✅ Salvat!' : shopSaveState === 'error' ? '❌ Eroare' : '💾 Salvează'}
-                          </button>
                         </div>
-                        {shopSaveState === 'error' && shopSaveError && (
-                          <p style={{ fontSize: 12, color: '#c00', marginTop: 12, background: '#ffe0e0', padding: '10px 12px', borderRadius: 8 }}>{shopSaveError}</p>
-                        )}
-
-                        {/* Match button after save */}
-                        {shopSaveState === 'saved' && (
-                          <div style={{
-                            marginTop: 12,
-                            padding: '12px 16px',
-                            borderRadius: 10,
-                            background: '#fff3cd',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                          }}>
-                            <span style={{ fontSize: 13, color: '#666' }}>✅ Saved! Want to match to a store?</span>
-                            <button
-                              onClick={() => setMatchStep('match')}
-                              style={{
-                                padding: '8px 14px',
-                                borderRadius: 8,
-                                background: '#f59e0b',
-                                color: '#fff',
-                                fontSize: 13,
-                                fontWeight: 700,
-                                border: 'none',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                              onMouseOver={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#d97706'
-                              }}
-                              onMouseOut={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#f59e0b'
-                              }}
-                            >
-                              🔍 Match on Store →
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* STEP 3: MATCH & CHECKOUT */}
-                {matchStep === 'match' && savedListId && (
-                  <div style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    padding: 24,
-                    marginBottom: 24,
-                  }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 600, color: '#111', marginBottom: 20, margin: '0 0 20px 0' }}>🔍 Match to Store</h2>
-
-                    {/* Vendor & Budget selectors */}
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: matchResults.length > 0 ? '1fr 1fr' : '1fr',
-                      gap: 16,
-                      marginBottom: 20,
-                    }}>
-                      <div>
-                        <label style={{ fontSize: 12, fontWeight: 500, color: '#666', display: 'block', marginBottom: 8 }}>Vendor</label>
-                        <select
-                          value={matchVendor}
-                          onChange={(e) => setMatchVendor(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            borderRadius: 8,
-                            border: '1px solid #ddd',
-                            fontSize: 13,
-                            background: '#fff',
-                            color: '#333',
-                            fontWeight: 500,
-                          }}
-                        >
-                          <option value="bringo">🛍️ Bringo</option>
-                          <option value="glovo">🚴 Glovo</option>
-                          <option value="cora">🏪 Cora</option>
-                          <option value="carrefour">🏬 Carrefour</option>
-                          <option value="kaufland">🏬 Kaufland</option>
-                          <option value="mega_image">🏢 Mega Image</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label style={{ fontSize: 12, fontWeight: 500, color: '#666', display: 'block', marginBottom: 8 }}>Budget</label>
-                        <select
-                          value={matchBudget}
-                          onChange={(e) => setMatchBudget(e.target.value as 'budget' | 'normal' | 'premium')}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            borderRadius: 8,
-                            border: '1px solid #ddd',
-                            fontSize: 13,
-                            background: '#fff',
-                            color: '#333',
-                            fontWeight: 500,
-                          }}
-                        >
-                          <option value="budget">💰 Budget</option>
-                          <option value="normal">⚖️ Normal</option>
-                          <option value="premium">✨ Premium</option>
-                        </select>
-                      </div>
+                      ))}
                     </div>
 
-                    {/* Match button */}
-                    <button
-                      onClick={handleMatch}
-                      disabled={matching}
-                      style={{
-                        width: matchResults.length === 0 ? '100%' : 'auto',
-                        padding: '12px 20px',
-                        borderRadius: 10,
-                        background: matching ? '#ccc' : '#111',
-                        color: '#fff',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        border: 'none',
-                        cursor: matching ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s',
-                      }}
-                      onMouseOver={(e) => {
-                        if (!matching) (e.currentTarget as HTMLButtonElement).style.background = '#333'
-                      }}
-                      onMouseOut={(e) => {
-                        if (!matching) (e.currentTarget as HTMLButtonElement).style.background = '#111'
-                      }}
-                    >
-                      {matching ? '⏳ Matching…' : '🔎 Find Products'}
-                    </button>
-
-                    {/* Match results */}
-                    {matchResults.length > 0 && (
-                      <div style={{ marginTop: 24 }}>
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: 16,
-                          paddingBottom: 12,
-                          borderBottom: '1px solid #eee',
-                        }}>
-                          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#111', margin: 0 }}>Matched Products</h3>
-                          {matchTotal !== null && (
-                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1a7f37' }}>~{matchTotal.toFixed(2)} RON</span>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
-                          {matchResults.map((match, idx) => {
-                            const item = shopItems.find((i) => i.id === match.ingredientRef.split('__')[0].toLowerCase() + '__' + match.ingredientRef.split('__')[1])
-                            return (
-                              <div
-                                key={idx}
-                                style={{
-                                  padding: '12px',
-                                  borderRadius: 10,
-                                  background: match.product ? '#f9f9f9' : '#ffe0e0',
-                                  border: '1px solid ' + (match.product ? '#eee' : '#ffb3b3'),
-                                }}
-                              >
-                                {match.product ? (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111', margin: '0 0 2px 0' }}>{match.product.name}</p>
-                                      <p style={{ fontSize: 11, color: '#999', margin: 0 }}>{match.product.packageSize}</p>
-                                    </div>
-                                    {match.product.baseUnitLabel && match.product.pricePerBaseUnit != null && (
-                                      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 70 }}>
-                                        <p style={{ fontSize: 10, color: '#888', margin: 0, lineHeight: 1.2 }}>{match.product.pricePerBaseUnit.toFixed(2)} RON</p>
-                                        <p style={{ fontSize: 9, color: '#aaa', margin: 0 }}>/{match.product.baseUnitLabel}</p>
-                                      </div>
-                                    )}
-                                    <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 75, borderLeft: '1px solid #e5e5e5', paddingLeft: 10 }}>
-                                      <p style={{ fontSize: 14, fontWeight: 700, color: '#1a7f37', margin: 0, lineHeight: 1.2 }}>{match.product.pricePerUnit.toFixed(2)}</p>
-                                      <p style={{ fontSize: 9, color: '#888', margin: 0 }}>RON/item</p>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <p style={{ fontSize: 13, fontWeight: 600, color: '#c00', margin: '0 0 4px 0' }}>❌ Not matched</p>
-                                    <p style={{ fontSize: 12, color: '#666', margin: 0 }}>{item?.name} — {item?.totalQty}{item?.unit}</p>
-                                    {match.substitution && (
-                                      <p style={{ fontSize: 11, color: '#f59e0b', marginTop: 4, fontStyle: 'italic' }}>💡 Try: {match.substitution.substitute}</p>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-
-                        {/* Checkout button */}
+                    {/* Action bar */}
+                    <div className="rounded-2xl border border-border bg-card p-4">
+                      <div className="flex gap-2">
                         <button
-                          onClick={handleCheckout}
-                          disabled={matching}
-                          style={{
-                            width: '100%',
-                            padding: '14px 20px',
-                            borderRadius: 10,
-                            background: matching ? '#ccc' : '#1a7f37',
-                            color: '#fff',
-                            fontSize: 15,
-                            fontWeight: 700,
-                            border: 'none',
-                            cursor: matching ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s',
+                          onClick={() => {
+                            if (shopItems.length === 0) return
+                            const scopeLabel = shopScope.type === 'day' ? `Astăzi (${shopScope.day})`
+                              : shopScope.type === 'range' ? `Săptămânile ${shopRangeFrom + 1}–${shopRangeTo + 1}`
+                              : `Săptămâna ${currentWeek + 1}`
+                            const groupLabel = shopGrouping === 'category' ? 'pe categorii'
+                              : shopGrouping === 'recipe' ? 'pe rețete' : 'pe zile'
+
+                            let html = `<!DOCTYPE html><html><head><title>Listă de cumpărături</title><style>
+                              * { box-sizing: border-box; margin: 0; padding: 0; }
+                              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 780px; margin: 0 auto; padding: 32px 40px; color: #111; font-size: 16px; line-height: 1.5; }
+                              h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+                              .scope { font-size: 15px; color: #555; margin-bottom: 28px; border-bottom: 2px solid #111; padding-bottom: 14px; }
+                              h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin: 24px 0 10px 0; }
+                              ul { list-style: none; padding: 0; margin: 0; }
+                              li.item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; border-bottom: 1px solid #f2f2f2; }
+                              .check { width: 18px; height: 18px; border: 2px solid #bbb; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+                              .name { font-weight: 600; font-size: 16px; }
+                              .qty { color: #555; font-size: 15px; }
+                              .note { color: #aa7700; font-style: italic; font-size: 13px; }
+                              .meta { font-size: 12px; color: #aaa; padding: 2px 0 6px 30px; }
+                              @media print {
+                                body { padding: 0; font-size: 13pt; }
+                                @page { size: A4; margin: 1.8cm 2cm; }
+                                h1 { font-size: 22pt; }
+                                .scope { font-size: 12pt; }
+                                h2 { font-size: 9pt; }
+                                .name { font-size: 13pt; }
+                                .qty { font-size: 12pt; }
+                                .note { font-size: 11pt; }
+                                .meta { font-size: 10pt; }
+                                li.item { break-inside: avoid; }
+                              }
+                            </style></head><body>`
+                            html += `<h1>🛒 Listă de cumpărături</h1>`
+                            html += `<p class="scope">${scopeLabel} · ${shopItems.length} produse · ${groupLabel}</p>`
+
+                            Object.entries(groupedItems).sort(([a], [b]) => a.localeCompare(b)).forEach(([group, items]) => {
+                              html += `<h2>${group}</h2><ul>`
+                              items.forEach((item) => {
+                                const qty = item.totalQty % 1 === 0 ? String(item.totalQty) : item.totalQty.toFixed(1)
+                                html += `<li class="item"><div class="check"></div><div><span class="name">${item.name}</span> <span class="qty">${qty} ${item.unit}</span>${item.subtypeNote ? ` <span class="note">(${item.subtypeNote})</span>` : ''}</div></li>`
+                                if (shopGrouping === 'category' && item.fromRecipes.length > 0) {
+                                  html += `<div class="meta">${item.fromRecipes.join(' &middot; ')}</div>`
+                                } else if (shopGrouping === 'recipe' && item.fromDays.length > 0) {
+                                  html += `<div class="meta">${item.fromDays.join(' &middot; ')}</div>`
+                                } else if (shopGrouping === 'day' && item.fromRecipes.length > 0) {
+                                  html += `<div class="meta">${item.fromRecipes.join(' &middot; ')}</div>`
+                                }
+                              })
+                              html += `</ul>`
+                            })
+                            html += `</body></html>`
+                            const printWin = window.open('', '_blank', 'width=700,height=900')
+                            if (printWin) {
+                              printWin.document.write(html)
+                              printWin.document.close()
+                              printWin.focus()
+                              printWin.print()
+                            }
                           }}
-                          onMouseOver={(e) => {
-                            if (!matching) (e.currentTarget as HTMLButtonElement).style.background = '#165c31'
-                          }}
-                          onMouseOut={(e) => {
-                            if (!matching) (e.currentTarget as HTMLButtonElement).style.background = '#1a7f37'
-                          }}
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors border border-border"
                         >
-                          🚀 Send to {matchVendor === 'bringo' ? 'Bringo' : matchVendor === 'glovo' ? 'Glovo' : matchVendor === 'cora' ? 'Cora' : matchVendor === 'carrefour' ? 'Carrefour' : matchVendor === 'kaufland' ? 'Kaufland' : 'Mega Image'}
+                          🖨️ Printează
+                        </button>
+                        <button
+                          onClick={() => {
+                            const text = shopItems.map(
+                              (i) => `${i.checked ? '✓' : '☐'} ${i.name} — ${i.totalQty}${i.unit}${i.subtypeNote ? ` (${i.subtypeNote})` : ''}`
+                            ).join('\n')
+                            navigator.clipboard.writeText(text).catch(() => {})
+                          }}
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors border border-border"
+                        >
+                          📋 Copiază
+                        </button>
+                        <button
+                          onClick={saveToShoppingList}
+                          disabled={shopSaveState === 'saving'}
+                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${
+                            shopSaveState === 'saved'
+                              ? 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80 border-border'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {shopSaveState === 'saving' ? '⏳ Se salvează…' : shopSaveState === 'saved' ? '✅ Salvat!' : shopSaveState === 'error' ? '❌ Eroare' : '💾 Salvează'}
                         </button>
                       </div>
-                    )}
-                  </div>
+                      {shopSaveState === 'error' && shopSaveError && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-2 bg-red-500/10 border border-red-200 dark:border-red-800 rounded px-2 py-1">
+                          {shopSaveError}
+                        </p>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )
