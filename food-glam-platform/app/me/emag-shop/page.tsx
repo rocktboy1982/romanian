@@ -13,106 +13,110 @@ interface ShopItem {
   category: string
   fromRecipes: string[]
   selected: boolean
-  affiliateUrls: Record<string, string>  // vendorId → profitshare tracked URL
+  affiliateUrls: Record<string, string>
 }
 
 /* ── Vendor Configuration ─────────────────────────────────────────────────── */
-// Sorted by commission rate (highest first) per category
 
 interface Vendor {
   id: string
   name: string
-  color: string         // brand accent color
-  icon: string          // emoji
+  shortName: string
+  color: string
+  icon: string
   searchUrl: (q: string) => string
-  commission: string
-  bestFor: string[]     // categories this vendor is best for
+  bestFor: string[]
 }
 
 const VENDORS: Vendor[] = [
   {
     id: 'bauturialcoolice',
     name: 'BauturiAlcoolice.ro',
+    shortName: 'Băuturi',
     color: '#7b2d8e',
     icon: '🍷',
-    searchUrl: (q) => `https://www.bauturialcoolice.ro/catalogsearch/result/?q=${encodeURIComponent(q)}`,
-    commission: '8%',
-    bestFor: ['Spirtoase', 'Lichioruri', 'Vin', 'Bere', 'Mixere', 'Băuturi alcoolice'],
+    searchUrl: (q) => `https://www.bauturialcoolice.ro/?s=${encodeURIComponent(q)}`,
+    bestFor: ['Spirtoase', 'Lichioruri', 'Vin', 'Bere', 'Băuturi alcoolice'],
   },
   {
     id: 'unicorn',
     name: 'Unicorn Naturals',
+    shortName: 'Unicorn',
     color: '#6bb536',
     icon: '🦄',
     searchUrl: (q) => `https://unicorn-naturals.ro/?s=${encodeURIComponent(q)}`,
-    commission: '10%',
     bestFor: ['Bio', 'Naturale', 'Miere', 'Siropuri'],
   },
   {
     id: 'scufita',
     name: 'Scufița Roșie',
+    shortName: 'Scufița',
     color: '#d44040',
     icon: '🧺',
     searchUrl: (q) => `https://scufita-rosie.ro/?s=${encodeURIComponent(q)}`,
-    commission: '10%',
     bestFor: ['Condimente', 'Naturale', 'Ceaiuri'],
   },
   {
     id: 'vegis',
     name: 'Vegis.ro',
+    shortName: 'Vegis',
     color: '#3aa655',
     icon: '🌿',
     searchUrl: (q) => `https://vegis.ro/search?q=${encodeURIComponent(q)}`,
-    commission: '8%',
     bestFor: ['Vegan', 'Bio', 'Sănătos', 'Fără gluten'],
   },
   {
     id: 'parmashop',
     name: 'ParmaShop.ro',
+    shortName: 'Parma',
     color: '#c8860a',
     icon: '🇮🇹',
     searchUrl: (q) => `https://www.parmashop.ro/?q=${encodeURIComponent(q)}`,
-    commission: '1-10%',
     bestFor: ['Paste', 'Ulei de măsline', 'Parmezan', 'Delicatese'],
   },
   {
     id: 'nosugar',
     name: 'NoSugarShop.ro',
+    shortName: 'NoSugar',
     color: '#e85d75',
-    icon: '🚫🍬',
+    icon: '🍬',
     searchUrl: (q) => `https://www.nosugarshop.ro/?s=${encodeURIComponent(q)}`,
-    commission: '3-10%',
     bestFor: ['Fără zahăr', 'Keto', 'Diabet'],
   },
   {
     id: 'emag',
     name: 'eMAG.ro',
+    shortName: 'eMAG',
     color: '#f7c948',
     icon: '🛒',
     searchUrl: (q) => `https://www.emag.ro/search/${encodeURIComponent(q.replace(/\s+/g, '+'))}`,
-    commission: '1-5%',
-    bestFor: ['Toate', 'General'],
+    bestFor: ['General'],
   },
 ]
 
-// Detect best vendor for an item based on category keywords
-const ALCOHOL_KEYWORDS = ['vodka', 'vodcă', 'rom', 'rum', 'gin', 'whiskey', 'whisky', 'tequila', 'lichior', 'vin', 'bere', 'prosecco', 'champagne', 'șampanie', 'bitter', 'angostura', 'aperol', 'campari', 'vermouth', 'vermut', 'triple sec', 'cointreau', 'kahlua', 'baileys', 'amaretto', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'absint', 'cognac', 'brandy', 'armagnac']
+const ALCOHOL_KEYWORDS = ['vodka', 'vodcă', 'rom', 'rum', 'gin', 'whiskey', 'whisky', 'tequila', 'lichior', 'vin', 'bere', 'prosecco', 'champagne', 'șampanie', 'bitter', 'angostura', 'aperol', 'campari', 'vermouth', 'vermut', 'triple sec', 'cointreau', 'kahlua', 'baileys', 'amaretto', 'sambuca', 'grappa', 'țuică', 'pălincă', 'rachiu', 'absint', 'cognac', 'brandy']
 
 function isAlcoholic(name: string): boolean {
   const lower = name.toLowerCase()
   return ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))
 }
 
-function getRecommendedVendors(item: ShopItem): Vendor[] {
-  // Alcoholic items → Bauturi first, then eMAG
+function getBestVendorForItem(item: ShopItem): Vendor {
+  if (isAlcoholic(item.name) || item.category === 'Spirtoase' || item.category === 'Lichioruri' || item.category === 'Băuturi alcoolice') {
+    return VENDORS.find(v => v.id === 'bauturialcoolice')!
+  }
+  // For food items, default to first non-alcohol vendor (highest commission)
+  return VENDORS.find(v => v.id === 'unicorn')!
+}
+
+function getVendorsForItem(item: ShopItem): Vendor[] {
   if (isAlcoholic(item.name) || item.category === 'Spirtoase' || item.category === 'Lichioruri' || item.category === 'Băuturi alcoolice') {
     return VENDORS.filter(v => v.id === 'bauturialcoolice' || v.id === 'emag')
   }
-  // All other items → all food vendors, sorted by commission (already sorted)
   return VENDORS.filter(v => v.id !== 'bauturialcoolice')
 }
 
-/* ── Constants ────────────────────────────────────────────────────────────── */
+/* ── Constants & Normalization ────────────────────────────────────────────── */
 
 const STORAGE_KEY = 'marechef_emag_shop_items'
 
@@ -124,8 +128,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Mixere': '🥤', 'Garnituri': '🍋', 'Gheață': '🧊', 'Băuturi alcoolice': '🍷',
   'Altele': '🛒',
 }
-
-/* ── Normalization ────────────────────────────────────────────────────────── */
 
 const STRIP_UNITS = new Set([
   'g', 'kg', 'ml', 'l', 'dl',
@@ -195,40 +197,32 @@ function buildSearchQuery(itemName: string, totalQty: number, unit: string): str
   return name
 }
 
-function getCategoryIcon(category: string): string {
-  return CATEGORY_ICONS[category] || '🛒'
-}
-
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function ShopPage() {
   const [items, setItems] = useState<ShopItem[]>([])
   const [hydrated, setHydrated] = useState(false)
   const [affiliateLoading, setAffiliateLoading] = useState(false)
-  const [activeVendor, setActiveVendor] = useState<string>('emag')
+  const [activeVendor, setActiveVendor] = useState<string>('smart')
 
-  // Generate affiliate links for ALL vendors via Profitshare API
   const generateAffiliateLinks = useCallback(async (shopItems: ShopItem[]) => {
     if (shopItems.length === 0) return
     setAffiliateLoading(true)
     try {
-      // Build links for ALL vendors
       const allLinks: Array<{ name: string; url: string }> = []
       const linkMap: Array<{ itemIdx: number; vendorId: string }> = []
 
       shopItems.forEach((item, itemIdx) => {
         const query = buildSearchQuery(item.name, item.totalQty, item.unit)
-        const vendors = getRecommendedVendors(item)
+        const vendors = getVendorsForItem(item)
         vendors.forEach(vendor => {
           allLinks.push({ name: `${vendor.id}:${query}`, url: vendor.searchUrl(query) })
           linkMap.push({ itemIdx, vendorId: vendor.id })
         })
       })
 
-      // Batch call (max 50 per request)
       const batchSize = 50
       const allResults: Array<{ ps_url: string }> = []
-
       for (let i = 0; i < allLinks.length; i += batchSize) {
         const batch = allLinks.slice(i, i + batchSize)
         const res = await fetch('/api/profitshare/links', {
@@ -240,33 +234,24 @@ export default function ShopPage() {
           const data = await res.json()
           allResults.push(...(data.links || []))
         } else {
-          // Fill with empty for this batch
           allResults.push(...batch.map(() => ({ ps_url: '' })))
         }
       }
 
-      // Map results back to items
       setItems(prev => {
-        const updated = [...prev]
+        const updated = prev.map(item => ({ ...item, affiliateUrls: { ...item.affiliateUrls } }))
         allResults.forEach((result, i) => {
           const mapping = linkMap[i]
           if (mapping && result.ps_url) {
-            if (!updated[mapping.itemIdx].affiliateUrls) {
-              updated[mapping.itemIdx] = { ...updated[mapping.itemIdx], affiliateUrls: {} }
-            }
             updated[mapping.itemIdx].affiliateUrls[mapping.vendorId] = result.ps_url
           }
         })
         return updated
       })
-    } catch {
-      // Silently fail — direct links as fallback
-    } finally {
-      setAffiliateLoading(false)
-    }
+    } catch { /* silent */ }
+    finally { setAffiliateLoading(false) }
   }, [])
 
-  // Load items from localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -280,7 +265,6 @@ export default function ShopPage() {
     setHydrated(true)
   }, [generateAffiliateLinks])
 
-  // Group by category
   const grouped = useMemo(() => {
     const map: Record<string, ShopItem[]> = {}
     items.forEach(item => {
@@ -293,7 +277,6 @@ export default function ShopPage() {
 
   const selectedCount = items.filter(i => i.selected).length
   const totalCount = items.length
-  const currentVendor = VENDORS.find(v => v.id === activeVendor) || VENDORS[VENDORS.length - 1]
 
   const toggleItem = (id: string) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, selected: !item.selected } : item))
@@ -305,21 +288,20 @@ export default function ShopPage() {
   }
 
   const getItemUrl = (item: ShopItem, vendorId: string): string => {
-    // Use affiliate URL if available, otherwise direct vendor search
     if (item.affiliateUrls[vendorId]) return item.affiliateUrls[vendorId]
     const vendor = VENDORS.find(v => v.id === vendorId)
     if (!vendor) return '#'
     return vendor.searchUrl(buildSearchQuery(item.name, item.totalQty, item.unit))
   }
 
-  const getBestVendorForItem = (item: ShopItem): Vendor => {
-    const recommended = getRecommendedVendors(item)
-    return recommended[0] || currentVendor
+  const resolveVendor = (item: ShopItem): Vendor => {
+    if (activeVendor === 'smart') return getBestVendorForItem(item)
+    return VENDORS.find(v => v.id === activeVendor) || VENDORS[VENDORS.length - 1]
   }
 
-  const openSingleItem = (item: ShopItem, vendorId?: string) => {
-    const vid = vendorId || getBestVendorForItem(item).id
-    window.open(getItemUrl(item, vid), '_blank', 'noopener')
+  const openSingleItem = (item: ShopItem) => {
+    const vendor = resolveVendor(item)
+    window.open(getItemUrl(item, vendor.id), '_blank', 'noopener')
   }
 
   const openAllSelected = () => {
@@ -327,9 +309,9 @@ export default function ShopPage() {
     if (selected.length === 0) return
     const batch = selected.slice(0, 10)
     batch.forEach((item, i) => {
-      const vid = activeVendor === 'smart' ? getBestVendorForItem(item).id : activeVendor
+      const vendor = resolveVendor(item)
       setTimeout(() => {
-        window.open(getItemUrl(item, vid), '_blank', 'noopener')
+        window.open(getItemUrl(item, vendor.id), '_blank', 'noopener')
       }, i * 300)
     })
     if (selected.length > 10) {
@@ -344,21 +326,17 @@ export default function ShopPage() {
     return (
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
-          <Link href="/plan" className="text-sm text-muted-foreground hover:text-foreground transition-colors">&larr; Înapoi la planificator</Link>
+          <Link href="/plan" className="text-sm text-muted-foreground hover:text-foreground transition-colors">&larr; Înapoi</Link>
         </div>
         <div className="text-center py-16">
           <p className="text-4xl mb-4">🛒</p>
           <h1 className="text-xl font-bold mb-2">Nicio listă de cumpărături</h1>
           <p className="text-muted-foreground text-sm mb-6">
-            Generează o listă de cumpărături din planificatorul de mese sau party planner.
+            Generează o listă din planificatorul de mese sau party planner.
           </p>
           <div className="flex gap-3 justify-center">
-            <Link href="/plan" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors">
-              Planificator mese
-            </Link>
-            <Link href="/cocktails/plan" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-500 text-white font-medium text-sm hover:bg-purple-600 transition-colors">
-              Party planner
-            </Link>
+            <Link href="/plan" className="px-5 py-2.5 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors">Planificator mese</Link>
+            <Link href="/cocktails/plan" className="px-5 py-2.5 rounded-xl bg-purple-500 text-white font-medium text-sm hover:bg-purple-600 transition-colors">Party planner</Link>
           </div>
         </div>
       </main>
@@ -367,59 +345,51 @@ export default function ShopPage() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-3xl">
-      {/* Header */}
       <div className="mb-6">
-        <Link href="/plan" className="text-sm text-muted-foreground hover:text-foreground transition-colors">&larr; Înapoi la planificator</Link>
+        <Link href="/plan" className="text-sm text-muted-foreground hover:text-foreground transition-colors">&larr; Înapoi</Link>
       </div>
 
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold tracking-tight">Cumpără online</h1>
         <span className="text-xs text-muted-foreground px-3 py-1 rounded-full bg-muted">
-          {selectedCount} / {totalCount} selectate
+          {selectedCount} / {totalCount}
         </span>
       </div>
       <p className="text-muted-foreground text-sm mb-4">
-        Selectează produsele și magazinul preferat. Fiecare produs se deschide într-un tab nou.
-        {affiliateLoading && <span className="ml-2 text-amber-500 text-xs">Se generează link-urile...</span>}
+        Alege magazinul, apoi apasă pe un produs pentru a-l căuta acolo.
+        {affiliateLoading && <span className="ml-2 text-amber-500 text-xs">Se pregătesc link-urile...</span>}
       </p>
 
       {/* Vendor selector */}
       <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-3 mb-4">
+        <button
+          onClick={() => setActiveVendor('smart')}
+          className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
+            activeVendor === 'smart' ? 'border-amber-500 bg-amber-500/10 text-amber-600 shadow-sm' : 'border-border opacity-60 hover:opacity-100'
+          }`}
+        >
+          <span>✨</span>
+          <span>Automat</span>
+        </button>
         {VENDORS.map(vendor => (
           <button
             key={vendor.id}
             onClick={() => setActiveVendor(vendor.id)}
             className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
-              activeVendor === vendor.id
-                ? 'border-current shadow-sm'
-                : 'border-border opacity-60 hover:opacity-100'
+              activeVendor === vendor.id ? 'shadow-sm' : 'border-border opacity-60 hover:opacity-100'
             }`}
             style={activeVendor === vendor.id ? { color: vendor.color, borderColor: vendor.color, backgroundColor: `${vendor.color}10` } : {}}
           >
             <span>{vendor.icon}</span>
-            <span className="whitespace-nowrap">{vendor.name}</span>
-            <span className="text-[10px] opacity-60">{vendor.commission}</span>
+            <span className="whitespace-nowrap">{vendor.shortName}</span>
           </button>
         ))}
       </div>
 
-      {/* Select all / open all */}
+      {/* Select all */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={toggleAll} className="text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 transition-colors">
           {items.every(i => i.selected) ? 'Deselectează tot' : 'Selectează tot'}
-        </button>
-        <button
-          onClick={openAllSelected}
-          disabled={selectedCount === 0}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-            selectedCount > 0
-              ? 'text-white shadow-md hover:shadow-lg'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
-          }`}
-          style={selectedCount > 0 ? { backgroundColor: currentVendor.color } : {}}
-        >
-          <span>{currentVendor.icon}</span>
-          Deschide {selectedCount > 0 ? `${selectedCount} produse` : ''} pe {currentVendor.name}
         </button>
       </div>
 
@@ -428,16 +398,13 @@ export default function ShopPage() {
         {grouped.map(([category, categoryItems]) => (
           <div key={category} className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50 border-b border-border">
-              <span className="text-sm">{getCategoryIcon(category)}</span>
+              <span className="text-sm">{CATEGORY_ICONS[category] || '🛒'}</span>
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{category}</span>
               <span className="text-[10px] text-muted-foreground ml-auto">{categoryItems.length}</span>
             </div>
             <div className="divide-y divide-border">
               {categoryItems.map(item => {
-                const bestVendor = getBestVendorForItem(item)
-                const displayVendor = activeVendor === 'emag' ? bestVendor : currentVendor
-                const query = buildSearchQuery(item.name, item.totalQty, item.unit)
-
+                const vendor = resolveVendor(item)
                 return (
                   <div key={item.id} className={`flex items-center gap-3 px-4 py-3 transition-colors ${item.selected ? '' : 'opacity-40'}`}>
                     {/* Checkbox */}
@@ -454,41 +421,25 @@ export default function ShopPage() {
                       )}
                     </button>
 
-                    {/* Name and details */}
+                    {/* Name and qty */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {item.totalQty % 1 === 0 ? item.totalQty : item.totalQty.toFixed(1)} {item.unit}
                         {item.fromRecipes.length > 0 && <span className="ml-1">· {item.fromRecipes.slice(0, 2).join(', ')}</span>}
                       </p>
-                      <p className="text-[10px] text-muted-foreground/60">{query}</p>
                     </div>
 
-                    {/* Vendor buttons — show best + eMAG fallback */}
-                    <div className="shrink-0 flex items-center gap-1">
-                      {/* Best vendor for this item */}
-                      {bestVendor.id !== 'emag' && (
-                        <button
-                          onClick={() => openSingleItem(item, bestVendor.id)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
-                          style={{ backgroundColor: `${bestVendor.color}20`, color: bestVendor.color }}
-                          title={`${bestVendor.name} (${bestVendor.commission})`}
-                        >
-                          <span className="text-xs">{bestVendor.icon}</span>
-                          <span className="hidden sm:inline">{bestVendor.name.split('.')[0]}</span>
-                        </button>
-                      )}
-                      {/* Active vendor (if different) */}
-                      <button
-                        onClick={() => openSingleItem(item, displayVendor.id)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
-                        style={{ backgroundColor: `${displayVendor.color}20`, color: displayVendor.color }}
-                        title={`${displayVendor.name} (${displayVendor.commission})`}
-                      >
-                        <span className="text-xs">{displayVendor.icon}</span>
-                        <span className="hidden sm:inline">{displayVendor.name.split('.')[0]}</span>
-                      </button>
-                    </div>
+                    {/* Single vendor button */}
+                    <button
+                      onClick={() => openSingleItem(item)}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:opacity-80"
+                      style={{ backgroundColor: `${vendor.color}15`, color: vendor.color, border: `1px solid ${vendor.color}30` }}
+                      title={`Caută pe ${vendor.name}`}
+                    >
+                      <span>{vendor.icon}</span>
+                      <span>{vendor.shortName}</span>
+                    </button>
                   </div>
                 )
               })}
@@ -497,21 +448,22 @@ export default function ShopPage() {
         ))}
       </div>
 
-      {/* Bottom sticky bar */}
+      {/* Bottom bar — compact */}
       <div className="sticky bottom-0 left-0 right-0 mt-6 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background to-transparent">
         <button
           onClick={openAllSelected}
           disabled={selectedCount === 0}
-          className={`w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all ${
-            selectedCount > 0 ? 'text-white shadow-lg hover:shadow-xl' : 'bg-muted text-muted-foreground cursor-not-allowed'
+          className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-medium text-sm transition-all ${
+            selectedCount > 0 ? 'bg-foreground/10 text-foreground border border-border hover:bg-foreground/15' : 'bg-muted text-muted-foreground cursor-not-allowed'
           }`}
-          style={selectedCount > 0 ? { backgroundColor: currentVendor.color } : {}}
         >
-          <span>{currentVendor.icon}</span>
-          {selectedCount > 0 ? `Deschide ${selectedCount} produse pe ${currentVendor.name}` : 'Selectează produse'}
+          {selectedCount > 0
+            ? `Deschide ${selectedCount} produse (${activeVendor === 'smart' ? 'automat' : VENDORS.find(v => v.id === activeVendor)?.shortName || 'eMAG'})`
+            : 'Selectează produse'
+          }
         </button>
-        <p className="text-[10px] text-muted-foreground text-center mt-2">
-          Se deschide câte un tab pentru fiecare produs · Link-uri afiliate Profitshare
+        <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+          Se deschide câte un tab per produs
         </p>
       </div>
     </main>
