@@ -20,6 +20,7 @@ const UNITS = new Set([
   'lingura', 'lingură', 'linguri',
   'lingurita', 'linguriță', 'lingurițe', 'lingurite',
   'cana', 'cană', 'cani', 'căni',
+  'ceasca', 'ceașcă', 'cesti', 'cești', 'cescuta', 'ceșcuță',
   'pahar', 'pahare',
   'felie', 'felii',
   'bucata', 'bucată', 'bucati', 'bucăți', 'buc',
@@ -111,7 +112,14 @@ const UNIT_NORMALIZATION: Record<string, { factor: number; canonical: string }> 
   'l':           { factor: 1000, canonical: 'ml' },
   'litru':       { factor: 1000, canonical: 'ml' },
   'litri':       { factor: 1000, canonical: 'ml' },
-  // Romanian cups/spoons
+  // ceașcă = US cup = 240 ml (ceașcă is the correct Romanian word for "cup")
+  'ceasca':      { factor: 240,  canonical: 'ml' },
+  'ceașcă':      { factor: 240,  canonical: 'ml' },
+  'cesti':       { factor: 240,  canonical: 'ml' },
+  'cești':       { factor: 240,  canonical: 'ml' },
+  'cescuta':     { factor: 240,  canonical: 'ml' },
+  'ceșcuță':     { factor: 240,  canonical: 'ml' },
+  // cană = Romanian mug = 250 ml (LARGER than a US cup — do NOT confuse with ceașcă)
   'cana':        { factor: 250,  canonical: 'ml' },
   'cană':        { factor: 250,  canonical: 'ml' },
   'cani':        { factor: 250,  canonical: 'ml' },

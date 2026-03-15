@@ -29,6 +29,7 @@ export default function MeClientPage() {
 
   const [user, setUser] = useState<{ email?: string; user_metadata?: { full_name?: string }; id: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [mockUser, setMockUser] = useState<MockUser | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -50,6 +51,7 @@ export default function MeClientPage() {
 
         // If authenticated, fetch real profile from API
         if (data.user) {
+          if (mounted) setProfileLoading(true)
           try {
             const res = await fetch('/api/profiles/me')
             if (res.ok) {
@@ -60,6 +62,8 @@ export default function MeClientPage() {
             }
           } catch (err) {
             console.error('Failed to fetch profile:', err)
+          } finally {
+            if (mounted) setProfileLoading(false)
           }
         }
       } catch (e) {
@@ -70,6 +74,7 @@ export default function MeClientPage() {
       setUser(session?.user ?? null);
       if (session?.user) {
         // Fetch profile when auth state changes
+        if (mounted) setProfileLoading(true)
         fetch('/api/profiles/me')
           .then(res => res.ok ? res.json() : null)
           .then(data => {
@@ -78,8 +83,10 @@ export default function MeClientPage() {
             }
           })
           .catch(err => console.error('Failed to fetch profile:', err))
+          .finally(() => { if (mounted) setProfileLoading(false) })
       } else {
         setProfile(null)
+        if (mounted) setProfileLoading(false)
       }
     });
     return () => {
@@ -102,45 +109,62 @@ export default function MeClientPage() {
         
         {/* ===== PROFILE CARD (COMPACT) ===== */}
         <section className="flex flex-col gap-3">
-          {(profile || mockUser) ? (
+            {/* When authenticated, never fall back to mock/Chef Anna — wait for real profile */}
+          {profileLoading ? (
+            <div className="flex items-center gap-3 opacity-60">
+              <div className="w-12 h-12 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }} />
+              <div className="flex flex-col gap-1.5">
+                <div className="w-28 h-3 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                <div className="w-20 h-3 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.07)' }} />
+              </div>
+            </div>
+          ) : (profile || (!user && mockUser)) ? (
             <>
               {/* Profile header: Avatar + Name + Handle in one row */}
-              <div className="flex items-center gap-4">
-                <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg select-none font-bold overflow-hidden flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
-                >
-                  {(profile?.avatar_url || mockUser?.avatar_url)
-                    ? <FallbackImage src={profile?.avatar_url || mockUser?.avatar_url || ''} alt="" className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
-                    : ((profile?.display_name || mockUser?.display_name)?.charAt(0).toUpperCase() ?? '👤')}
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
-                    {profile?.display_name || mockUser?.display_name}
-                  </p>
-                  <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                    @{profile?.handle || mockUser?.handle}
-                  </p>
-                </div>
-              </div>
+              {/* When authenticated: use real profile only. When guest: use mockUser. */}
+              {(() => {
+                const displayedProfile = profile ?? (user ? null : mockUser)
+                if (!displayedProfile) return null
+                return (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-lg select-none font-bold overflow-hidden flex-shrink-0"
+                        style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
+                      >
+                        {displayedProfile.avatar_url
+                          ? <FallbackImage src={displayedProfile.avatar_url} alt="" className="w-full h-full object-cover" fallbackEmoji="👨‍🍳" />
+                          : displayedProfile.display_name?.charAt(0).toUpperCase() ?? '👤'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
+                          {displayedProfile.display_name}
+                        </p>
+                        <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                          @{displayedProfile.handle}
+                        </p>
+                      </div>
+                    </div>
 
-              {/* Profile links */}
-              <div className="flex flex-col gap-2 text-sm">
-                <Link
-                  href={`/chefs/${profile?.handle || mockUser?.handle}`}
-                  className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
-                >
-                  Vezi profilul bucătarului →
-                </Link>
-                {user && (
-                  <Link
-                    href="/me/profile/edit"
-                    className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
-                  >
-                    Editează →
-                  </Link>
-                )}
-              </div>
+                    <div className="flex flex-col gap-2 text-sm">
+                      <Link
+                        href={`/chefs/${displayedProfile.handle}`}
+                        className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
+                      >
+                        Vezi profilul bucătarului →
+                      </Link>
+                      {user && (
+                        <Link
+                          href="/me/profile/edit"
+                          className="inline-block text-xs font-semibold opacity-75 hover:opacity-100 transition-opacity"
+                        >
+                          Editează →
+                        </Link>
+                      )}
+                    </div>
+                  </>
+                )
+              })()}
             </>
           ) : (
             <div className="flex flex-col gap-2">
