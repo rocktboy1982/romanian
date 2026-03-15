@@ -35,7 +35,7 @@ const VENDORS: Vendor[] = [
     shortName: 'Băuturi',
     color: '#7b2d8e',
     icon: '🍷',
-    searchUrl: (q) => `https://www.bauturialcoolice.ro/?s=${encodeURIComponent(q)}`,
+    searchUrl: (q) => `https://bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
     bestFor: ['Spirtoase', 'Lichioruri', 'Vin', 'Bere', 'Băuturi alcoolice'],
   },
   {
@@ -71,7 +71,7 @@ const VENDORS: Vendor[] = [
     shortName: 'Parma',
     color: '#c8860a',
     icon: '🇮🇹',
-    searchUrl: (q) => `https://www.parmashop.ro/?q=${encodeURIComponent(q)}`,
+    searchUrl: (q) => `https://www.parmashop.ro/index.php?route=product/search&search=${encodeURIComponent(q)}`,
     bestFor: ['Paste', 'Ulei de măsline', 'Parmezan', 'Delicatese'],
   },
   {
