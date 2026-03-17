@@ -1035,8 +1035,21 @@ export default async function RecipePage({ params }: RecipePageProps) {
            {/* Left Column - Recipe Content */}
            <div className="lg:col-span-2 space-y-6">
 
+            {/* Summary / intro — visible to Google as page body text (SEO critical).
+                Google needs 200-300 words of context to rank the page as "relevant".
+                Shown before ingredients so it's high on the page. */}
+            {post.summary && (
+              <Card className="shadow-sm border-0 bg-card/80">
+                <CardContent className="px-5 py-4">
+                  <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                    {post.summary}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Action bar card */}
-            <Card className="shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+             <Card className="shadow-lg border-0 bg-card/95 backdrop-blur-sm">
               <CardContent className="p-5">
                 <RecipeActionsClient
                   recipeId={post.id}

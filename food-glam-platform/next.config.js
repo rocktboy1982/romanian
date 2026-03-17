@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true,
+    // unoptimized removed — Vercel now serves images as WebP automatically (better LCP/CWV)
+    formats: ['image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
     ],
+    minimumCacheTTL: 86400, // 24h CDN cache for optimized images
   },
   async headers() {
     return [
