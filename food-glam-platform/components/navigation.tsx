@@ -199,9 +199,10 @@ export function Navigation() {
   const searchRef = useRef<HTMLInputElement>(null)
   const { theme, toggleTheme } = useTheme()
   
-  // Use real user if available, otherwise fall back to mock user
-  const user = realUser || mockUser
-  const hydrated = realHydrated && mockHydrated
+  // Use real user if available; only show mock user in development before real auth resolves
+  const isDev = process.env.NODE_ENV === 'development'
+  const user = realUser || (isDev && !realHydrated ? mockUser : null)
+  const hydrated = realHydrated
   const signOut = realUser ? realSignOut : mockSignOut
 
   /* close mobile menu on route change */
@@ -483,19 +484,25 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
          }}
        >
         {MOBILE_TABS.map(item => {
+          const isProfileTab = item.href === '/me'
+          const href = isProfileTab && !user ? '/auth/signin' : item.href
           const active = isActive(item.href)
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={href}
               className="flex flex-col items-center gap-0.5 px-3 py-1"
             >
-               <span className="text-lg" style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+               {isProfileTab && user?.avatar_url ? (
+                 <FallbackImage src={user.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" fallbackEmoji="👤" style={{ opacity: active ? 1 : 0.5 }} />
+               ) : (
+                 <span className="text-lg" style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+               )}
                <span
                  className="text-[9px] tracking-wide"
                  style={{ color: active ? (theme === 'dark' ? '#ff9500' : '#fff') : (theme === 'dark' ? '#666' : 'rgba(255,255,255,0.6)') }}
                >
-                 {item.label}
+                 {isProfileTab && !user ? 'Intră' : item.label}
                </span>
             </Link>
           )

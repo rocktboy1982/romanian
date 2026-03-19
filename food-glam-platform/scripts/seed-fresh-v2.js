@@ -45,12 +45,10 @@ try {
   }
 } catch {}
 
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!ANTHROPIC_KEY)                { console.error('❌  ANTHROPIC_API_KEY missing'); process.exit(1); }
-if (!SUPABASE_URL || !SUPABASE_KEY) { console.error('❌  Supabase env missing');     process.exit(1); }
+if (!SUPABASE_URL || !SUPABASE_KEY) { console.error('❌  Supabase env missing'); process.exit(1); }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -59,7 +57,9 @@ const TARGET_PER_COUNTRY = 40;
 const REQUEST_DELAY      = 700;   // ms between HTTP requests
 const INSERT_DELAY       = 60;    // ms between DB inserts
 const PROGRESS_FILE      = path.join(__dirname, '.seed-v2-progress.json');
-const CLAUDE_MODEL       = 'claude-haiku-4-5';
+
+// Ollama local model (dGPU, free)
+const OLLAMA_MODEL = 'aya-expanse:8b';
 
 const APPROACH_IDS = [
   'b0000000-0000-0000-0000-000000000001',
@@ -477,32 +477,45 @@ async function scrapeUrls(urls, maxRecipes) {
   return recipes;
 }
 
-// ─── Claude translate ─────────────────────────────────────────────────────────
-function claudeRequest(messages, maxTokens = 3000) {
+// ─── Ollama translate (local dGPU, free) ─────────────────────────────────────
+const OLLAMA_HARD_TIMEOUT = 180000; // 180s hard cutoff — iGPU needs more time for full recipes
+
+function ollamaRequest(prompt) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ model: CLAUDE_MODEL, max_tokens: maxTokens, messages });
-    const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
+    const body = JSON.stringify({
+      model: OLLAMA_MODEL,
+      prompt,
+      stream: false,
+      keep_alive: '24h',
+      options: { temperature: 0.2, num_predict: 1000 },
+    });
+
+    // Hard timeout — fires no matter what (even if Ollama keeps generating)
+    const hardTimer = setTimeout(() => {
+      req.destroy();
+      reject(new Error('Ollama timeout'));
+    }, OLLAMA_HARD_TIMEOUT);
+
+    const req = http.request({
+      hostname: '127.0.0.1',
+      port: 11434,
+      path: '/api/generate',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'Content-Length': Buffer.byteLength(body),
-      },
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }, (res) => {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => {
+        clearTimeout(hardTimer);
         try {
           const parsed = JSON.parse(data);
-          if (parsed.error) return reject(new Error(parsed.error.message));
-          resolve(parsed.content?.[0]?.text || '');
-        } catch (e) { reject(e); }
+          if (parsed.error) return reject(new Error(parsed.error));
+          resolve(parsed.response || '');
+        } catch (e) { reject(new Error('Bad Ollama response: ' + data.slice(0, 100))); }
       });
+      res.on('error', (e) => { clearTimeout(hardTimer); reject(e); });
     });
-    req.on('error', reject);
+    req.on('error', (e) => { clearTimeout(hardTimer); reject(e); });
     req.write(body);
     req.end();
   });
@@ -542,16 +555,22 @@ ${recipe.steps.map((x, i) => `${i + 1}. ${x}`).join('\n')}
 
 {"title":"...","summary":"...","ingredients":["..."],"steps":["..."]}`;
 
-  const text = await claudeRequest([{ role: 'user', content: prompt }]);
-  const match = text.match(/\{[\s\S]*\}/);
+  const text = await ollamaRequest(prompt);
+  // Strip markdown code fences aya-expanse wraps around JSON
+  const clean = text.replace(/```(?:json)?\n?/g, '').trim();
+  const match = clean.match(/\{[\s\S]*\}/);
   if (!match) throw new Error('No JSON in response');
   const t = JSON.parse(match[0]);
+  // Handle both English keys (ingredients/steps) and Romanian keys (ingrediente/pași)
+  // that aya-expanse sometimes returns
+  const ingredients = t.ingredients || t.ingrediente || t.ingredienti || recipe.ingredients;
+  const steps       = t.steps       || t.pași        || t.pasi       || t.instrucțiuni || recipe.steps;
   return {
     ...recipe,
-    title:       t.title       || recipe.title,
-    summary:     t.summary     || recipe.summary,
-    ingredients: t.ingredients || recipe.ingredients,
-    steps:       t.steps       || recipe.steps,
+    title:   t.title   || recipe.title,
+    summary: t.summary || t.rezumat || recipe.summary,
+    ingredients,
+    steps,
   };
 }
 
@@ -588,7 +607,7 @@ async function main() {
   console.log('  seed-fresh-v2 — scrape real → Claude translate → metric');
   console.log('  Link sursă + imagine originală păstrate');
   console.log('══════════════════════════════════════════════════════════════');
-  console.log(`  Model Claude: ${CLAUDE_MODEL}`);
+  console.log(`  Model Ollama: ${OLLAMA_MODEL} (local, gratuit)`);
   console.log(`  Țări:         ${Object.keys(COUNTRY_MAP).length}`);
   console.log(`  Target:       ${TARGET_PER_COUNTRY}/țară`);
   console.log(`  Completate:   ${progress.completedPrefixes.length}`);
@@ -692,7 +711,10 @@ async function main() {
 
       console.log(`  ✅  ${countryInserted}/${TARGET_PER_COUNTRY} inserate`);
 
-      if (countryInserted > 0) progress.completedPrefixes.push(prefix);
+      // Mark completed if inserted anything, OR if scraper ran but all slugs already existed
+      // (prevents infinite re-run loop when recipes are already in DB)
+      const allAlreadyExisted = countryInserted === 0 && rawRecipes.length > 0;
+      if (countryInserted > 0 || allAlreadyExisted) progress.completedPrefixes.push(prefix);
       else progress.failedPrefixes.push(prefix);
       progress.insertedCount = totalInserted;
       saveProgress(progress);
