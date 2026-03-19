@@ -1195,6 +1195,51 @@ export default function PlanClient() {
                           {shopSaveError}
                         </p>
                       )}
+
+                      {/* Buy online buttons */}
+                      {shopItems.length > 0 && (() => {
+                        const hasAlcohol = shopItems.some(i => isAlcoholicIngredient(i.name))
+                        const foodItems = shopItems.filter(i => !isAlcoholicIngredient(i.name))
+                        const alcoholItems = shopItems.filter(i => isAlcoholicIngredient(i.name))
+
+                        // Build eMAG multi-search URL (top items)
+                        const emagQuery = (foodItems.length > 0 ? foodItems : shopItems)
+                          .slice(0, 8)
+                          .map(i => i.name)
+                          .join(' ')
+                        const emagAllUrl = `https://www.emag.ro/search/${encodeURIComponent(emagQuery)}`
+
+                        const bauturiQuery = alcoholItems
+                          .slice(0, 5)
+                          .map(i => i.name)
+                          .join(' ')
+                        const bauturiAllUrl = `https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(bauturiQuery)}`
+
+                        return (
+                          <div className="flex gap-2 mt-2">
+                            <a
+                              href={emagAllUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-center transition-colors"
+                              style={{ background: 'linear-gradient(135deg,#f59e0b,#ea580c)', color: '#fff' }}
+                            >
+                              🛒 Cumpără de pe eMAG
+                            </a>
+                            {hasAlcohol && (
+                              <a
+                                href={bauturiAllUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-center transition-colors"
+                                style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', color: '#fff' }}
+                              >
+                                🍷 Cumpără de pe BauturiAlcoolice
+                              </a>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   </>
                 )}

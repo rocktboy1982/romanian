@@ -2,6 +2,7 @@
 
 import FallbackImage from '@/components/FallbackImage'
 import React, { useState, useMemo, useCallback, useEffect } from "react"
+import { isAlcoholicIngredient } from '@/lib/normalize-for-search'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -997,31 +998,55 @@ export default function PartyPlanClient() {
                    📤 Partajează
                  </button>
                </div>
-               {/* Buy online button */}
-               <button
-                 onClick={() => {
-                   const shopItems = aggregatedIngredients.map(ing => {
-                     const raw = ing.amount * state.guestCount
-                     const unitLower = ing.unit.toLowerCase()
-                     const isVolume = ['ml', 'l', 'dl', 'cl', 'oz'].includes(unitLower)
-                     const isWeight = ['g', 'kg', 'lb'].includes(unitLower)
-                     return {
-                       id: `${ing.name}__${ing.unit}`,
-                       name: ing.name,
-                       totalQty: isVolume || isWeight ? raw : Math.ceil(raw),
-                       unit: ing.unit,
-                       category: ing.category,
-                       fromRecipes: ing.sources,
-                     }
-                   })
-                   localStorage.setItem('marechef_emag_shop_items', JSON.stringify(shopItems))
-                   window.open('/me/emag-shop', '_blank')
-                 }}
-                 className="w-full px-4 py-3 rounded-lg font-semibold text-sm transition-all"
-                 style={{ background: '#7b2d8e', color: '#fff' }}
-               >
-                 🛒 Cumpără online
-               </button>
+               {/* Buy online buttons */}
+               {(() => {
+                 const allItems = aggregatedIngredients.map(ing => {
+                   const raw = ing.amount * state.guestCount
+                   const unitLower = ing.unit.toLowerCase()
+                   const isVolume = ['ml', 'l', 'dl', 'cl', 'oz'].includes(unitLower)
+                   const isWeight = ['g', 'kg', 'lb'].includes(unitLower)
+                   return {
+                     name: ing.name,
+                     totalQty: isVolume || isWeight ? raw : Math.ceil(raw),
+                     unit: ing.unit,
+                     isAlcohol: isAlcoholicIngredient(ing.name),
+                   }
+                 })
+                 const foodItems = allItems.filter(i => !i.isAlcohol)
+                 const alcoholItems = allItems.filter(i => i.isAlcohol)
+
+                 const emagQuery = (foodItems.length > 0 ? foodItems : allItems)
+                   .slice(0, 8).map(i => i.name).join(' ')
+                 const emagUrl = `https://www.emag.ro/search/${encodeURIComponent(emagQuery)}`
+
+                 const bauturiQuery = alcoholItems.slice(0, 5).map(i => i.name).join(' ')
+                 const bauturiUrl = `https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(bauturiQuery)}`
+
+                 return (
+                   <div className="flex gap-2">
+                     <a
+                       href={emagUrl}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="flex-1 px-4 py-3 rounded-lg font-semibold text-sm text-center transition-all"
+                       style={{ background: 'linear-gradient(135deg,#f59e0b,#ea580c)', color: '#fff' }}
+                     >
+                       🛒 Cumpără de pe eMAG
+                     </a>
+                     {alcoholItems.length > 0 && (
+                       <a
+                         href={bauturiUrl}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="flex-1 px-4 py-3 rounded-lg font-semibold text-sm text-center transition-all"
+                         style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', color: '#fff' }}
+                       >
+                         🍷 BauturiAlcoolice
+                       </a>
+                     )}
+                   </div>
+                 )
+               })()}
              </div>
 
                {/* Grouping toggle */}
