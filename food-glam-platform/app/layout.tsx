@@ -18,8 +18,8 @@ const inter = Inter({ subsets: ['latin'] })
 // Targeting long-tail queries: "ce pot găti azi", "rețete românești tradiționale",
 // "rețete fine dining acasă", "planuri de masă săptămânale", "cocktailuri de casă"
 export const metadata: Metadata = {
-  title: 'MareChef.ro - Platformă Culinară',
-  description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea. Salvează rețete favorite, creează planuri de masă și generează liste de cumpărături.',
+  title: 'MareChef.ro — Rețete Culinare din Toată Lumea | Gătește cu Stil',
+  description: 'Descoperă peste 4000 de rețete autentice din toată lumea, traduse în română. Planuri de masă, liste de cumpărături, cocktailuri și rețete tradiționale românești pe MareChef.ro.',
   keywords: [
     // Cele mai căutate query-uri în România (Google Trends data)
     'rețete',
@@ -48,6 +48,9 @@ export const metadata: Metadata = {
     'rețete la air fryer',
     'rețete de post',
   ],
+  verification: {
+    google: 'google74b41e035b440d26',
+  },
   other: {
     'profitshareid': 'd71654ad223cdf6397214d8057b92c38',
   },
@@ -64,11 +67,11 @@ export const metadata: Metadata = {
     locale: 'ro_RO',
     url: 'https://marechef.ro',
     siteName: 'MareChef.ro',
-    title: 'MareChef.ro - Platformă Culinară',
-    description: 'O platformă culinară elegantă unde poți descoperi rețete din toată lumea. Salvează rețete favorite, creează planuri de masă și generează liste de cumpărături.',
+    title: 'MareChef.ro — Rețete Culinare din Toată Lumea | Gătește cu Stil',
+    description: 'Descoperă peste 4000 de rețete autentice din toată lumea, traduse în română. Planuri de masă, liste de cumpărături, cocktailuri și rețete tradiționale românești pe MareChef.ro.',
     images: [
       {
-        url: 'https://marechef.ro/og-image.jpg',
+        url: 'https://marechef.ro/og',
         width: 1200,
         height: 630,
         alt: 'MareChef.ro - Platformă Culinară',
@@ -79,7 +82,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MareChef.ro — Rețete Tradiționale Românești & Fine Dining Acasă',
     description: 'Rețete românești tradiționale reinterpretate, fine dining acasă și cocktailuri elegante.',
-    images: ['https://marechef.ro/og-image.jpg'],
+    images: ['https://marechef.ro/og'],
   },
   alternates: {
     canonical: 'https://marechef.ro',

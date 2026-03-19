@@ -67,5 +67,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   }
 
-  return [...staticPages, ...recipeUrls, ...cocktailUrls]
+  // Region landing pages
+  const REGIONS = [
+    'europe', 'middle-east', 'east-asia', 'south-asia', 'southeast-asia',
+    'africa', 'north-america', 'south-america', 'central-america', 'caribbean',
+    'oceania', 'central-asia', 'eastern-europe', 'northern-europe', 'southern-europe', 'western-europe',
+  ]
+  const regionUrls: MetadataRoute.Sitemap = REGIONS.map(r => ({
+    url: `${baseUrl}/cookbooks/region/${r}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.75,
+  }))
+
+  // Cuisine landing pages
+  let cuisineUrls: MetadataRoute.Sitemap = []
+  try {
+    const supabase = createServiceSupabaseClient()
+    const { data: cuisines } = await supabase
+      .from('cuisines')
+      .select('slug')
+    if (cuisines) {
+      cuisineUrls = cuisines.map((c: { slug: string }) => ({
+        url: `${baseUrl}/cookbooks/cuisines/${c.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }))
+    }
+  } catch { /* ignore */ }
+
+  return [...staticPages, ...regionUrls, ...cuisineUrls, ...recipeUrls, ...cocktailUrls]
 }
