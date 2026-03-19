@@ -61,8 +61,8 @@ async function fetchRecipes() {
   if (!posts) return { recipes: [], total: 0 }
 
   const recipes = posts.map((post) => {
-    const approachData = post.approaches as Record<string, unknown> | null
-    const creatorData = post.created_by as Record<string, unknown> | null
+    const approachData = post.approaches as unknown as Record<string, unknown> | null
+    const creatorData = post.created_by as unknown as Record<string, unknown> | null
     const recipeJson = (post.recipe_json || {}) as Record<string, unknown>
     const nutrition = recipeJson.nutrition_per_serving as { calories: number; protein: number; carbs: number; fat: number } | null | undefined
     const cookTime = recipeJson.cook_time_minutes as number | null | undefined
