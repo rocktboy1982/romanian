@@ -1106,6 +1106,18 @@ async function main() {
         continue;
       }
 
+      // Validate translation completeness — skip if ingredients/steps are missing or still English
+      const trIngredients = translated.ingredients
+      const trSteps = translated.steps || translated.instructions
+      if (!trIngredients || !Array.isArray(trIngredients) || trIngredients.length < 2) {
+        console.log(`  ⚠️ skip (incomplete translation — no ingredients)`);
+        continue;
+      }
+      if (!trSteps || !Array.isArray(trSteps) || trSteps.length < 1) {
+        console.log(`  ⚠️ skip (incomplete translation — no steps)`);
+        continue;
+      }
+
       // Insert into Supabase
       const approachId = APPROACH_IDS[inserted % APPROACH_IDS.length];
       const { error } = await supabase.from('posts').insert({
@@ -1121,9 +1133,9 @@ async function main() {
         hero_image_url: raw.imageUrl || '',
         source_url: raw.sourceUrl || '',
         recipe_json: {
-          ingredients: translated.ingredients || raw.ingredients,
-          instructions: translated.steps || translated.instructions || raw.instructions,
-          steps: translated.steps || translated.instructions || raw.instructions,
+          ingredients: trIngredients,
+          instructions: trSteps,
+          steps: trSteps,
           prep_time_minutes: raw.prepTime || 15,
           cook_time_minutes: raw.cookTime || 30,
           servings: raw.servings || 4,
