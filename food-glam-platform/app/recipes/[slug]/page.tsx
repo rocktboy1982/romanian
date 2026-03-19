@@ -294,7 +294,7 @@ function VideoEmbed({ url }: { url: string }) {
          className="w-full h-full"
          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
          allowFullScreen
-         title="Videoclip retet\u0103"
+         title="Videoclip retetă"
        />
     </div>
   )
@@ -346,52 +346,52 @@ function mealTypeToCategory(mealType?: string | null): string {
   if (!mealType) return 'Fel principal'
   const map: Record<string, string> = {
     breakfast: 'Mic dejun',
-    lunch: 'Pr\u00e2nz',
-    dinner: 'Cin\u0103',
+    lunch: 'Prânz',
+    dinner: 'Cină',
     dessert: 'Desert',
     snack: 'Gustare',
     appetizer: 'Aperitiv',
-    soup: 'Sup\u0103',
-    salad: 'Salat\u0103',
+    soup: 'Supă',
+    salad: 'Salată',
   }
   return map[mealType.toLowerCase()] || 'Fel principal'
 }
 
 /**
  * Derive recipeCuisine from a chef profile display_name.
- * Example: "Chef Italy" -> "Italian\u0103", "Chef France" -> "Francez\u0103"
+ * Example: "Chef Italy" -> "Italiană", "Chef France" -> "Franceză"
  */
 function chefDisplayNameToCuisine(displayName?: string | null): string | null {
   if (!displayName) return null
   const map: Record<string, string> = {
-    italy: 'Italian\u0103',
-    france: 'Francez\u0103',
-    spain: 'Spaniol\u0103',
-    greece: 'Greceasc\u0103',
-    mexico: 'Mexican\u0103',
-    japan: 'Japonez\u0103',
-    china: 'Chinez\u0103',
-    india: 'Indian\u0103',
-    thailand: 'Thailandez\u0103',
-    morocco: 'Marocan\u0103',
-    turkey: 'Turc\u0103',
-    korea: 'Corean\u0103',
-    vietnam: 'Vietnamez\u0103',
-    peru: 'Peruvian\u0103',
-    brazil: 'Brazilian\u0103',
-    lebanon: 'Libanez\u0103',
-    ethiopia: 'Etiopian\u0103',
-    ghana: 'Ghanez\u0103',
-    senegal: 'Senegalez\u0103',
-    nigeria: 'Nigerian\u0103',
-    kenya: 'Kenyan\u0103',
-    portugal: 'Portughez\u0103',
-    germany: 'German\u0103',
-    hungary: 'Ungureasc\u0103',
-    romania: 'Rom\u00e2neasc\u0103',
-    usa: 'American\u0103',
-    uk: 'Britanic\u0103',
-    argentina: 'Argentinian\u0103',
+    italy: 'Italiană',
+    france: 'Franceză',
+    spain: 'Spaniolă',
+    greece: 'Grecească',
+    mexico: 'Mexicană',
+    japan: 'Japoneză',
+    china: 'Chineză',
+    india: 'Indiană',
+    thailand: 'Thailandeză',
+    morocco: 'Marocană',
+    turkey: 'Turcă',
+    korea: 'Coreană',
+    vietnam: 'Vietnameză',
+    peru: 'Peruviană',
+    brazil: 'Braziliană',
+    lebanon: 'Libaneză',
+    ethiopia: 'Etiopiană',
+    ghana: 'Ghaneză',
+    senegal: 'Senegaleză',
+    nigeria: 'Nigeriană',
+    kenya: 'Kenyană',
+    portugal: 'Portugheză',
+    germany: 'Germană',
+    hungary: 'Ungurească',
+    romania: 'Românească',
+    usa: 'Americană',
+    uk: 'Britanică',
+    argentina: 'Argentiniană',
   }
   const lower = displayName.toLowerCase()
   for (const [country, cuisine] of Object.entries(map)) {
@@ -418,7 +418,7 @@ function generateRecipeBreadcrumbJsonLd(title: string, slug: string) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Re\u021bete',
+        name: 'Rețete',
         item: `${baseUrl}/search`,
       },
       {
@@ -445,16 +445,16 @@ function generateFaqJsonLd(
   // Q1: Preparation time
   if (detail.prep_time || detail.cook_time || detail.total_time) {
     const parts: string[] = []
-    if (detail.prep_time) parts.push(`Prepararea dureaz\u0103 ${detail.prep_time}`)
-    if (detail.cook_time) parts.push(`g\u0103titul ${detail.cook_time}`)
-    if (detail.total_time) parts.push(`\u00een total ${detail.total_time}`)
+    if (detail.prep_time) parts.push(`Prepararea durează ${detail.prep_time}`)
+    if (detail.cook_time) parts.push(`gătitul ${detail.cook_time}`)
+    if (detail.total_time) parts.push(`în total ${detail.total_time}`)
     const answer = parts.length > 0
       ? parts.join(', ') + '.'
-      : `Prepararea dureaz\u0103 aproximativ ${detail.total_time || 'necunoscut'}.`
+      : `Prepararea durează aproximativ ${detail.total_time || 'necunoscut'}.`
 
     faqItems.push({
       '@type': 'Question',
-      name: `C\u00e2t dureaz\u0103 s\u0103 preg\u0103te\u0219ti ${title}?`,
+      name: `Cât durează să pregătești ${title}?`,
       acceptedAnswer: {
         '@type': 'Answer',
         text: answer.charAt(0).toUpperCase() + answer.slice(1),
@@ -466,10 +466,10 @@ function generateFaqJsonLd(
   if (detail.servings) {
     faqItems.push({
       '@type': 'Question',
-      name: `C\u00e2te por\u021bii ob\u021bii din ${title}?`,
+      name: `Câte porții obții din ${title}?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `Aceast\u0103 re\u021bet\u0103 este pentru ${detail.servings} por\u021bii.`,
+        text: `Această rețetă este pentru ${detail.servings} porții.`,
       },
     })
   }
@@ -478,10 +478,10 @@ function generateFaqJsonLd(
   if (nutrition && typeof nutrition.calories === 'number' && nutrition.calories > 0) {
     faqItems.push({
       '@type': 'Question',
-      name: `Ce valoare caloric\u0103 are ${title}?`,
+      name: `Ce valoare calorică are ${title}?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `O por\u021bie con\u021bine aproximativ ${nutrition.calories} kcal.`,
+        text: `O porție conține aproximativ ${nutrition.calories} kcal.`,
       },
     })
   }
@@ -520,10 +520,10 @@ function generateRecipeJsonLd(recipe: any, detail: any, slug: string) {
   // Build nutrition information
   const nutrition = detail.nutrition || {}
 
-  // Derive recipeCuisine from chef profile display_name, fallback to region, then "Interna\u021bional"
+  // Derive recipeCuisine from chef profile display_name, fallback to region, then "Internațional"
   const creatorDisplayName = recipe.created_by?.display_name || recipe.profiles?.display_name || null
   const derivedCuisine = chefDisplayNameToCuisine(creatorDisplayName)
-  const recipeCuisine = derivedCuisine || recipe.region || 'Interna\u021bional'
+  const recipeCuisine = derivedCuisine || recipe.region || 'Internațional'
 
   // Author: use Organization by default, Person only if a real chef name exists
   const authorName = creatorDisplayName
@@ -542,7 +542,7 @@ function generateRecipeJsonLd(recipe: any, detail: any, slug: string) {
     prepTime,
     cookTime,
     totalTime,
-    recipeYield: `${detail.servings} por\u021bii`,
+    recipeYield: `${detail.servings} porții`,
     recipeCategory: mealTypeToCategory(recipe.meal_type),
     recipeCuisine,
     recipeIngredient,
@@ -624,8 +624,8 @@ export async function generateMetadata({ params }: RecipePageProps): Promise<Met
     const mockRecipe = MOCK_RECIPES.find(r => r.slug === slug)
     if (!mockRecipe) {
       return {
-        title: 'Re\u021beta nu a fost g\u0103sit\u0103 | MareChef.ro',
-        description: 'Re\u021beta pe care o cau\u021bi nu a fost g\u0103sit\u0103.',
+        title: 'Rețeta nu a fost găsită | MareChef.ro',
+        description: 'Rețeta pe care o cauți nu a fost găsită.',
       }
     }
     recipe = {
@@ -640,7 +640,7 @@ export async function generateMetadata({ params }: RecipePageProps): Promise<Met
   }
 
   const title = `${recipe.title} | MareChef.ro`
-  const description = recipe.summary || `Descoper\u0103 re\u021beta pentru ${recipe.title} pe MareChef.ro - o platform\u0103 culinar\u0103 elegant\u0103 cu re\u021bete din toat\u0103 lumea.`
+  const description = recipe.summary || `Descoperă rețeta pentru ${recipe.title} pe MareChef.ro - o platformă culinară elegantă cu rețete din toată lumea.`
   const imageUrl = recipe.hero_image_url || `${baseUrl}/og-default.jpg`
   const canonicalUrl = `${baseUrl}/recipes/${slug}`
 
@@ -765,7 +765,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                        <polyline points="20 6 9 17 4 12"/>
                      </svg>
-                     Testat\u0103
+                     Testată
                    </span>
                  )}
                 {dietTags.map((tag: string) => (
@@ -785,12 +785,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   {detail.total_time}
                 </span>
                 <span className="flex items-center gap-1.5">Preparare: {detail.prep_time}</span>
-                <span className="flex items-center gap-1.5">G\u0103tire: {detail.cook_time}</span>
+                <span className="flex items-center gap-1.5">Gătire: {detail.cook_time}</span>
                 <span className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                   </svg>
-                   {detail.servings} por\u021bii
+                   {detail.servings} porții
                 </span>
                 <span className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -884,7 +884,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                       <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
                     </svg>
-                     Instruc\u021biuni
+                     Instrucțiuni
                    </CardTitle>
                  </CardHeader>
                  <CardContent>
@@ -975,13 +975,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
                {detailNutrition && (
                  <Card className="shadow-sm">
                    <CardContent className="p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutri\u021bie per por\u021bie</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Nutriție per porție</p>
                       <div className="grid grid-cols-2 gap-2">
                         {([
                           { label: 'Calorii', value: detailNutrition.calories, unit: 'kcal' },
                           { label: 'Proteine',  value: detailNutrition.protein,  unit: 'g' },
-                          { label: 'Carbohidra\u021bi',    value: detailNutrition.carbs,    unit: 'g' },
-                          { label: 'Gr\u0103simi',      value: detailNutrition.fat,      unit: 'g' },
+                          { label: 'Carbohidrați',    value: detailNutrition.carbs,    unit: 'g' },
+                          { label: 'Grăsimi',      value: detailNutrition.fat,      unit: 'g' },
                        ] as const).map(({ label, value, unit }) => (
                           <div key={label} className="bg-stone-50 dark:bg-white/5 rounded-lg p-2.5 text-center">
                            <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
@@ -998,7 +998,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
                 {/* Back to browse */}
                <Link href="/search">
-                 <Button variant="outline" className="w-full">Descoper\u0103 mai multe re\u021bete</Button>
+                 <Button variant="outline" className="w-full">Descoperă mai multe rețete</Button>
                </Link>
            </div>
          </div>
@@ -1188,7 +1188,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                      <polyline points="20 6 9 17 4 12"/>
                    </svg>
-                   Testat\u0103
+                   Testată
                  </span>
                )}
               {dietTags.map((tag: string) => (
@@ -1217,13 +1217,13 @@ export default async function RecipePage({ params }: RecipePageProps) {
                  <span className="flex items-center gap-1.5">Preparare: {prepTime}</span>
                )}
                {cookTime && (
-                 <span className="flex items-center gap-1.5">G\u0103tire: {cookTime}</span>
+                 <span className="flex items-center gap-1.5">Gătire: {cookTime}</span>
                )}
                <span className="flex items-center gap-1.5">
                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                  </svg>
-                 {servings} por\u021bii
+                 {servings} porții
                </span>
               <span className="flex items-center gap-1.5">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1245,7 +1245,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
              rel="noopener noreferrer"
              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm transition-colors"
             >
-              Vezi re\u021beta original\u0103
+              Vezi rețeta originală
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                <polyline points="15 3 21 3 21 9"/>
@@ -1308,7 +1308,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                        <polygon points="5 3 19 12 5 21 5 3"/>
                      </svg>
-                     Vizionaz\u0103
+                     Vizionază
                    </CardTitle>
                  </CardHeader>
                  <CardContent className="px-5 pb-5">
@@ -1366,7 +1366,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                     <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
                   </svg>
-                   Instruc\u021biuni
+                   Instrucțiuni
                  </CardTitle>
                </CardHeader>
                <CardContent>
@@ -1382,7 +1382,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                      ))}
                    </ol>
                  ) : (
-                   <p className="text-sm text-muted-foreground">Nu sunt pa\u0219i lista\u021bi.</p>
+                   <p className="text-sm text-muted-foreground">Nu sunt pași listați.</p>
                  )}
               </CardContent>
             </Card>
@@ -1457,7 +1457,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                <Card className="shadow-sm">
                   <CardContent className="p-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                      Nutri\u021bie per por\u021bie
+                      Nutriție per porție
                       {computedNutrition && !hasStoredNutrition && (
                         <span className="ml-1 text-[9px] font-normal text-amber-500">~ estimat</span>
                       )}
@@ -1466,8 +1466,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       {[
                         { label: 'Calorii', value: effectiveNutrition.calories, unit: 'kcal' },
                         { label: 'Proteine', value: effectiveNutrition.protein, unit: 'g' },
-                        { label: 'Carbohidra\u021bi', value: effectiveNutrition.carbs, unit: 'g' },
-                        { label: 'Gr\u0103simi', value: effectiveNutrition.fat, unit: 'g' },
+                        { label: 'Carbohidrați', value: effectiveNutrition.carbs, unit: 'g' },
+                        { label: 'Grăsimi', value: effectiveNutrition.fat, unit: 'g' },
                       ].map((item) => (
                         <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
                           <p className="text-lg font-bold">{item.value || '\u2014'}</p>
@@ -1476,7 +1476,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                       ))}
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                      Per por\u021bie ({servings} por\u021bii \u00een total)
+                      Per porție ({servings} porții în total)
                     </p>
                  </CardContent>
                </Card>
@@ -1489,7 +1489,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             {sourceUrl && (
               <Card className="shadow-sm">
                <CardContent className="p-4">
-                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Re\u021beta original\u0103</p>
+                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Rețeta originală</p>
                    <a
                      href={sourceUrl}
                      target="_blank"
@@ -1510,7 +1510,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
              {/* Similar Recipes */}
              <Card className="shadow-sm">
                <CardHeader className="pb-3">
-                 <CardTitle className="text-base">Re\u021bete similare</CardTitle>
+                 <CardTitle className="text-base">Rețete similare</CardTitle>
               </CardHeader>
               <CardContent>
                 <SimilarRecipesClient id={post.id} />

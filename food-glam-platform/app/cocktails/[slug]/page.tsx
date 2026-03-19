@@ -79,7 +79,7 @@ function StarDisplay({ score }: { score: number | null }) {
 }
 
 const DIFFICULTY_LABELS: Record<string, string> = {
-  'easy': 'u\u0219or',
+  'easy': 'ușor',
   'medium': 'mediu',
   'hard': 'greu'
 }
@@ -110,8 +110,8 @@ function generateCocktailJsonLd(cocktail: CocktailPost, rj: CocktailRecipeJson, 
       name: 'MareChef.ro',
     },
     recipeCategory: 'Cocktail',
-    recipeCuisine: 'Interna\u021bional',
-    recipeYield: rj.serves ? `${rj.serves} por\u021bii` : '1 por\u021bie',
+    recipeCuisine: 'Internațional',
+    recipeYield: rj.serves ? `${rj.serves} porții` : '1 porție',
     recipeIngredient: rj.ingredients || [],
     recipeInstructions,
     url: cocktailUrl,
@@ -125,7 +125,7 @@ function generateCocktailJsonLd(cocktail: CocktailPost, rj: CocktailRecipeJson, 
   const keywordParts: string[] = []
   if (cocktail.food_tags && Array.isArray(cocktail.food_tags)) keywordParts.push(...cocktail.food_tags)
   if (rj.spirit && rj.spirit !== 'none') keywordParts.push(rj.spirit)
-  if (rj.category) keywordParts.push(rj.category === 'alcoholic' ? 'cu alcool' : 'f\u0103r\u0103 alcool')
+  if (rj.category) keywordParts.push(rj.category === 'alcoholic' ? 'cu alcool' : 'fără alcool')
   keywordParts.push('cocktail')
   if (keywordParts.length > 0) {
     jsonLd.keywords = [...new Set(keywordParts)].join(', ')
@@ -220,7 +220,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${post.title} | MareChef.ro`,
-    description: post.summary || `Re\u021bet\u0103 ${post.title} pe MareChef.ro`,
+    description: post.summary || `Rețetă ${post.title} pe MareChef.ro`,
     openGraph: {
       title: post.title,
       description: post.summary || '',
@@ -364,7 +364,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                     }
               }
             >
-               {isAlcoholic ? '\ud83e\udd43 Cu alcool' : '\ud83c\udf3f F\u0103r\u0103 alcool'}
+               {isAlcoholic ? '\ud83e\udd43 Cu alcool' : '\ud83c\udf3f Fără alcool'}
             </Pill>
             {spiritLabel && (
               <Pill style={{ background: 'rgba(0,0,0,0.06)', color: '#555', border: '1px solid rgba(0,0,0,0.1)' }}>
@@ -403,7 +403,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
             {/* Quick stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                 { label: 'Por\u021bii', value: rj.serves || '\u2014' },
+                 { label: 'Porții', value: rj.serves || '\u2014' },
                  { label: 'Dificultate', value: DIFFICULTY_LABELS[rj.difficulty ?? ''] || rj.difficulty || '\u2014' },
                  {
                    label: 'Calitate',
@@ -439,7 +439,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                 )}
                 {rj.garnish && (
                   <div className="flex items-center gap-1.5">
-                    <span style={{ color: '#888' }}>\ud83c\udf3f Garnitur\u0103:</span>
+                    <span style={{ color: '#888' }}>\ud83c\udf3f Garnitură:</span>
                     <span>{rj.garnish}</span>
                   </div>
                 )}
@@ -472,7 +472,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
               <section>
                 <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111' }}>
                   <span className="w-1 h-5 rounded-full inline-block" style={{ background: '#8B1A2B' }} />
-                  Metod\u0103
+                  Metodă
                 </h2>
               {steps.length > 0 ? (
                 <ol className="space-y-5">
@@ -492,7 +492,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                 </ol>
               ) : (
                 <p className="text-sm italic" style={{ color: '#888' }}>
-                  Nu sunt pa\u0219i lista\u021bi.
+                  Nu sunt pași listați.
                 </p>
               )}
             </section>
@@ -583,7 +583,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                     border: '1px solid rgba(139,26,43,0.25)',
                   }}
                >
-                 \ud83c\udf79 Adaug\u0103 propriul cocktail
+                 \ud83c\udf79 Adaugă propriul cocktail
                </Link>
               <Link
                 href="/cocktails"
