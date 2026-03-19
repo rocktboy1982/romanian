@@ -942,66 +942,220 @@ const COUNTRIES_TO_SCRAPE = [
   { name: 'Nepal',           code: 'NP', idx: 71 },
 ];
 
-async function main() {
-  const outPath = path.join(__dirname, '../data/recipes-new-countries.csv');
-  const header = 'country,country_code,cuisine_uuid,profile_uuid,recipe_uuid,post_uuid,title,slug,summary,description,ingredients,instructions,prep_time_minutes,cook_time_minutes,servings,difficulty_level,image_url,approach_id,source_url\n';
-  fs.writeFileSync(outPath, header, 'utf8');
+// ── Load .env.local ──────────────────────────────────────────────────────────
+try {
+  const env = fs.readFileSync(path.join(__dirname, '..', '.env.local'), 'utf8');
+  for (const line of env.split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const eq = t.indexOf('=');
+    if (eq === -1) continue;
+    const k = t.slice(0, eq).trim();
+    const v = t.slice(eq + 1).trim().replace(/^['"]|['"]$/g, '');
+    if (!process.env[k]) process.env[k] = v;
+  }
+} catch {}
 
-  let totalRows = 0;
-  const summary = [];
+// ── Supabase client ──────────────────────────────────────────────────────────
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+// ── Ollama translate ─────────────────────────────────────────────────────────
+const OLLAMA_MODEL = 'aya-expanse:8b';
+const OLLAMA_HARD_TIMEOUT = 180000;
+
+function ollamaRequest(prompt) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: OLLAMA_MODEL, prompt, stream: false,
+      keep_alive: '24h',
+      options: { temperature: 0.2, num_predict: 1200 },
+    });
+    const hardTimer = setTimeout(() => { req.destroy(); reject(new Error('Ollama timeout')); }, OLLAMA_HARD_TIMEOUT);
+    const req = http.request({
+      hostname: '127.0.0.1', port: 11434, path: '/api/generate', method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    }, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        clearTimeout(hardTimer);
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.error) return reject(new Error(parsed.error));
+          resolve(parsed.response || '');
+        } catch (e) { reject(new Error('Bad Ollama response')); }
+      });
+      res.on('error', (e) => { clearTimeout(hardTimer); reject(e); });
+    });
+    req.on('error', (e) => { clearTimeout(hardTimer); reject(e); });
+    req.write(body);
+    req.end();
+  });
+}
+
+async function translateRecipe(recipe) {
+  const prompt = `Ești un traducător culinar expert. Traduce această rețetă din engleză în română.
+
+REGULI STRICTE:
+1. Ingrediente — convertește TOATE unitățile la metric:
+   • cups → ml  (1 cup = 240 ml)
+   • tablespoon/tbsp → ml  (1 tbsp = 15 ml)
+   • teaspoon/tsp → ml  (1 tsp = 5 ml)
+   • oz → g  (1 oz = 28 g) sau ml dacă e lichid
+   • lb/lbs → g  (1 lb = 450 g)
+   • stick butter → g  (1 stick = 113 g)
+   Format: "cantitate unitate ingredient, detaliu"
+
+2. Pași — voce CALDĂ, descriptivă, ca un bucătar care explică unui prieten:
+   • Include texturi, culori, timpi, indicii senzoriale
+   • NU: "Se prăjesc ceapele 5 minute."
+   • DA: "Adaugă ceapa și las-o să se înmoaie la foc mediu, amestecând ușor, până devine translucidă și ușor aurie — vreo 5-6 minute."
+
+3. Română corectă cu diacritice: ă â î ș ț
+
+4. Returnează STRICT JSON valid:
+
+Rețetă:
+Title: ${recipe.title}
+Summary: ${recipe.summary || recipe.title}
+Ingredients:
+${recipe.ingredients.map((x, i) => `${i + 1}. ${x}`).join('\n')}
+Steps:
+${(recipe.instructions || recipe.steps || []).map((x, i) => `${i + 1}. ${x}`).join('\n')}
+
+{"title":"...","summary":"...","ingredients":["..."],"steps":["..."]}`;
+
+  const text = await ollamaRequest(prompt);
+  const clean = text.replace(/```(?:json)?\n?/g, '').trim();
+  const jsonStart = clean.indexOf('{');
+  const jsonEnd = clean.lastIndexOf('}');
+  if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found');
+  return JSON.parse(clean.slice(jsonStart, jsonEnd + 1));
+}
+
+// ── Clean slug (NO country prefix) ───────────────────────────────────────────
+function cleanSlug(title) {
+  return title
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+// ── Progress tracking ────────────────────────────────────────────────────────
+const PROGRESS_FILE = path.join(__dirname, '.scrape-authentic-progress.json');
+function loadProgress() {
+  try { return JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf8')); } catch { return { completed: [] }; }
+}
+function saveProgress(p) { fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p, null, 2)); }
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+async function main() {
+  console.log('══════════════════════════════════════════════════════════════');
+  console.log('  Authentic recipe scraper — country blogs → Ollama translate → Supabase');
+  console.log('  Model: ' + OLLAMA_MODEL + ' (local, free)');
+  console.log('══════════════════════════════════════════════════════════════');
+
+  // Load existing slugs to avoid duplicates
+  const { data: existing } = await supabase.from('posts').select('slug').eq('type', 'recipe');
+  const existingSlugs = new Set((existing || []).map(p => p.slug));
+  console.log(`  Existing recipes: ${existingSlugs.size}`);
+
+  const progress = loadProgress();
+  let totalInserted = 0;
+  const summaryList = [];
 
   for (const countryDef of COUNTRIES_TO_SCRAPE) {
     const { name, code, idx } = countryDef;
+    if (progress.completed.includes(name)) {
+      console.log(`  ⏭️  ${name} — already done`);
+      continue;
+    }
+
     const scraper = SCRAPERS[name];
-    if (!scraper) { summary.push({ name, count: 0 }); continue; }
+    if (!scraper) { summaryList.push({ name, count: 0 }); continue; }
 
-    console.log(`\n🌍 Scraping ${name} (idx=${idx})...`);
+    console.log(`\n🌍  [${name}] Scraping from blogs...`);
     let recipes = [];
-    try { recipes = await scraper(); } catch (e) { console.error(`  ERROR: ${e.message}`); }
+    try { recipes = await scraper(); } catch (e) { console.error(`  ERROR scraping: ${e.message}`); }
+    console.log(`  ${recipes.length} recipes scraped`);
 
-    const cuisineId = cuisineUUID(idx);
-    const profileId = profileUUID(idx);
-    const rows = [];
-    const seen = new Set();
+    // Find the profile for this country
+    const { data: profileRows } = await supabase.from('profiles').select('id').ilike('display_name', `%${name}%`).limit(1);
+    const profileId = profileRows?.[0]?.id || profileUUID(idx);
 
-    for (const r of recipes) {
-      if (rows.length >= 20) break;
-      const slug = toSlug(name, r.title);
-      if (seen.has(slug)) continue;
-      seen.add(slug);
-      const approachId = APPROACH_IDS[rows.length % APPROACH_IDS.length];
-      const row = [
-        csvField(name), csvField(code), csvField(cuisineId), csvField(profileId),
-        csvField(randomUUID()), csvField(randomUUID()),
-        csvField(r.title), csvField(slug),
-        csvField(r.summary), csvField(r.description),
-        csvField(r.ingredients.join('|')), csvField(r.instructions.join('|')),
-        String(Math.max(0, r.prepTime || 15)), String(Math.max(0, r.cookTime || 30)),
-        String(r.servings || 4), csvField(r.difficulty || 'medium'),
-        csvField(r.imageUrl || ''), csvField(approachId), csvField(r.sourceUrl || ''),
-      ].join(',');
-      rows.push(row);
+    let inserted = 0;
+    for (const raw of recipes) {
+      if (inserted >= 20) break;
+      const slug = cleanSlug(raw.title);
+      if (existingSlugs.has(slug)) { console.log(`  ⏭️  "${raw.title}" — slug exists`); continue; }
+
+      // Translate
+      console.log(`  Traducere "${raw.title.slice(0, 50)}"...`);
+      let translated;
+      try {
+        translated = await translateRecipe(raw);
+        console.log(`  ✓`);
+      } catch (e) {
+        console.log(`  ⚠️ skip (${e.message})`);
+        continue;
+      }
+
+      // Insert into Supabase
+      const approachId = APPROACH_IDS[inserted % APPROACH_IDS.length];
+      const { error } = await supabase.from('posts').insert({
+        id: randomUUID(),
+        created_by: profileId,
+        approach_id: approachId,
+        title: translated.title || raw.title,
+        slug,
+        content: translated.summary || raw.summary || translated.title,
+        summary: translated.summary || raw.summary,
+        status: 'active',
+        type: 'recipe',
+        hero_image_url: raw.imageUrl || '',
+        source_url: raw.sourceUrl || '',
+        recipe_json: {
+          ingredients: translated.ingredients || raw.ingredients,
+          instructions: translated.steps || translated.instructions || raw.instructions,
+          steps: translated.steps || translated.instructions || raw.instructions,
+          prep_time_minutes: raw.prepTime || 15,
+          cook_time_minutes: raw.cookTime || 30,
+          servings: raw.servings || 4,
+          difficulty_level: raw.difficulty || 'medium',
+        },
+      });
+
+      if (error) {
+        console.log(`  ✗ ${error.code} — ${error.message.slice(0, 60)}`);
+      } else {
+        existingSlugs.add(slug);
+        inserted++;
+      }
     }
 
-    if (rows.length > 0) {
-      fs.appendFileSync(outPath, rows.join('\n') + '\n', 'utf8');
-      totalRows += rows.length;
-    }
+    totalInserted += inserted;
+    summaryList.push({ name, count: inserted });
+    console.log(`  ✅  ${inserted}/${recipes.length} inserted for ${name}`);
 
-    summary.push({ name, count: rows.length });
-    console.log(`  → ${rows.length}/20 for ${name}`);
+    progress.completed.push(name);
+    saveProgress(progress);
     await sleep(2000);
   }
 
   console.log('\n══════════════════════════════════════');
   console.log('SUMMARY');
   console.log('══════════════════════════════════════');
-  for (const s of summary) {
-    const mark = s.count >= 20 ? '✅' : s.count > 0 ? `⚠️  ${s.count}/20` : '❌  0/20';
+  for (const s of summaryList) {
+    const mark = s.count >= 15 ? '✅' : s.count > 0 ? `⚠️  ${s.count}/20` : '❌  0/20';
     console.log(`  ${mark}  ${s.name}`);
   }
-  console.log(`\nTotal rows: ${totalRows}`);
-  console.log(`Output: ${outPath}`);
+  console.log(`\nTotal inserted: ${totalInserted}`);
 }
 
 main().catch(e => { console.error('Fatal:', e); process.exit(1); });
