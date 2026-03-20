@@ -1106,9 +1106,40 @@ async function main() {
         continue;
       }
 
-      // Validate translation completeness — skip if ingredients/steps are missing or still English
-      const trIngredients = translated.ingredients
-      const trSteps = translated.steps || translated.instructions
+      // Validate + normalize translation — ensure ingredients are plain strings in format "qty unit name"
+      let trIngredients = translated.ingredients
+      let trSteps = translated.steps || translated.instructions
+
+      // Fix: if Ollama returned objects instead of strings, extract text
+      if (Array.isArray(trIngredients)) {
+        trIngredients = trIngredients.map(item => {
+          if (typeof item === 'string') return item
+          if (typeof item === 'object' && item !== null) {
+            // Handle {cantitate, unitate, detaliu} or {qty, unit, name} shapes
+            const qty = item.cantitate || item.qty || item.quantity || ''
+            const unit = item.unitate || item.unit || ''
+            const name = item.ingredient || item.name || item.detaliu || ''
+            return `${qty} ${unit} ${name}`.replace(/\s+/g, ' ').trim()
+          }
+          return String(item)
+        }).filter(s => s.length > 1)
+      }
+
+      // Fix: if Ollama returned objects for steps
+      if (Array.isArray(trSteps)) {
+        trSteps = trSteps.map(item => {
+          if (typeof item === 'string') return item
+          if (typeof item === 'object' && item !== null) return item.text || item.step || item.description || JSON.stringify(item)
+          return String(item)
+        }).filter(s => s.length > 5)
+      }
+
+      // Reject if still English (check for common English words in ingredients)
+      const sampleIngr = (trIngredients || []).slice(0, 3).join(' ').toLowerCase()
+      if (sampleIngr.includes('tablespoon') || sampleIngr.includes('teaspoon') || sampleIngr.includes(' cup ') || sampleIngr.includes('ounce')) {
+        console.log(`  ⚠️ skip (ingredients still in English)`)
+        continue
+      }
       if (!trIngredients || !Array.isArray(trIngredients) || trIngredients.length < 2) {
         console.log(`  ⚠️ skip (incomplete translation — no ingredients)`);
         continue;
@@ -1155,8 +1186,13 @@ async function main() {
     summaryList.push({ name, count: inserted });
     console.log(`  ✅  ${inserted}/${recipes.length} inserted for ${name}`);
 
-    progress.completed.push(name);
-    saveProgress(progress);
+    // Only mark as completed if we got a decent number — allows retry on failure
+    if (inserted >= 5 || (recipes.length === 0 && inserted === 0)) {
+      // Mark 0-recipe countries too so we don't re-scrape broken sitemaps forever
+      // But they can be manually retried by removing from progress
+      progress.completed.push(name);
+      saveProgress(progress);
+    }
     await sleep(2000);
   }
 
