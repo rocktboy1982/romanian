@@ -105,7 +105,18 @@ function parseIngredient(ingredientStr: string): { amount: number; unit: string;
   // Common units: cl, ml, oz, linguri, lingurita, liniute, linii, cana, pahar, etc.
   const unitMatch = rest.match(/^([a-zA-ZăâîșțĂÂÎȘȚ]+\.?)\s+(.+)$/)
   if (unitMatch) {
-    return { amount, unit: unitMatch[1], name: translateIngredientName(unitMatch[2].trim()) }
+    let parsedUnit = unitMatch[1]
+    let parsedAmount = amount
+    const parsedName = translateIngredientName(unitMatch[2].trim())
+
+    // Normalize all volume units to ml for consistent aggregation
+    const u = parsedUnit.toLowerCase()
+    if (u === 'cl') { parsedAmount = amount * 10; parsedUnit = 'ml' }
+    else if (u === 'dl') { parsedAmount = amount * 100; parsedUnit = 'ml' }
+    else if (u === 'l') { parsedAmount = amount * 1000; parsedUnit = 'ml' }
+    else if (u === 'oz') { parsedAmount = amount * 30; parsedUnit = 'ml' }
+
+    return { amount: parsedAmount, unit: parsedUnit, name: parsedName }
   }
 
   // No unit recognised — treat as piece
