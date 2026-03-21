@@ -98,6 +98,8 @@ const UNIT_TO_GRAMS = {
   'lingură': 15, 'linguri': 15, 'tbsp': 15, 'tablespoon': 15,
   'linguriță': 5, 'lingurițe': 5, 'tsp': 5, 'teaspoon': 5,
   'oz': 28, 'lb': 454, 'bucată': 100, 'buc': 100,
+  'felii': 20, 'felie': 20, 'frunze': 3, 'frunză': 3,
+  'căței': 5, 'cățel': 5,
 };
 
 function parseAmount(str) {
@@ -114,13 +116,101 @@ function parseUnit(str) {
   return null;
 }
 
+// Romanian → English aliases for lookup resolution
+const RO_ALIASES = {
+  'pâine': 'bread', 'paine': 'bread', 'baghetă': 'bread', 'bagheta': 'bread', 'loaf': 'bread',
+  'murături': 'pickle', 'muraturi': 'pickle', 'murătură': 'pickle',
+  'măsline': 'olive', 'masline': 'olive',
+  'anșoa': 'anchovy', 'ansoa': 'anchovy', 'anșoare': 'anchovy',
+  'busuioc': 'basil', 'emmental': 'cheese', 'cașcaval': 'cheese', 'cascaval': 'cheese',
+  'salam': 'salami', 'mortadelle': 'mortadella', 'mortadella': 'mortadella',
+  'felii': 'slice', 'fileuri': 'fillet',
+  'roșii': 'tomato', 'rosii': 'tomato', 'roșie': 'tomato',
+  'ceapă': 'onion', 'ceapa': 'onion', 'cepe': 'onion',
+  'usturoi': 'garlic', 'morcov': 'carrot', 'morcovi': 'carrot',
+  'ardei': 'pepper', 'ardei gras': 'bell pepper', 'ardei iute': 'chili',
+  'spanac': 'spinach', 'varză': 'cabbage', 'varza': 'cabbage',
+  'dovlecel': 'zucchini', 'vinete': 'eggplant', 'ciuperci': 'mushroom',
+  'mazăre': 'peas', 'mazare': 'peas', 'fasole': 'beans', 'linte': 'lentils',
+  'năut': 'chickpeas', 'naut': 'chickpeas',
+  'cartofi': 'potato', 'cartof': 'potato', 'cartofi dulci': 'sweet potato',
+  'castravete': 'cucumber', 'castraveți': 'cucumber',
+  'țelină': 'celery', 'telina': 'celery', 'pătrunjel': 'parsley',
+  'coriandru': 'cilantro', 'mentă': 'mint', 'menta': 'mint', 'mărar': 'dill',
+  'cimbru': 'thyme', 'rozmarin': 'rosemary', 'oregano': 'oregano',
+  'scorțișoară': 'cinnamon', 'scortisoara': 'cinnamon',
+  'ghimbir': 'ginger', 'curcuma': 'turmeric', 'chimen': 'cumin',
+  'boia': 'paprika', 'paprika': 'paprika',
+  'piept de pui': 'chicken breast', 'pulpe de pui': 'chicken thigh',
+  'carne de vită': 'beef', 'carne de porc': 'pork', 'carne de miel': 'lamb',
+  'carne tocată': 'ground beef', 'cotlet': 'pork chop',
+  'cârnați': 'sausage', 'carnati': 'sausage', 'cârnăciori': 'sausage',
+  'șuncă': 'ham', 'sunca': 'ham', 'prosciutto': 'ham',
+  'somon': 'salmon', 'ton': 'tuna', 'creveți': 'shrimp', 'creveti': 'shrimp',
+  'pește': 'fish', 'peste': 'fish', 'calmar': 'squid',
+  'ou': 'egg', 'ouă': 'eggs', 'oua': 'eggs', 'albuș': 'egg', 'gălbenuș': 'egg',
+  'lapte': 'milk', 'smântână': 'sour cream', 'smantana': 'sour cream',
+  'frișcă': 'cream', 'frisca': 'cream', 'unt': 'butter',
+  'brânză': 'cheese', 'branza': 'cheese', 'parmezan': 'parmesan',
+  'iaurt': 'yogurt', 'ricotta': 'ricotta',
+  'orez': 'rice', 'paste': 'pasta', 'spaghete': 'spaghetti', 'tăiței': 'noodles',
+  'făină': 'flour', 'faina': 'flour', 'griș': 'semolina',
+  'zahăr': 'sugar', 'zahar': 'sugar', 'miere': 'honey',
+  'ciocolată': 'chocolate', 'ciocolata': 'chocolate', 'cacao': 'cocoa',
+  'ulei de măsline': 'olive oil', 'ulei': 'oil', 'ulei vegetal': 'vegetable oil',
+  'oțet': 'vinegar', 'otet': 'vinegar', 'sos de soia': 'soy sauce',
+  'muștar': 'mustard', 'mustar': 'mustard', 'maioneză': 'mayonnaise',
+  'sare': 'salt', 'piper': 'pepper',
+  'nucă de cocos': 'coconut', 'migdale': 'almonds', 'nuci': 'walnuts',
+  'arahide': 'peanuts', 'caju': 'cashews', 'susan': 'sesame seeds',
+  'lămâie': 'lemon', 'lamaie': 'lemon', 'limetă': 'lime',
+  'portocală': 'orange', 'portocala': 'orange',
+  'măr': 'apple', 'banană': 'banana', 'banana': 'banana',
+  'căpșuni': 'strawberry', 'capsuni': 'strawberry', 'afine': 'blueberry',
+  'struguri': 'grape', 'ananas': 'pineapple', 'mango': 'mango',
+  'avocado': 'avocado', 'pepene': 'watermelon',
+  'praf de copt': 'baking powder', 'drojdie': 'yeast',
+  'lapte de cocos': 'coconut milk', 'vin': 'wine', 'bere': 'beer', 'rom': 'rum',
+  'apă': 'water', 'apa': 'water', 'supă': 'broth', 'supa': 'broth',
+};
+
+// Additional kcal entries for things the main table misses
+Object.assign(KCAL_TABLE, {
+  'salami': 336, 'mortadella': 311, 'olive': 115, 'pickle': 18,
+  'anchovy': 210, 'basil': 22, 'parsley': 36, 'cilantro': 23,
+  'mint': 44, 'dill': 43, 'thyme': 101, 'rosemary': 131,
+  'cinnamon': 247, 'ginger': 80, 'turmeric': 312, 'cumin': 375,
+  'paprika': 282, 'chili': 40, 'baking powder': 53, 'yeast': 325,
+  'sausage': 301, 'pork chop': 231, 'squid': 92, 'rum': 231,
+  'sour cream': 193, 'semolina': 360, 'slice': 300,
+});
+
+function resolveRomanian(name) {
+  const n = name.toLowerCase().trim()
+    .replace(/,.*$/, '') // strip after comma
+    .replace(/\(.*\)/, '') // strip parentheses
+    .replace(/\s+(tocat|tocată|tocate|tăiat|tăiate|feliat|ras|rasă|proaspăt|proaspătă|congelat|uscat|uscată|fin|grosier)\b.*/i, '') // strip adjectives
+    .trim();
+  // Direct alias match
+  if (RO_ALIASES[n]) return RO_ALIASES[n];
+  // Try each alias as substring — longest match first to avoid partial matches
+  const sortedAliases = Object.entries(RO_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  for (const [ro, en] of sortedAliases) {
+    if (n.includes(ro)) return en;
+  }
+  return n;
+}
+
 function lookupKcal(name) {
   const n = name.toLowerCase().trim();
   // Exact match
   if (KCAL_TABLE[n] !== undefined) return KCAL_TABLE[n];
-  // Substring match
+  // Resolve Romanian → English
+  const resolved = resolveRomanian(n);
+  if (KCAL_TABLE[resolved] !== undefined) return KCAL_TABLE[resolved];
+  // Substring match on both original and resolved
   for (const [key, val] of Object.entries(KCAL_TABLE)) {
-    if (n.includes(key) || key.includes(n)) return val;
+    if (n.includes(key) || key.includes(n) || resolved.includes(key) || key.includes(resolved)) return val;
   }
   return null;
 }
@@ -182,10 +272,8 @@ async function main() {
     .select('id, title, recipe_json')
     .eq('type', 'recipe');
 
-  const allRecipes = (zeroCalRecipes || []).filter(r => {
-    const n = r.recipe_json?.nutrition_per_serving;
-    return !n || !n.calories || n.calories === 0;
-  });
+  // Recompute ALL recipes (previous calculations were inaccurate)
+  const allRecipes = zeroCalRecipes || [];
 
   console.log(`Found ${allRecipes.length} recipes without calories`);
 
