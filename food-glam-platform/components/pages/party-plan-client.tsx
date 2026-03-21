@@ -998,51 +998,49 @@ export default function PartyPlanClient() {
                    📤 Partajează
                  </button>
                </div>
-               {/* Buy online buttons */}
+               {/* Buy online buttons — opens one tab per product */}
                {(() => {
-                 const allItems = aggregatedIngredients.map(ing => {
-                   const raw = ing.amount * state.guestCount
-                   const unitLower = ing.unit.toLowerCase()
-                   const isVolume = ['ml', 'l', 'dl', 'cl', 'oz'].includes(unitLower)
-                   const isWeight = ['g', 'kg', 'lb'].includes(unitLower)
-                   return {
-                     name: ing.name,
-                     totalQty: isVolume || isWeight ? raw : Math.ceil(raw),
-                     unit: ing.unit,
-                     isAlcohol: isAlcoholicIngredient(ing.name),
-                   }
-                 })
+                 const allItems = aggregatedIngredients.map(ing => ({
+                   name: ing.name,
+                   isAlcohol: isAlcoholicIngredient(ing.name),
+                 }))
                  const foodItems = allItems.filter(i => !i.isAlcohol)
                  const alcoholItems = allItems.filter(i => i.isAlcohol)
 
-                 const emagQuery = (foodItems.length > 0 ? foodItems : allItems)
-                   .slice(0, 8).map(i => i.name).join(' ')
-                 const emagUrl = `https://www.emag.ro/search/${encodeURIComponent(emagQuery)}`
+                 const openEmagTabs = () => {
+                   const items = foodItems.length > 0 ? foodItems : allItems
+                   items.forEach((item, i) => {
+                     setTimeout(() => {
+                       window.open(`https://www.emag.ro/search/${encodeURIComponent(item.name)}`, '_blank')
+                     }, i * 300)
+                   })
+                 }
 
-                 const bauturiQuery = alcoholItems.slice(0, 5).map(i => i.name).join(' ')
-                 const bauturiUrl = `https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(bauturiQuery)}`
+                 const openBauturiTabs = () => {
+                   alcoholItems.forEach((item, i) => {
+                     setTimeout(() => {
+                       window.open(`https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(item.name)}`, '_blank')
+                     }, i * 300)
+                   })
+                 }
 
                  return (
                    <div className="flex gap-2">
-                     <a
-                       href={emagUrl}
-                       target="_blank"
-                       rel="noopener noreferrer"
+                     <button
+                       onClick={openEmagTabs}
                        className="flex-1 px-4 py-3 rounded-lg font-semibold text-sm text-center transition-all"
                        style={{ background: 'linear-gradient(135deg,#f59e0b,#ea580c)', color: '#fff' }}
                      >
-                       🛒 Cumpără de pe eMAG
-                     </a>
+                       🛒 Cumpără de pe eMAG ({(foodItems.length > 0 ? foodItems : allItems).length} produse)
+                     </button>
                      {alcoholItems.length > 0 && (
-                       <a
-                         href={bauturiUrl}
-                         target="_blank"
-                         rel="noopener noreferrer"
+                       <button
+                         onClick={openBauturiTabs}
                          className="flex-1 px-4 py-3 rounded-lg font-semibold text-sm text-center transition-all"
                          style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', color: '#fff' }}
                        >
-                         🍷 BauturiAlcoolice
-                       </a>
+                         🍷 BauturiAlcoolice ({alcoholItems.length} produse)
+                       </button>
                      )}
                    </div>
                  )
