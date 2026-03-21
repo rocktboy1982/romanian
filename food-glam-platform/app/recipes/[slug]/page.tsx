@@ -1336,7 +1336,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   ) : (
                     <p className="text-sm text-muted-foreground">Nu sunt ingrediente listate.</p>
                   )}
-                  <BuyIngredientsButtons ingredients={recipeData.ingredients || []} type="recipe" />
+                  <BuyIngredientsButtons ingredients={recipeData.recipeIngredient || recipeData.ingredient_sections?.flatMap(s => s.ingredients) || []} type="recipe" />
                </CardContent>
              </Card>
 
