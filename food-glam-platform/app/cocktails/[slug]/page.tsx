@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import FallbackImage from '@/components/FallbackImage'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { AdInArticle, AdSidebar } from '@/components/ads/ad-placements'
+import BuyIngredientsButtons from '@/components/BuyIngredientsButtons'
 
 export const dynamic = 'force-dynamic'
 
@@ -466,6 +467,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                   Nu sunt ingrediente listate.
                 </p>
               )}
+              <BuyIngredientsButtons ingredients={ingredients} type="cocktail" />
             </section>
 
              {/* Method / Steps */}

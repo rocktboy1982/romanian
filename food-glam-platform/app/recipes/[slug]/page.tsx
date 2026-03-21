@@ -13,6 +13,7 @@ import RecipeIngredientsClient from "@/components/pages/recipe-ingredients-clien
 import RecipeActionsClient from "@/components/pages/recipe-actions-client"
 import RecipeCommentsClient from "@/components/pages/recipe-comments-client"
 import RelatedRecipes from "@/components/related-recipes"
+import BuyIngredientsButtons from "@/components/BuyIngredientsButtons"
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { estimateRecipeCalories } from '@/lib/calorie-engine'
 import { MOCK_RECIPES } from '@/lib/mock-data'
@@ -852,6 +853,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   </CardHeader>
                   <CardContent>
                     <RecipeIngredientsClient sections={ingredientSections} showCalories />
+                    <BuyIngredientsButtons ingredients={detail.ingredients} type="recipe" />
                  </CardContent>
                </Card>
 
@@ -1334,6 +1336,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                   ) : (
                     <p className="text-sm text-muted-foreground">Nu sunt ingrediente listate.</p>
                   )}
+                  <BuyIngredientsButtons ingredients={recipeData.ingredients || []} type="recipe" />
                </CardContent>
              </Card>
 
