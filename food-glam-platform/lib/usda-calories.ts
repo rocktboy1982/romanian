@@ -1054,6 +1054,101 @@ const UNIT_TO_GRAMS: Record<string, number> = {
   'legătură':     50,   // bunch (with diacritic)
 }
 
+// ── Romanian ingredient names (direct lookup, no alias resolution needed) ────
+// These supplement the English table above for Romanian recipe ingredients
+const ROMANIAN_KCAL: Record<string, number> = {
+  // Bread & Bakery
+  'pâine': 265, 'paine': 265, 'pâine albă': 265, 'pâine integrală': 247,
+  'baghetă': 274, 'bagheta': 274, 'chifle': 265, 'covrigi': 330, 'cornuri': 350,
+  'foi de plăcintă': 320, 'foi de drojdie': 280, 'blat de pizza': 266,
+  'pesmet': 395, 'panko': 395, 'griș': 360, 'gris': 360,
+  // Meat & Deli
+  'piept de pui': 165, 'pulpe de pui': 209, 'aripioare': 203, 'pui': 200,
+  'carne de vită': 250, 'carne de porc': 242, 'carne de miel': 294,
+  'carne tocată': 254, 'carne tocata': 254,
+  'salam': 336, 'mortadella': 311, 'mortadelle': 311, 'prosciutto': 195,
+  'șuncă': 145, 'sunca': 145, 'bacon': 541, 'pancetta': 410,
+  'cârnați': 301, 'carnati': 301, 'cârnăciori': 301,
+  'guanciale': 460, 'chorizo': 455,
+  'cotlet': 231, 'mușchi de porc': 143, 'muschi de porc': 143,
+  'ficat': 135, 'rinichi': 99,
+  // Fish & Seafood
+  'somon': 208, 'ton': 130, 'hering': 203, 'sardine': 208,
+  'creveți': 99, 'creveti': 99, 'calmar': 92, 'midii': 86,
+  'pește': 130, 'peste': 130, 'cod': 82, 'tilapia': 96, 'basa': 91,
+  'anșoa': 210, 'ansoa': 210, 'anșoare': 210, 'fileuri de anșoa': 210,
+  // Dairy
+  'lapte': 42, 'smântână': 193, 'smantana': 193, 'frișcă': 340, 'frisca': 340,
+  'unt': 717, 'brânză': 350, 'branza': 350, 'cașcaval': 380, 'cascaval': 380,
+  'emmental': 380, 'parmezan': 431, 'mozzarella': 280, 'feta': 264,
+  'ricotta': 174, 'mascarpone': 429, 'iaurt': 59, 'iaurt grecesc': 97,
+  'telemea': 250, 'brânză de vaci': 98, 'branza de vaci': 98,
+  'cremă de brânză': 342, 'crema de branza': 342,
+  'ou': 155, 'ouă': 155, 'oua': 155, 'gălbenuș': 322, 'galbenus': 322, 'albuș': 52,
+  // Vegetables
+  'roșii': 18, 'rosii': 18, 'roșie': 18, 'ceapă': 40, 'ceapa': 40, 'cepe': 40,
+  'usturoi': 149, 'morcov': 41, 'morcovi': 41, 'cartofi': 77, 'cartof': 77,
+  'cartofi dulci': 86, 'ardei': 20, 'ardei gras': 31, 'ardei iute': 40,
+  'dovlecel': 17, 'vinete': 25, 'spanac': 23, 'varză': 25, 'varza': 25,
+  'conopidă': 25, 'broccoli': 34, 'mazăre': 81, 'mazare': 81,
+  'fasole': 127, 'fasole verde': 31, 'linte': 116, 'năut': 164, 'naut': 164,
+  'ciuperci': 22, 'porumb': 86, 'sfeclă': 43, 'sfecla': 43,
+  'castravete': 15, 'castraveți': 15, 'țelină': 14, 'telina': 14,
+  'dovleac': 26, 'ridiche': 16, 'păstârnac': 75, 'pastarnac': 75,
+  'avocado': 160, 'năsturel': 11, 'rucola': 25, 'salată': 15,
+  'murături': 18, 'muraturi': 18, 'măsline': 115, 'masline': 115,
+  // Fruits
+  'lămâie': 29, 'lamaie': 29, 'limetă': 30, 'portocală': 47, 'portocala': 47,
+  'măr': 52, 'banană': 89, 'banana': 89, 'căpșuni': 32, 'capsuni': 32,
+  'afine': 57, 'zmeură': 52, 'mure': 43, 'struguri': 69,
+  'ananas': 50, 'mango': 60, 'pepene': 30, 'piersică': 39, 'caisă': 48,
+  'smochine': 74, 'curmale': 277, 'stafide': 299,
+  'nucă de cocos': 354, 'cocos': 354,
+  // Herbs & Spices
+  'busuioc': 22, 'pătrunjel': 36, 'coriandru': 23, 'mentă': 44, 'menta': 44,
+  'mărar': 43, 'marar': 43, 'cimbru': 101, 'rozmarin': 131,
+  'oregano': 265, 'dafin': 313, 'tarhon': 295,
+  'scorțișoară': 247, 'scortisoara': 247, 'ghimbir': 80,
+  'curcuma': 312, 'chimion': 375, 'chimen': 375, 'cumin': 375,
+  'boia': 282, 'paprika': 282, 'nucșoară': 525, 'nucsoara': 525,
+  'piper': 251, 'piper negru': 251, 'sare': 0, 'curry': 325,
+  // Oils & Fats
+  'ulei de măsline': 884, 'ulei de masline': 884,
+  'ulei': 884, 'ulei vegetal': 884, 'ulei de floarea-soarelui': 884,
+  'ulei de cocos': 862, 'ulei de susan': 884, 'ulei de rapiță': 884,
+  'untură': 902, 'untura': 902,
+  // Grains & Pasta
+  'orez': 130, 'orez basmati': 130, 'paste': 131, 'spaghete': 131,
+  'tăiței': 138, 'taitei': 138, 'couscous': 112, 'bulgur': 83, 'quinoa': 120,
+  'făină': 364, 'faina': 364, 'amidon': 381, 'amidon de porumb': 381,
+  // Sweeteners
+  'zahăr': 387, 'zahar': 387, 'zahăr brun': 380, 'zahăr pudră': 389,
+  'miere': 304, 'sirop de arțar': 260, 'sirop': 260,
+  'ciocolată': 546, 'ciocolata': 546, 'cacao': 228,
+  // Nuts & Seeds
+  'migdale': 579, 'nuci': 654, 'arahide': 567, 'caju': 553,
+  'fistic': 560, 'alune': 628, 'susan': 573,
+  'semințe de in': 534, 'semințe de chia': 486,
+  'unt de arahide': 588,
+  // Condiments & Sauces
+  'oțet': 18, 'otet': 18, 'oțet de vin roșu': 18, 'oțet balsamic': 88,
+  'sos de soia': 53, 'muștar': 66, 'mustar': 66,
+  'maioneză': 680, 'maioneza': 680, 'ketchup': 112,
+  'pastă de roșii': 82, 'pasta de rosii': 82,
+  'sos de roșii': 29, 'sos pesto': 387,
+  // Liquids
+  'apă': 0, 'apa': 0, 'supă': 5, 'supa': 5, 'bulion': 5,
+  'vin': 83, 'vin roșu': 85, 'vin alb': 82,
+  'bere': 43, 'rom': 231, 'vodcă': 231,
+  'lapte de cocos': 230, 'lapte de migdale': 17,
+  // Legumes (cooked)
+  'fasole albă': 139, 'fasole neagră': 132, 'fasole roșie': 127,
+  'fasole cu unt': 127, 'bob': 88,
+}
+
+// Merge Romanian entries into the main table
+Object.assign(USDA_KCAL_PER_100G, ROMANIAN_KCAL)
+
 /**
  * Look up kcal/100g for a canonical ingredient name.
  * Tries exact match first, then partial/substring match on longest key.
