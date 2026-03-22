@@ -315,7 +315,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             >
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
-            {hydrated && user ? (
+            {user ? (
               <>
                  <Link
                    href="/me"
@@ -343,7 +343,6 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
                   </button>
               </>
             ) : (
-              hydrated && (
                <Link
                    href="/auth/signin"
                    className="text-sm font-semibold px-4 py-2 rounded-full transition-all"
@@ -351,7 +350,6 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
                  >
                    Autentificare
                  </Link>
-              )
             )}
           </div>
         </div>
