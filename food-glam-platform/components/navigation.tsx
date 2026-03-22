@@ -34,9 +34,9 @@ const NAV_ITEMS: NavEntry[] = [
 
   // ── Creează ──
   { separator: 'Creează' },
-  { href: '/submit/recipe',    label: 'Adaugă rețetă',   icon: '🍽️' },
-  { href: '/submit/cocktail',  label: 'Adaugă băutură',  icon: '🍹' },
-  { href: '/chefs/me/new-post', label: 'Postare Chef',   icon: '✍️' },
+  { href: '/submit/recipe',    label: '＋ Adaugă rețetă',   icon: '📝' },
+  { href: '/submit/cocktail',  label: '＋ Adaugă băutură',  icon: '🥂' },
+  { href: '/chefs/me/new-post', label: '＋ Postare Chef',   icon: '✍️' },
 ]
 
 const MOBILE_TABS = [
