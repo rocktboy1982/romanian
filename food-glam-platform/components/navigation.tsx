@@ -152,6 +152,8 @@ function useRealUser() {
     await supabase.auth.signOut()
     localStorage.removeItem('mock_user')
     setUser(null)
+    // Force full page reload to clear all cached state and cookies
+    window.location.href = '/'
   }
 
   return { user, hydrated, signOut }

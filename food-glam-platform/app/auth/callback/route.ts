@@ -106,7 +106,9 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}/`)
+      const response = NextResponse.redirect(`${origin}/`)
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+      return response
     }
   }
 
