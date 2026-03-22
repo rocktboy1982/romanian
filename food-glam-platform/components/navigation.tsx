@@ -18,6 +18,8 @@ const NAV_ITEMS = [
   { href: '/party',         label: 'Plan de petrecere', icon: '🎉' },
   { href: '/me/preferred',  label: '⭐ Preferate', icon: '⭐' },
   { href: '/me/cookbook',   label: 'Cartea mea', icon: '🍴' },
+  { href: '/me/pantry',    label: 'Cămara mea', icon: '🥫' },
+  { href: '/me/bar',       label: 'Barul meu',  icon: '🍸' },
 
   { href: '/chefs/me/new-post', label: '+ Postare Chef',   icon: '✍️' },
   { href: '/submit/recipe',    label: '+ Adaugă rețetă',   icon: '🍽️' },
