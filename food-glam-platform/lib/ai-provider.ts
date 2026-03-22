@@ -263,36 +263,44 @@ export async function recogniseIngredientsFromPhoto(
     }
   }
 
-  const prompt = `You are a food ingredient recognition system.
+  const prompt = `You are a food ingredient recognition system for a ROMANIAN cooking platform.
 Identify all visible food ingredients in this photo.
+IMPORTANT: ALL text output MUST be in ROMANIAN. Never use English names.
 
 Context hint: "${contextHint || 'unknown'}"
 
 For each ingredient return:
-- name: common name in Romanian (e.g. "Mozzarella proaspătă")
-- canonical_name: lowercase searchable form (e.g. "mozzarella")
-- quantity_estimate: visible quantity string or null (e.g. "~250g", "3 bucăți", "1 legătură")
+- name: name in Romanian (e.g. "Ouă", "Lapte", "Struguri verzi", "Afine", "Morcovi")
+- canonical_name: also in Romanian, lowercase (e.g. "ouă", "lapte", "struguri", "afine", "morcovi")
+- quantity_estimate: visible quantity in Romanian or null (e.g. "~250g", "3 bucăți", "1 legătură", "~6 buc")
 - confidence: 0.0 to 1.0 (omit items below 0.5)
-- category: produce | dairy | meat | seafood | pantry | bakery | beverage | frozen | other
+- category: legume | fructe | lactate | carne | pește | cereale | condimente | panificație | conserve | băuturi | altele
 
 Also return:
-- context: overall scene type — fridge | market | pantry | receipt | other
+- context: overall scene type — frigider | piață | cămară | bon | altele
 
 Return ONLY valid JSON in this exact shape:
 {
-  "context": "fridge",
+  "context": "frigider",
   "ingredients": [
     {
-      "name": "Mozzarella proaspătă",
-      "canonical_name": "mozzarella",
-      "quantity_estimate": "~250g",
+      "name": "Ouă",
+      "canonical_name": "ouă",
+      "quantity_estimate": "~6 buc",
       "confidence": 0.95,
-      "category": "dairy"
+      "category": "lactate"
+    },
+    {
+      "name": "Lapte",
+      "canonical_name": "lapte",
+      "quantity_estimate": "~1L",
+      "confidence": 0.98,
+      "category": "lactate"
     }
   ]
 }
 
-Be conservative — only include items you are reasonably confident about (confidence > 0.5).`
+Be thorough — list everything visible. ALL names MUST be in Romanian.`
 
   try {
     const model = getVisionModel()
