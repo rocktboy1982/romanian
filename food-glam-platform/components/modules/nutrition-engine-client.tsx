@@ -10,7 +10,7 @@ export default function NutritionEngineClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_nutrition'); if(raw) setCalculations(JSON.parse(raw)); }catch(e){} },[]);
   useEffect(()=>{ try{ localStorage.setItem('dev_nutrition', JSON.stringify(calculations)); }catch(e){} },[calculations]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const runCalc = () => {

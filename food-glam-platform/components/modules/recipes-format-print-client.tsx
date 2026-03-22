@@ -10,7 +10,7 @@ export default function RecipesFormatPrintClient() {
   useEffect(()=>{ try { const raw = localStorage.getItem('dev_formats'); if(raw) setFormats(JSON.parse(raw)); } catch(e){} }, []);
   useEffect(()=>{ try{ localStorage.setItem('dev_formats', JSON.stringify(formats)); } catch(e){} }, [formats]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => setFormats((s)=>[...s, `Format ${s.length+1}`]);

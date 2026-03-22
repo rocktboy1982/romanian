@@ -163,7 +163,7 @@ export default function CommunityForumRemoteClient() {
   };
 
   /* ── Render ────────────────────────────────────────── */
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   return (

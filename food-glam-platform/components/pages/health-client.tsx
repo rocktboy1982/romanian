@@ -112,7 +112,7 @@ export default function HealthClient() {
   const setMacroFat = (v: string) => setMacroFatRaw(v)
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <div className="container mx-auto px-4 py-8">Se încarcă...</div>;
   }
 
   if (!healthMode) {

@@ -10,7 +10,7 @@ export default function PostsContentTypesClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_post_types'); if(raw) setTypes(JSON.parse(raw)); } catch(e){} }, []);
   useEffect(()=>{ try{ localStorage.setItem('dev_post_types', JSON.stringify(types)); } catch(e){} }, [types]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => setTypes((s)=>[...s, `Type ${s.length+1}`]);

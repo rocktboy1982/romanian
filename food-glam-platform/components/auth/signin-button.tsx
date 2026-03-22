@@ -14,7 +14,7 @@ export default function SignInButton() {
       await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
     } catch (e) {
       console.error("Sign in error", e);
-      push({ message: 'Sign in failed', type: 'error' });
+      push({ message: 'Autentificarea a eșuat', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -36,10 +36,10 @@ export default function SignInButton() {
   return (
     <div className="flex gap-2">
       <Button onClick={signInWithGoogle} variant="default" disabled={loading}>
-        Sign in with Google
+        Conectează-te cu Google
       </Button>
       <Button onClick={signOut} variant="outline" disabled={loading}>
-        Sign out
+        Deconectează-te
       </Button>
     </div>
   );

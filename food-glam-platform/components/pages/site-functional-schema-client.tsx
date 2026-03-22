@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 export default function SiteFunctionalSchemaClient() {
   const { flags, loading } = useFeatureFlags();
   const powerMode = !!flags.powerMode;
-  if (loading) return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  if (loading) return <div className="container mx-auto px-4 py-8">Se încarcă...</div>;
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-2xl">

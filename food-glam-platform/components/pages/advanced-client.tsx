@@ -134,7 +134,7 @@ export default function AdvancedClient() {
   const powerMode = !!flags.powerMode;
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <div className="container mx-auto px-4 py-8">Se încarcă...</div>;
   }
 
   if (!powerMode) {

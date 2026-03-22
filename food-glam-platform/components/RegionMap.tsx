@@ -60,7 +60,7 @@ export default function RegionMap() {
   return (
     <Suspense fallback={
       <div className="w-full h-48 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Se încarcă...</div>
       </div>
     }>
       <RegionMapContent />

@@ -11,7 +11,7 @@ export default function CommunityForumClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_threads'); if(raw) setThreads(JSON.parse(raw)); }catch(e){} },[]);
   useEffect(()=>{ try{ localStorage.setItem('dev_threads', JSON.stringify(threads)); }catch(e){} },[threads]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const createThread = () => {

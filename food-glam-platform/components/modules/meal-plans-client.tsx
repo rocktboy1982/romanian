@@ -13,7 +13,7 @@ export default function MealPlansClient() {
   }, []);
   useEffect(() => { try { localStorage.setItem('dev_meal_plans', JSON.stringify(plans)); } catch(e){} }, [plans]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => {

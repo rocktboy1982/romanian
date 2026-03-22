@@ -205,7 +205,7 @@ return (
           </div>
         </div>
         {loading ? (
-          <p>Loading...</p>
+          <p>Se încarcă...</p>
         ) : plans.length === 0 ? (
           <p className="text-muted-foreground">No meal plans yet.</p>
         ) : (

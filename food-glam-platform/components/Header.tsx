@@ -48,13 +48,13 @@ export default function Header() {
               Discover
             </Link>
             <Link href="/me/meal-plans" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
-              Meal Plans
+              Plan de masă
             </Link>
              <Link href="/me/cookbook" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
                Carte de rețete
              </Link>
             <Link href="/submit/recipe" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
-              Submit Recipe
+              Adaugă rețetă
             </Link>
           </nav>
 

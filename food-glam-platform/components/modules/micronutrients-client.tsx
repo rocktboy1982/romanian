@@ -10,7 +10,7 @@ export default function MicronutrientsClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_micro'); if(raw) setItems(JSON.parse(raw)); }catch(e){} },[]);
   useEffect(()=>{ try{ localStorage.setItem('dev_micro', JSON.stringify(items)); }catch(e){} },[items]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const addSample = () => setItems((s)=>[{nutrient:`Vit ${s.length+1}`, amount:`${Math.round(Math.random()*100)} mg`}, ...s]);

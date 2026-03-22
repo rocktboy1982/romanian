@@ -19,7 +19,7 @@ export default function CollectionsClient() {
     try { localStorage.setItem("dev_collections", JSON.stringify(collections)); } catch (e) {}
   }, [collections]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const addCollection = () => {

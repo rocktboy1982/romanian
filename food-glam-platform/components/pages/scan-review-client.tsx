@@ -93,7 +93,7 @@ export default function ScanReviewClient({ sessionId }: { sessionId: string }) {
                 color: result.confidence_overall > 0.7 ? '#1a7f37' : '#9a6700',
                 borderRadius: 8, padding: '3px 10px', fontSize: 12, fontWeight: 600,
               }}>
-                {result.confidence_overall > 0.7 ? '✓' : '~'} {Math.round(result.confidence_overall * 100)}% confidence
+                {result.confidence_overall > 0.7 ? '✓' : '~'} {Math.round(result.confidence_overall * 100)}% încredere
               </span>
             )}
           </div>

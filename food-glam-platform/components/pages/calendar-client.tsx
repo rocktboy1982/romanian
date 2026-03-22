@@ -8,7 +8,7 @@ export default function CalendarClient() {
   const healthMode = !!flags.healthMode;
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <div className="container mx-auto px-4 py-8">Se încarcă...</div>;
   }
   return (
     <main className="container mx-auto px-4 py-8 max-w-2xl">

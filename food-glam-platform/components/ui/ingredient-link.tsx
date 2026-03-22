@@ -42,7 +42,7 @@ export default function IngredientLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      title={`Buy "${searchTerm}" on eMAG`}
+      title={`Cumpără „${searchTerm}" de pe eMAG`}
       onClick={(e) => e.stopPropagation()}
       className={className}
       style={{

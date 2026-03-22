@@ -119,7 +119,7 @@ export default function CollectionsRemoteClient() {
           <input className="rounded border px-2 py-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New collection title" />
           <button className="bg-primary text-white px-3 rounded" onClick={add}>Create</button>
         </div>
-        {loading ? <div>Loading...</div> : (
+        {loading ? <div>Se încarcă...</div> : (
           <ul className="space-y-2">
             {cols.map((c) => (
               <li key={c.id} className="flex justify-between items-center border rounded p-2 bg-card">

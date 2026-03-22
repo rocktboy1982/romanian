@@ -11,7 +11,7 @@ export default function FoodLoggingClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_logs'); if(raw) setLogs(JSON.parse(raw)); }catch(e){} },[]);
   useEffect(()=>{ try{ localStorage.setItem('dev_logs', JSON.stringify(logs)); }catch(e){} },[logs]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => {

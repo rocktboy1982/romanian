@@ -16,7 +16,7 @@ export default function FollowsFeedClient() {
   useEffect(()=>{ try{ localStorage.setItem('dev_follows', JSON.stringify(follows)); }catch(e){} },[follows]);
   useEffect(()=>{ try{ localStorage.setItem('dev_posts', JSON.stringify(posts)); }catch(e){} },[posts]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const addFollow = () => {

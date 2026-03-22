@@ -21,7 +21,7 @@ export default function ShoppingListsClient() {
     } catch (e) {}
   }, [items]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => {

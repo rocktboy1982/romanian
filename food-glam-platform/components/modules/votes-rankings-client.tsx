@@ -11,7 +11,7 @@ export default function VotesRankingsClient() {
   useEffect(()=>{ try{ const raw = localStorage.getItem('dev_rankings'); if(raw) setItems(JSON.parse(raw)); }catch(e){} },[]);
   useEffect(()=>{ try{ localStorage.setItem('dev_rankings', JSON.stringify(items)); }catch(e){} },[items]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Se încarcă...</div>;
   if (!powerMode) return null;
 
   const add = () => { if(!name.trim()) return; setItems((s)=>[...s, {name:name.trim(), score:0}]); setName(''); };

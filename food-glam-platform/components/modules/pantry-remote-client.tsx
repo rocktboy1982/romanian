@@ -84,7 +84,7 @@ export default function PantryRemoteClient() {
             <input className="w-24 rounded border px-2 py-1" value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Qty" />
             <button className="bg-primary text-white px-3 rounded" onClick={add}>Add</button>
           </div>
-          {loading ? <div>Loading...</div> : (
+          {loading ? <div>Se încarcă...</div> : (
             <ul className="list-disc pl-5 space-y-2">
               {items.map((it) => (
                 <li key={it.id} className="flex justify-between items-center">

@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function RLSRolesClient() {
   const { flags, loading } = useFeatureFlags();
-  if (loading) return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  if (loading) return <div className="container mx-auto px-4 py-8">Se încarcă...</div>;
   const admin = false;
   const moderator = false;
   const user = true;

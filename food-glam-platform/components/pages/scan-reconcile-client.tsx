@@ -168,7 +168,7 @@ export default function ScanReconcileClient({ sessionId }: { sessionId: string }
         {result && (
           <section style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 16px' }}>
-              ✅ Done! {result.patched_count} item{result.patched_count !== 1 ? 's' : ''} checked off
+              ✅ Gata! {result.patched_count} element{result.patched_count !== 1 ? 'e' : ''} bifate
             </h2>
 
             {result.matched.length > 0 && (
