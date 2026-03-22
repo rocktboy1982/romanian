@@ -257,7 +257,7 @@ export default function ScanClient() {
         </button>
 
         <p style={{ textAlign: 'center', fontSize: 12, color: '#999', marginTop: 12 }}>
-          Powered by Gemini Vision · Rezultatele sunt generate de AI
+          Powered by Claude AI · Rezultatele sunt generate de AI
         </p>
       </div>
     </main>

@@ -1,25 +1,25 @@
 /**
- * AI Provider — centralised Gemini client for Module 39 & 40
- *
- * Text tasks (ingredient normalisation, budget optimisation):
- *   → gemini-2.0-flash-lite  (~$0.10/1k calls)
+ * AI Provider — centralised Claude client for vision & text tasks
  *
  * Vision tasks (photo → ingredient recognition):
- *   → gemini-2.0-flash       (~$0.27/1k scans)
+ *   → claude-haiku-4-5-20251001 (fast, cheap, great vision)
+ *
+ * Text tasks (ingredient normalisation, budget optimisation):
+ *   → claude-haiku-4-5-20251001
  *
  * Fallback: rule-based parser (no API key required)
  */
 
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 
-const API_KEY = process.env.GOOGLE_API_KEY ?? ''
+const API_KEY = process.env.ANTHROPIC_API_KEY ?? ''
 
-let _client: GoogleGenerativeAI | null = null
+let _client: Anthropic | null = null
 
-function getClient(): GoogleGenerativeAI {
+function getClient(): Anthropic {
   if (!_client) {
-    if (!API_KEY) throw new Error('GOOGLE_API_KEY is not set')
-    _client = new GoogleGenerativeAI(API_KEY)
+    if (!API_KEY) throw new Error('ANTHROPIC_API_KEY is not set')
+    _client = new Anthropic({ apiKey: API_KEY })
   }
   return _client
 }
@@ -28,27 +28,7 @@ export function isAiAvailable(): boolean {
   return !!API_KEY
 }
 
-/* ─── Text model: Flash-Lite for ingredient normalisation ─────────────────── */
-
-export function getTextModel() {
-  return getClient().getGenerativeModel({
-    model: 'gemini-2.0-flash-lite',
-    generationConfig: {
-      responseMimeType: 'application/json',
-    },
-  })
-}
-
-/* ─── Vision model: Flash for photo recognition ──────────────────────────── */
-
-export function getVisionModel() {
-  return getClient().getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      responseMimeType: 'application/json',
-    },
-  })
-}
+const MODEL = 'claude-haiku-4-5-20251001'
 
 /* ─── Shared types ────────────────────────────────────────────────────────── */
 
@@ -103,8 +83,8 @@ export interface VendorProduct {
   storeUrl: string
   category: string
   vendor: string
-  pricePerBaseUnit?: number  // price per 100g/100ml for comparison
-  baseUnitLabel?: string     // 'RON/100g'
+  pricePerBaseUnit?: number
+  baseUnitLabel?: string
 }
 
 export interface CartItem {
@@ -117,13 +97,13 @@ export interface CartResult {
   checkoutUrl?: string
   storeOrderId?: string
   requiresAppHandoff?: boolean
-  handoffMessage?: string   // Bringo: formatted list for clipboard
+  handoffMessage?: string
   estimatedTotal?: number
   currency?: string
 }
 
 export interface IngredientMatch {
-  ingredientRef: string       // original ingredient string
+  ingredientRef: string
   canonical: string
   product: VendorProduct | null
   substitution?: SubstitutionCandidate
@@ -219,9 +199,9 @@ For each ingredient extract:
   For normal/premium tier: always empty array [].
 
 Tier guidance:
-- budget: prefer store-brand search terms, flag expensive items (pine nuts, saffron, truffle) as substitution candidates
+- budget: prefer store-brand search terms, flag expensive items as substitution candidates
 - normal: balanced quality/price search terms, no substitutions
-- premium: named brand search terms (e.g. "Bella Italia mozzarella"), no substitutions
+- premium: named brand search terms, no substitutions
 
 Return ONLY a valid JSON array. No explanation. No markdown.
 
@@ -229,9 +209,14 @@ Ingredients:
 ${JSON.stringify(ingredients)}`
 
   try {
-    const model = getTextModel()
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
+    const client = getClient()
+    const msg = await client.messages.create({
+      model: MODEL,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+    })
+
+    const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
     const parsed = JSON.parse(text)
     if (Array.isArray(parsed)) return parsed as NormalisedIngredient[]
     return ingredients.map(i => ruleBasedNormalise(i, tier))
@@ -266,9 +251,9 @@ Identify all visible food ingredients in this photo.
 Context hint: "${contextHint || 'unknown'}"
 
 For each ingredient return:
-- name: common English name (e.g. "Fresh Mozzarella")
+- name: common name in Romanian (e.g. "Mozzarella proaspătă")
 - canonical_name: lowercase searchable form (e.g. "mozzarella")
-- quantity_estimate: visible quantity string or null (e.g. "~250g", "3 pieces", "1 bunch")
+- quantity_estimate: visible quantity string or null (e.g. "~250g", "3 bucăți", "1 legătură")
 - confidence: 0.0 to 1.0 (omit items below 0.5)
 - category: produce | dairy | meat | seafood | pantry | bakery | beverage | frozen | other
 
@@ -280,7 +265,7 @@ Return ONLY valid JSON in this exact shape:
   "context": "fridge",
   "ingredients": [
     {
-      "name": "Fresh Mozzarella",
+      "name": "Mozzarella proaspătă",
       "canonical_name": "mozzarella",
       "quantity_estimate": "~250g",
       "confidence": 0.95,
@@ -292,18 +277,29 @@ Return ONLY valid JSON in this exact shape:
 Be conservative — only include items you are reasonably confident about (confidence > 0.5).`
 
   try {
-    const model = getVisionModel()
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType,
-          data: imageBase64,
-        },
-      },
-    ])
+    const client = getClient()
+    const mediaType = mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
 
-    const text = result.response.text()
+    const msg = await client.messages.create({
+      model: MODEL,
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType,
+              data: imageBase64,
+            },
+          },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    })
+
+    const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
     const parsed = JSON.parse(text) as { context: string; ingredients: RecognisedIngredient[] }
 
     const overall = parsed.ingredients.length > 0
@@ -327,6 +323,3 @@ Be conservative — only include items you are reasonably confident about (confi
     }
   }
 }
-
-/* ─── Schema export for response_schema (future use) ─────────────────────── */
-export { SchemaType }
