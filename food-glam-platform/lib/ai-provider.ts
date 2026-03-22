@@ -249,11 +249,14 @@ export async function recogniseIngredientsFromPhoto(
   imageBase64: string,
   mimeType: string,
   contextHint: string,
-  sessionId: string
+  sessionId: string,
+  apiKey?: string
 ): Promise<RecognitionResult> {
   const start = Date.now()
 
-  if (!isAiAvailable()) {
+  // Determine which client to use: per-user key takes priority over env var
+  const effectiveKey = apiKey?.trim() || API_KEY
+  if (!effectiveKey) {
     return {
       session_id: sessionId,
       context: contextHint || 'unknown',
@@ -262,6 +265,15 @@ export async function recogniseIngredientsFromPhoto(
       processing_time_ms: 0,
     }
   }
+
+  // Create a dedicated client with the effective key
+  const client = new GoogleGenerativeAI(effectiveKey)
+  const visionModel = client.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+    },
+  })
 
   const prompt = `You are a food ingredient recognition system for a ROMANIAN cooking platform.
 Identify all visible food ingredients in this photo.
@@ -303,8 +315,7 @@ Return ONLY valid JSON in this exact shape:
 Be thorough — list everything visible. ALL names MUST be in Romanian.`
 
   try {
-    const model = getVisionModel()
-    const result = await model.generateContent([
+    const result = await visionModel.generateContent([
       prompt,
       {
         inlineData: {

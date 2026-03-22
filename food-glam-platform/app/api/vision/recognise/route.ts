@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { recogniseIngredientsFromPhoto } from '@/lib/ai-provider'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import { v4 as uuidv4 } from 'uuid'
 
 // In-memory session store (production: use DB vision_scan_sessions table)
@@ -16,6 +18,31 @@ export const SESSION_STORE = new Map<string, {
  */
 export async function POST(req: Request) {
   try {
+    // Resolve the authenticated user and their Gemini API key
+    const supabase = createServerSupabaseClient()
+    const user = await getRequestUser(req, supabase)
+
+    if (!user) {
+      return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+    }
+
+    // Fetch user's personal Gemini API key from their profile
+    const serviceSupabase = createServiceSupabaseClient()
+    const { data: profile } = await serviceSupabase
+      .from('profiles')
+      .select('gemini_api_key')
+      .eq('id', user.id)
+      .single()
+
+    const userApiKey = profile?.gemini_api_key?.trim() || null
+
+    if (!userApiKey) {
+      return NextResponse.json(
+        { error: 'Configurează cheia Gemini API în setări' },
+        { status: 403 }
+      )
+    }
+
     const formData = await req.formData()
     const imageFile = formData.get('image') as File | null
     const contextHint = (formData.get('context') as string | null) ?? ''
@@ -42,7 +69,7 @@ export async function POST(req: Request) {
     const mimeType = imageFile.type || 'image/jpeg'
 
     const sessionId = uuidv4()
-    const result = await recogniseIngredientsFromPhoto(base64, mimeType, contextHint, sessionId)
+    const result = await recogniseIngredientsFromPhoto(base64, mimeType, contextHint, sessionId, userApiKey)
 
     // Store session
     SESSION_STORE.set(sessionId, {
