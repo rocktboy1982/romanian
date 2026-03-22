@@ -10,31 +10,35 @@ export async function GET(request: Request) {
 
   if (code) {
     const cookieStore = await cookies()
-    
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
+          getAll() {
+            return cookieStore.getAll()
           },
-          set(name: string, value: string, options: any) {
-            cookieStore.set({ name, value, ...options })
-          },
-          remove(name: string, options: any) {
-            cookieStore.delete({ name, ...options })
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing user sessions.
+            }
           },
         },
       }
     )
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error) {
       // Get the authenticated user
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (user) {
         // Check if profile already exists
         const { data: existingProfile } = await supabase
@@ -42,7 +46,7 @@ export async function GET(request: Request) {
           .select('id')
           .eq('id', user.id)
           .single()
-        
+
         const serviceClient = createServiceSupabaseClient()
 
         // Upgrade Google avatar to higher resolution (s96-c → s400-c)
@@ -57,15 +61,14 @@ export async function GET(request: Request) {
           let handle = baseHandle
           let collision = true
           let attempts = 0
-          
-          // Check for handle collisions and append random chars if needed
+
           while (collision && attempts < 5) {
             const { data: existingHandle } = await serviceClient
               .from('profiles')
               .select('id')
               .eq('handle', handle)
               .single()
-            
+
             if (!existingHandle) {
               collision = false
             } else {
@@ -74,8 +77,7 @@ export async function GET(request: Request) {
               attempts++
             }
           }
-          
-          // Insert the new profile with Google avatar
+
           await serviceClient
             .from('profiles')
             .insert({
@@ -86,8 +88,6 @@ export async function GET(request: Request) {
               avatar_url: googleAvatar,
             })
         } else if (googleAvatar) {
-          // Existing user: sync Google avatar on every login
-          // Only update if current avatar is a Google avatar or empty (don't overwrite custom GDrive links)
           const { data: currentProfile } = await serviceClient
             .from('profiles')
             .select('avatar_url')
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
           }
         }
       }
-      
+
       return NextResponse.redirect(`${origin}/`)
     }
   }

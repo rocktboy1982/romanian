@@ -18,79 +18,51 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301)
   }
 
-  // Recipe pages: no auth needed, just return (only matched for redirect above)
-  if (pathname.startsWith('/recipes/')) {
-    return NextResponse.next()
-  }
-
-  // Skip auth check for public routes and static assets
-  if (
-    pathname.startsWith('/api/recipes') ||
-    pathname.startsWith('/api/search') ||
-    pathname.startsWith('/api/tonight') ||
-    pathname.startsWith('/api/trending') ||
-    pathname.startsWith('/api/homepage') ||
-    pathname.startsWith('/api/cuisines') ||
-    pathname.startsWith('/api/cookbooks') ||
-    pathname.startsWith('/api/chefs/latest') ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/_next') ||
-    pathname === '/favicon.ico'
-  ) {
-    return NextResponse.next()
-  }
-
-  // For protected routes, check Supabase session
-  const res = NextResponse.next()
+  // Create a response that we can modify (to set refreshed cookies)
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: any) {
-          res.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          res.cookies.set({ name, value: '', ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
   )
 
+  // IMPORTANT: DO NOT remove this getUser() call.
+  // It refreshes the auth token and sets updated cookies.
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Allow mock user in development
-  const hasMockUser = process.env.NODE_ENV === 'development' &&
-    request.headers.get('x-mock-user-id')
-
   // Protect /me/* routes — redirect to signin if not authenticated
-  if (pathname.startsWith('/me') && !user && !hasMockUser) {
+  if (pathname.startsWith('/me') && !user) {
     const signinUrl = request.nextUrl.clone()
     signinUrl.pathname = '/auth/signin'
     return NextResponse.redirect(signinUrl)
   }
 
-  // Protect /api/admin/* routes — return 401 if not authenticated
-  if (pathname.startsWith('/api/admin') && !user && !hasMockUser) {
+  // Protect /api/admin/* routes
+  if (pathname.startsWith('/api/admin') && !user) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
 
-  return res
+  return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)',
   ],
 }
