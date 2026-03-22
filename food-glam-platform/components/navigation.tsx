@@ -361,7 +361,14 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           className="flex items-center gap-1 px-6 pb-1"
           style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
         >
-          {NAV_ITEMS.filter((item): item is { href: string; label: string; icon: string } => 'href' in item).map(item => {
+          {[
+            { href: '/',              label: 'Acasă' },
+            { href: '/cookbooks',     label: 'Cărți de bucate' },
+            { href: '/cocktailbooks', label: 'Cocktailuri' },
+            { href: '/plan',          label: 'Plan de masă' },
+            { href: '/me/preferred',  label: 'Preferate' },
+            { href: '/me/pantry',     label: 'Cămara' },
+          ].map(item => {
             const active = isActive(item.href)
             return (
               <Link
