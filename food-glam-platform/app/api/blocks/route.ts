@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 
 /* ── GET: List blocked users ─────────────────────────────── */
 export async function GET(req: Request) {
   try {
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
 
     const { data, error } = await supabase
@@ -26,8 +27,9 @@ export async function GET(req: Request) {
 /* ── POST: Block a user ──────────────────────────────────── */
 export async function POST(req: Request) {
   try {
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
 
     const body = await req.json()
@@ -55,8 +57,9 @@ export async function POST(req: Request) {
 /* ── DELETE: Unblock a user ──────────────────────────────── */
 export async function DELETE(req: Request) {
   try {
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
 
     const { searchParams } = new URL(req.url)

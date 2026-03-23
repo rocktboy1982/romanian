@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import { resolveIngredientName } from '@/lib/ingredient-aliases'
 
@@ -9,8 +9,10 @@ import { resolveIngredientName } from '@/lib/ingredient-aliases'
  */
 export async function GET(req: NextRequest) {
   try {
+    // Use server client (reads cookies) for auth, service client for data
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const category = req.nextUrl.searchParams.get('category') || 'pantry'
@@ -43,8 +45,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const canonical = resolveIngredientName(name.trim().toLowerCase())
@@ -85,8 +88,9 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const { id } = await req.json()
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const { error } = await supabase
@@ -114,8 +118,9 @@ export async function PATCH(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }

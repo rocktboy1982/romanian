@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 
 /** GET /api/shopping-lists - List user's shopping lists with item counts */
 export async function GET(req: NextRequest) {
   try {
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const { data, error } = await supabase
@@ -37,8 +38,9 @@ export async function POST(req: NextRequest) {
 
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const insert: Record<string, unknown> = {
@@ -72,8 +74,9 @@ export async function PATCH(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'List id is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const update: Record<string, unknown> = {}
@@ -101,8 +104,9 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'List id is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Delete items first, then the list

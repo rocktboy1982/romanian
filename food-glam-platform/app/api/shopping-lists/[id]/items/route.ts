@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 
 /** GET /api/shopping-lists/[id]/items - Fetch all items for a list */
@@ -9,8 +9,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Verify ownership
@@ -54,8 +55,9 @@ export async function POST(
 
     if (!name) return NextResponse.json({ error: 'Item name is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Verify ownership
@@ -110,8 +112,9 @@ export async function PATCH(
 
     if (!item_id) return NextResponse.json({ error: 'item_id is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Verify ownership
@@ -158,8 +161,9 @@ export async function DELETE(
 
     if (!item_id) return NextResponse.json({ error: 'item_id is required' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Verify ownership

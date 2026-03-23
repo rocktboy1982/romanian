@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import { resolveIngredientName } from '@/lib/ingredient-aliases'
 import { isAlcoholicIngredient } from '@/lib/normalize-for-search'
@@ -27,8 +27,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'items array is required' }, { status: 400 })
     }
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const rows = items.map(item => {

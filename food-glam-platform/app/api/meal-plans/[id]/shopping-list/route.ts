@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import {
   extractIngredientsFromJson,
@@ -46,8 +46,9 @@ export async function GET(
   const from = searchParams.get('from')
   const to = searchParams.get('to')
 
+  const authClient = createServerSupabaseClient()
   const supabase = createServiceSupabaseClient()
-  const user = await getRequestUser(req, supabase)
+  const user = await getRequestUser(req, authClient)
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
   // Fetch the meal plan

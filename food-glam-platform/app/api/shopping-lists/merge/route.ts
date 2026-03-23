@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 
 export async function POST(req: Request) {
@@ -13,8 +13,9 @@ export async function POST(req: Request) {
       )
     }
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -14,8 +14,9 @@ export async function POST(req: Request) {
     }
     if (!id || typeof id !== 'string') return NextResponse.json({ error: 'Missing shopping list id' }, { status: 400 })
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     // Verify ownership
@@ -109,8 +110,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Provide token or shopping_list_id' }, { status: 400 })
     }
 
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     if (token) {

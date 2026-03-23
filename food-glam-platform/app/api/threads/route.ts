@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import { validateContent } from '@/lib/profanity-filter'
 import pool from '@/lib/db'
@@ -38,8 +38,9 @@ export async function GET(req: Request) {
 /* ── POST: Create a thread (1 per day limit) ────────────── */
 export async function POST(req: Request) {
   try {
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
 
     const body = await req.json()

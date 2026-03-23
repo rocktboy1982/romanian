@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser } from '@/lib/get-user'
 import { rateLimit } from '@/lib/rate-limit'
 import { slugify } from '@/lib/slug'
@@ -44,8 +44,9 @@ export async function POST(req: NextRequest) {
     const slug = slugify(title)
 
     // Get authenticated user
+    const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, supabase)
+    const user = await getRequestUser(req, authClient)
     const createdBy = user?.id || 'anonymous'
 
     // Build recipe_json with cocktail-specific fields
