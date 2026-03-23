@@ -376,7 +376,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           {/* Group 3: Bucătărie */}
           {[
             { href: '/me/pantry',     label: 'Cămara' },
-            { href: '/me/bar',        label: 'Barul' },
+            { href: '/me/bar',        label: 'Bar' },
           ].map(item => {
             const active = isActive(item.href)
             return (
