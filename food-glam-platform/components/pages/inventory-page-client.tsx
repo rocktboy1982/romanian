@@ -85,8 +85,8 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
 
   const isDark = theme === 'dark'
   const bg = isDark ? 'hsl(var(--background))' : '#fff'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'
-  const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+  const cardBg = isDark ? 'rgba(255,255,255,0.06)' : '#fff'
+  const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'
 
   const fetchItems = useCallback(async () => {
     try {
