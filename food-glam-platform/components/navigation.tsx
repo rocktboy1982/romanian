@@ -44,7 +44,7 @@ const MOBILE_TABS = [
   { href: '/',                 icon: '🏠', label: 'Acasă'     },
   { href: '/search',           icon: '🔍', label: 'Explorează'  },
   { href: '/me/scan',          icon: '📷', label: 'Scanează'     },
-  { href: '/me/pantry',        icon: '🥫', label: 'Cămara'     },
+  { href: '/me/grocery',       icon: '🛒', label: 'Cumpărături'     },
   { href: '/me',               icon: '👤', label: 'Profil'  },
 ]
 

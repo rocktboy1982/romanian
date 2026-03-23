@@ -228,16 +228,6 @@ export default function Home() {
         <section className="px-4 pt-10 pb-4 relative">
           <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2" style={{ scrollSnapType: 'x mandatory' }}>
 
-            {/* Scanează — prominent, same size as chef stories */}
-            <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
-              <Link href="/me/scan">
-                <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center relative border-2 border-dashed hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, rgba(255,77,109,0.15), rgba(255,149,0,0.15))', borderColor: '#ff4d6d' }}>
-                  <span className="text-2xl">📷</span>
-                </div>
-              </Link>
-              <span className="text-[10px] font-semibold" style={{ color: '#ff4d6d' }}>Scanează</span>
-            </div>
-
             {/* "Add story" button */}
             <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
               <Link href="/chefs/me/new-post">
@@ -283,6 +273,16 @@ export default function Home() {
                 </span>
               </button>
             ))}
+
+            {/* Scanează — last in strip, highlighted */}
+            <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
+              <Link href="/me/scan">
+                <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center relative hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)', boxShadow: '0 2px 12px rgba(255,77,109,0.4)' }}>
+                  <span className="text-2xl">📷</span>
+                </div>
+              </Link>
+              <span className="text-[10px] font-bold" style={{ color: '#ff4d6d' }}>Scanează</span>
+            </div>
           </div>
 
           {/* story viewer */}
