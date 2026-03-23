@@ -369,15 +369,20 @@ export default function PlanClient() {
         setPlanner(base)
       }
     } catch { /* ignore parse errors */ }
-    // Restore week & month
-    const savedWeek = Number(localStorage.getItem('planner-week') ?? 0)
-    setCurrentWeek(savedWeek)
-    const savedMonth = localStorage.getItem('planner-month')
-    if (savedMonth !== null) {
-      setSelectedMonth(Number(savedMonth))
-    } else {
-      setSelectedMonth(YEAR_WEEKS[savedWeek]?.month ?? new Date().getMonth())
+    // Find current week index based on today's date
+    const today = new Date()
+    const todayTime = today.getTime()
+    let currentWeekIdx = 0
+    for (let i = 0; i < YEAR_WEEKS.length; i++) {
+      const w = YEAR_WEEKS[i]
+      if (todayTime >= w.monday.getTime() && todayTime <= w.sunday.getTime() + 86400000) {
+        currentWeekIdx = i
+        break
+      }
     }
+    // Use current week (not saved week) — always start on current week/month
+    setCurrentWeek(currentWeekIdx)
+    setSelectedMonth(YEAR_WEEKS[currentWeekIdx]?.month ?? today.getMonth())
     setHydrated(true)
   }, [])
   const [expandedSlot, setExpandedSlot] = useState<{ day: DayKey; meal: MealKey } | null>(null)
