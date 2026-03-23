@@ -58,89 +58,43 @@ function useRealUser() {
   useEffect(() => {
     let mounted = true
 
-    const initAuth = async () => {
-      try {
-        // First call getSession() — this detects #access_token in URL hash after OAuth
-        await supabase.auth.getSession()
-        // Then getUser() to validate the session server-side
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
-        if (mounted && authUser) {
-          // Fetch profile from profiles table to get latest display_name and handle
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('display_name, handle, avatar_url')
-              .eq('id', authUser.id)
-              .single()
+    const buildUser = (authUser: { id: string; email?: string | null; user_metadata?: Record<string, string | null> }): User => ({
+      id: authUser.id,
+      display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+      handle: authUser.email?.split('@')[0] || 'user',
+      avatar_url: authUser.user_metadata?.avatar_url || null,
+    })
 
-            if (mounted) {
-              const realUser: User = {
-                id: authUser.id,
-                display_name: profile?.display_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-                handle: profile?.handle || authUser.email?.split('@')[0] || 'user',
-                avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || null,
-              }
-              setUser(realUser)
-            }
-          } catch (err) {
-            // Fallback to auth metadata if profile fetch fails
-            if (mounted) {
-              const realUser: User = {
-                id: authUser.id,
-                display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-                handle: authUser.email?.split('@')[0] || 'user',
-                avatar_url: authUser.user_metadata?.avatar_url || null,
-              }
-              setUser(realUser)
-            }
-          }
-        }
-        
-        if (mounted) setHydrated(true)
-      } catch (err) {
-        if (mounted) setHydrated(true)
-      }
-    }
-
-    initAuth()
-
-    // Listen for auth state changes
+    // Listen for ALL auth state changes — this is the single source of truth.
+    // It fires for: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (mounted) {
-        if (session?.user) {
-          try {
-            // Fetch profile from profiles table
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('display_name, handle, avatar_url')
-              .eq('id', session.user.id)
-              .single()
+      if (!mounted) return
 
-            if (mounted) {
-              const realUser: User = {
-                id: session.user.id,
-                display_name: profile?.display_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-                handle: profile?.handle || session.user.email?.split('@')[0] || 'user',
-                avatar_url: profile?.avatar_url || session.user.user_metadata?.avatar_url || null,
-              }
-              setUser(realUser)
-            }
-          } catch (err) {
-            // Fallback to auth metadata if profile fetch fails
-            if (mounted) {
-              const realUser: User = {
-                id: session.user.id,
-                display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-                handle: session.user.email?.split('@')[0] || 'user',
-                avatar_url: session.user.user_metadata?.avatar_url || null,
-              }
-              setUser(realUser)
-            }
+      if (session?.user) {
+        // Quick render with auth metadata
+        setUser(buildUser(session.user))
+        setHydrated(true)
+
+        // Then try to enhance with profile data (non-blocking)
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, handle, avatar_url')
+            .eq('id', session.user.id)
+            .single()
+
+          if (mounted && profile) {
+            setUser({
+              id: session.user.id,
+              display_name: profile.display_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+              handle: profile.handle || session.user.email?.split('@')[0] || 'user',
+              avatar_url: profile.avatar_url || session.user.user_metadata?.avatar_url || null,
+            })
           }
-        } else {
-          setUser(null)
-        }
+        } catch { /* profile fetch failed, keep auth metadata */ }
+      } else {
+        setUser(null)
+        setHydrated(true)
       }
     })
 
@@ -154,7 +108,6 @@ function useRealUser() {
     await supabase.auth.signOut()
     localStorage.removeItem('mock_user')
     setUser(null)
-    // Force full page reload to clear all cached state and cookies
     window.location.href = '/'
   }
 
