@@ -345,11 +345,10 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             { href: '/cookbooks',     label: 'Cărți de bucate' },
             { href: '/cocktailbooks', label: 'Cocktailuri' },
             { href: '/plan',          label: 'Plan de masă' },
-            { href: '/party',         label: 'Petrecere' },
-            { href: '/me/preferred',  label: 'Preferate' },
-            { href: '/me/cookbook',    label: 'Cartea mea' },
+            { href: '/party',         label: 'Plan de petrecere' },
             { href: '/me/pantry',     label: 'Cămara' },
             { href: '/me/bar',        label: 'Barul' },
+            { href: '/me/cookbook',    label: 'Cartea mea' },
           ].map(item => {
             const active = isActive(item.href)
             return (
@@ -373,6 +372,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           <div className="flex-1" />
 
             {/* secondary links */}
+            <Link href="/me/preferred" className="text-xs px-2 py-1 font-medium" style={{ color: theme === 'dark' ? '#ff9500' : 'rgba(255,255,255,0.85)' }}>⭐ Rețete Preferate</Link>
             <Link href="/submit/recipe" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Rețetă</Link>
             <Link href="/submit/cocktail" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Băutură</Link>
             <Link href="/search" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#555' : 'rgba(255,255,255,0.6)' }}>Toate rețetele</Link>
