@@ -8,22 +8,16 @@ export function createServerSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
     {
       cookies: {
-        async get(name: string) {
+        async getAll() {
           const cookieStore = await cookies()
-          return cookieStore.get(name)?.value
+          return cookieStore.getAll()
         },
-        async set(name: string, value: string, options: Record<string, unknown>) {
+        async setAll(cookiesToSet) {
           try {
             const cookieStore = await cookies()
-            cookieStore.set({ name, value, ...options })
-          } catch {
-            // Read-only in Server Components — safe to ignore
-          }
-        },
-        async remove(name: string, options: Record<string, unknown>) {
-          try {
-            const cookieStore = await cookies()
-            cookieStore.set({ name, value: '', ...options })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
           } catch {
             // Read-only in Server Components — safe to ignore
           }
@@ -35,8 +29,7 @@ export function createServerSupabaseClient() {
 
 /**
  * Creates a Supabase client using the service-role key.
- * Bypasses RLS — use ONLY in API routes where auth is handled
- * via getRequestUser() (mock-user header flow).
+ * Bypasses RLS — use ONLY in API routes where auth is handled.
  */
 export function createServiceSupabaseClient() {
   return createClient(
