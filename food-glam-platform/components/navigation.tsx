@@ -345,9 +345,11 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             { href: '/cookbooks',     label: 'Cărți de bucate' },
             { href: '/cocktailbooks', label: 'Cocktailuri' },
             { href: '/plan',          label: 'Plan de masă' },
+            { href: '/party',         label: 'Petrecere' },
             { href: '/me/preferred',  label: 'Preferate' },
+            { href: '/me/cookbook',    label: 'Cartea mea' },
             { href: '/me/pantry',     label: 'Cămara' },
-            { href: '/me/scan',       label: '📷 Scanează' },
+            { href: '/me/bar',        label: 'Barul' },
           ].map(item => {
             const active = isActive(item.href)
             return (

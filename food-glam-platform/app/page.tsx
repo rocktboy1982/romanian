@@ -226,7 +226,16 @@ export default function Home() {
             STORIES STRIP  (Instagram-style)
         ════════════════════════════════════════════════════════ */}
         <section className="px-4 pt-10 pb-4 relative">
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2" style={{ scrollSnapType: 'x mandatory' }}>
+          {/* Scanează — top right, prominent */}
+          <div className="absolute top-10 right-4 flex items-center gap-2 z-10 pt-2">
+            <Link href="/me/scan" className="flex flex-col items-center gap-1">
+              <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)', boxShadow: '0 2px 12px rgba(255,77,109,0.4)' }}>
+                <span className="text-2xl">📷</span>
+              </div>
+              <span className="text-[10px] font-bold" style={{ color: '#ff4d6d' }}>Scanează</span>
+            </Link>
+          </div>
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar pt-2 pb-2 pr-24" style={{ scrollSnapType: 'x mandatory' }}>
 
             {/* "Add story" button */}
             <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
@@ -274,15 +283,6 @@ export default function Home() {
               </button>
             ))}
 
-            {/* Scanează — last in strip, highlighted */}
-            <div className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ scrollSnapAlign: 'start' }}>
-              <Link href="/me/scan">
-                <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center relative hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)', boxShadow: '0 2px 12px rgba(255,77,109,0.4)' }}>
-                  <span className="text-2xl">📷</span>
-                </div>
-              </Link>
-              <span className="text-[10px] font-bold" style={{ color: '#ff4d6d' }}>Scanează</span>
-            </div>
           </div>
 
           {/* story viewer */}
