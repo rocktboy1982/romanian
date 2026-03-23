@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { useTheme } from '@/components/theme-provider'
 import { supabase } from '@/lib/supabase-client'
+import { createClient } from '@supabase/supabase-js'
 
 /* ─── nav items ──────────────────────────────────────────────────────────── */
 
@@ -65,24 +66,26 @@ function useRealUser() {
       avatar_url: authUser.user_metadata?.avatar_url || null,
     })
 
-    // Listen for ALL auth state changes — this is the single source of truth.
-    // It fires for: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
+    // Use a standard createClient that reads localStorage AND detects URL hash tokens.
+    // createBrowserClient from @supabase/ssr only reads cookies, missing implicit flow tokens.
+    const lsClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+    )
 
+    // Listen on BOTH clients
+    const { data: { subscription: lsSub } } = lsClient.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
       if (session?.user) {
-        // Quick render with auth metadata
         setUser(buildUser(session.user))
         setHydrated(true)
-
-        // Then try to enhance with profile data (non-blocking)
+        // Enhance with profile
         try {
           const { data: profile } = await supabase
             .from('profiles')
             .select('display_name, handle, avatar_url')
             .eq('id', session.user.id)
             .single()
-
           if (mounted && profile) {
             setUser({
               id: session.user.id,
@@ -91,16 +94,30 @@ function useRealUser() {
               avatar_url: profile.avatar_url || session.user.user_metadata?.avatar_url || null,
             })
           }
-        } catch { /* profile fetch failed, keep auth metadata */ }
+        } catch {}
       } else {
-        setUser(null)
+        // Only set null if cookie client also has no session
+        const { data: { session: cookieSession } } = await supabase.auth.getSession()
+        if (!cookieSession && mounted) {
+          setUser(null)
+          setHydrated(true)
+        }
+      }
+    })
+
+    // Also listen on cookie client (for PKCE flow sessions set by server callback)
+    const { data: { subscription: cookieSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+      if (session?.user && !user) {
+        setUser(buildUser(session.user))
         setHydrated(true)
       }
     })
 
     return () => {
       mounted = false
-      subscription?.unsubscribe()
+      lsSub?.unsubscribe()
+      cookieSub?.unsubscribe()
     }
   }, [])
 
