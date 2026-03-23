@@ -39,7 +39,7 @@ try {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // ── Config ───────────────────────────────────────────────────────────────────
-const TARGET_PER_COUNTRY = 20;
+const TARGET_PER_COUNTRY = 40;
 const OLLAMA_MODEL = 'aya-expanse:8b';
 const OLLAMA_HARD_TIMEOUT = 180000;
 const PROGRESS_FILE = path.join(__dirname, '.seed-google-v3-progress.json');
@@ -114,6 +114,15 @@ const RECIPE_SOURCES = [
   { name: '196flavors', sitemaps: ['https://www.196flavors.com/post-sitemap.xml'] },
   { name: 'whiskaffair', sitemaps: ['https://www.whiskaffair.com/post-sitemap.xml'] },
   { name: 'wandercooks', sitemaps: ['https://www.wandercooks.com/post-sitemap.xml'] },
+  // Additional sources for better country coverage
+  { name: 'thespruceeats', sitemaps: ['https://www.thespruceeats.com/sitemap.xml'] },
+  { name: 'seriouseats', sitemaps: ['https://www.seriouseats.com/sitemap.xml'] },
+  { name: 'saveur', sitemaps: ['https://www.saveur.com/sitemap.xml'] },
+  { name: 'tasteatlas', sitemaps: ['https://www.tasteatlas.com/sitemap.xml'] },
+  { name: 'africanbites', sitemaps: ['https://www.africanbites.com/post-sitemap.xml'] },
+  { name: 'immaculatebites', sitemaps: ['https://www.immaculatebites.com/post-sitemap.xml'] },
+  { name: 'cravingsjournal', sitemaps: ['https://www.cravingsjournal.com/post-sitemap.xml'] },
+  { name: 'chilipeppermadness', sitemaps: ['https://www.chilipeppermadness.com/post-sitemap.xml'] },
 ];
 
 // Country → search keywords for URL matching
@@ -165,6 +174,100 @@ const COUNTRY_KEYWORDS = {
   'Malaysia': ['malaysian', 'malaysia', 'nasi-lemak', 'rendang', 'satay', 'laksa', 'char-kuey-teow', 'roti-canai'],
   'Singapore': ['singaporean', 'singapore', 'hainanese', 'laksa', 'chilli-crab', 'kaya-toast', 'char-kway-teow'],
   'Indonesia': ['indonesian', 'indonesia', 'nasi-goreng', 'rendang', 'satay', 'gado-gado', 'soto', 'bakso', 'tempeh'],
+  // Additional countries with specific authentic dishes
+  'Niger': ['nigerien', 'niger', 'djerma', 'tuareg', 'kilishi', 'fura', 'tuwo'],
+  'Tajikistan': ['tajik', 'tajikistan', 'qurutob', 'plov', 'oshi-palav', 'sambusa', 'shirchoy'],
+  'Guinea': ['guinean', 'guinea', 'fouti', 'tiga', 'mafe', 'plasas', 'poulet-yassa'],
+  'Tonga': ['tongan', 'tonga', 'lu-pulu', 'otai', 'ota-ika', 'topai', 'faikakai'],
+  'Gambia': ['gambian', 'gambia', 'domoda', 'benachin', 'yassa', 'chere', 'superkanja'],
+  'Trinidad': ['trinidadian', 'trinidad', 'doubles', 'callaloo', 'pelau', 'bake-shark', 'roti', 'macaroni-pie'],
+  'Honduras': ['honduran', 'honduras', 'baleada', 'sopa-de-caracol', 'pupusa', 'tajadas', 'platano', 'catrachada'],
+  'Palestine': ['palestinian', 'palestine', 'musakhan', 'maqluba', 'knafeh', 'maftoul', 'sumagiyya'],
+  'Sierra Leone': ['sierra-leonean', 'sierra-leone', 'cassava-leaf', 'groundnut-soup', 'pepper-soup', 'jollof', 'foo-foo'],
+  'Somalia': ['somali', 'somalia', 'canjeero', 'suqaar', 'bariis-iskukaris', 'sambusa', 'muufo', 'malawah'],
+  'Botswana': ['botswanan', 'botswana', 'seswaa', 'bogobe', 'vetkoek', 'morogo', 'dikgobe'],
+  'Vanuatu': ['vanuatu', 'ni-vanuatu', 'lap-lap', 'tuluk', 'nalot', 'simboro'],
+  'East Timor': ['timorese', 'east-timor', 'timor-leste', 'batar-daan', 'ikan-pepes', 'saboko'],
+  'Costa Rica': ['costa-rican', 'costa-rica', 'gallo-pinto', 'casado', 'chifrijo', 'olla-de-carne', 'arroz-con-pollo', 'patacones'],
+  'Fiji': ['fijian', 'fiji', 'kokoda', 'lovo', 'rourou', 'cassava-cake', 'duruka'],
+  'Ivory Coast': ['ivorian', 'ivory-coast', 'cote-divoire', 'attiéké', 'alloco', 'kedjenou', 'garba', 'foutou'],
+  'Latvia': ['latvian', 'latvia', 'piragi', 'sklandrausis', 'spekkuchen', 'rupjmaize', 'rasols'],
+  'Burundi': ['burundian', 'burundi', 'boko-boko', 'isombe', 'bugali', 'ntore'],
+  'El Salvador': ['salvadoran', 'el-salvador', 'pupusa', 'yuca-frita', 'curtido', 'tamales', 'horchata', 'sopa-de-pata'],
+  'Kazakhstan': ['kazakh', 'kazakhstan', 'beshbarmak', 'baursak', 'shubat', 'kuyrdak', 'manty', 'kurt'],
+  'Paraguay': ['paraguayan', 'paraguay', 'sopa-paraguaya', 'chipa', 'bori-bori', 'mbeju', 'empanada'],
+  'Luxembourg': ['luxembourgish', 'luxembourg', 'judd-mat-gaardebounen', 'bouneschlupp', 'gromperekichelcher', 'quetschentaart'],
+  'Slovenia': ['slovenian', 'slovenia', 'potica', 'struklji', 'idrijski-zlikrofi', 'prekmurska-gibanica', 'jota'],
+  'Montenegro': ['montenegrin', 'montenegro', 'njeguski-steak', 'kacamak', 'priganice', 'cicvara'],
+  'Bosnia': ['bosnian', 'bosnia', 'cevapi', 'burek', 'begova-corba', 'tufahije', 'klepe', 'sogan-dolma'],
+  'North Macedonia': ['macedonian', 'north-macedonia', 'tavce-gravce', 'ajvar', 'pindzur', 'pastrmajlija', 'turli-tava'],
+  'Kosovo': ['kosovar', 'kosovo', 'flia', 'pite', 'tavë-kosi', 'gjellë', 'mantia'],
+  'Moldova': ['moldovan', 'moldova', 'mamaliga', 'placinta', 'sarmale', 'zeama', 'branza'],
+  'Estonia': ['estonian', 'estonia', 'verivorst', 'kiluvõileib', 'rosolje', 'kama', 'mulgikapsad'],
+  'Lithuania': ['lithuanian', 'lithuania', 'cepelinai', 'šaltibarščiai', 'bulviniai-blynai', 'kibinai', 'kugelis'],
+  'Rwanda': ['rwandan', 'rwanda', 'isombe', 'brochettes', 'igisafuria', 'akabenz'],
+  'Madagascar': ['malagasy', 'madagascar', 'romazava', 'ravitoto', 'mofo-gasy', 'koba', 'lasary'],
+  'Samoa': ['samoan', 'samoa', 'oka', 'palusami', 'panipopo', 'sapasui', 'fa-ausi'],
+  'Panama': ['panamanian', 'panama', 'sancocho', 'arroz-con-pollo', 'hojaldres', 'ceviche', 'tamales', 'ropa-vieja'],
+  'Guatemala': ['guatemalan', 'guatemala', 'pepian', 'kak-ik', 'fiambre', 'tamales', 'rellenitos', 'jocon'],
+  'Cambodia': ['cambodian', 'cambodia', 'amok', 'lok-lak', 'samlor-korko', 'bai-sach-chrouk', 'num-banh-chok'],
+  'Laos': ['lao', 'laos', 'larb', 'tam-mak-hoong', 'khao-piak', 'ping-kai', 'or-lam', 'sticky-rice'],
+  'Myanmar': ['burmese', 'myanmar', 'mohinga', 'laphet-thoke', 'shan-noodles', 'oh-no-khao-swe'],
+  'Nepal': ['nepali', 'nepal', 'dal-bhat', 'momo', 'gundruk', 'sel-roti', 'chatamari', 'yomari'],
+  'Bhutan': ['bhutanese', 'bhutan', 'ema-datshi', 'phaksha-paa', 'jasha-maru', 'hoentay', 'shakam'],
+  'Mongolia': ['mongolian', 'mongolia', 'buuz', 'khuushuur', 'tsuivan', 'airag', 'boortsog', 'boodog'],
+  'Kyrgyzstan': ['kyrgyz', 'kyrgyzstan', 'beshbarmak', 'laghman', 'ashlyam-fu', 'kuurdak', 'boorsok'],
+  'Turkmenistan': ['turkmen', 'turkmenistan', 'dograma', 'gutap', 'shurpa', 'chorek', 'plov-turkmen'],
+  'Maldives': ['maldivian', 'maldives', 'garudhiya', 'mas-huni', 'fihunu-mas', 'hedhikaa', 'bis-keemiya'],
+  'Suriname': ['surinamese', 'suriname', 'roti', 'pom', 'bakabana', 'pinda-soep', 'moksi-alesi'],
+  'Guyana': ['guyanese', 'guyana', 'pepperpot', 'cook-up-rice', 'metemgee', 'roti', 'black-cake'],
+  'Bahrain': ['bahraini', 'bahrain', 'machbous', 'harees', 'muhammar', 'qoozi', 'balaleet'],
+  'Oman': ['omani', 'oman', 'shuwa', 'harees', 'mashuai', 'kahwa', 'mishkak'],
+  'Qatar': ['qatari', 'qatar', 'machbous', 'harees', 'madrouba', 'thareed', 'luqaimat'],
+  'Kuwait': ['kuwaiti', 'kuwait', 'machboos', 'harees', 'jireesh', 'gabout', 'gers-ogaily'],
+  'Djibouti': ['djiboutian', 'djibouti', 'skoudehkaris', 'fah-fah', 'lahoh', 'sambusa'],
+  'Eritrea': ['eritrean', 'eritrea', 'injera', 'tsebhi', 'zigni', 'shiro', 'ful', 'hilbet'],
+  'Cameroon': ['cameroonian', 'cameroon', 'ndole', 'eru', 'achu', 'koki', 'poulet-dg'],
+  'Mozambique': ['mozambican', 'mozambique', 'piri-piri', 'matapa', 'xima', 'galinha-zambeziana'],
+  'Namibia': ['namibian', 'namibia', 'potjiekos', 'biltong', 'kapana', 'oshifima', 'vetkoek'],
+  'Zimbabwe': ['zimbabwean', 'zimbabwe', 'sadza', 'nyama', 'muriwo', 'dovi', 'mapopo'],
+  'Malawi': ['malawian', 'malawi', 'nsima', 'chambo', 'mandasi', 'kondowole'],
+  'Liberia': ['liberian', 'liberia', 'jollof', 'fufu', 'palava-sauce', 'check-rice', 'palm-butter'],
+  'Mali': ['malian', 'mali', 'tiga-diga-na', 'fakoye', 'to', 'djouka'],
+  'Burkina Faso': ['burkinabe', 'burkina-faso', 'riz-gras', 'tô', 'ragout', 'babenda'],
+  'Togo': ['togolese', 'togo', 'fufu', 'akoume', 'djenkoume', 'koklo-meme'],
+  'Benin': ['beninese', 'benin', 'akassa', 'amiwo', 'kuli-kuli', 'tchoukoutou'],
+  'Sudan': ['sudanese', 'sudan', 'ful-medames', 'kisra', 'asida', 'mullah', 'shaiyah'],
+  'Yemen': ['yemeni', 'yemen', 'saltah', 'mandi', 'fahsa', 'jachnun', 'malawach', 'bint-al-sahn'],
+  'Tunisia': ['tunisian', 'tunisia', 'brik', 'couscous', 'lablabi', 'ojja', 'makroudh', 'harissa'],
+  'Libya': ['libyan', 'libya', 'bazin', 'sharba', 'asida', 'shakshuka', 'mbatten'],
+  'Mauritania': ['mauritanian', 'mauritania', 'thieboudienne', 'mechoui', 'couscous', 'maru-we-llham'],
+  'Papua New Guinea': ['papua', 'new-guinea', 'mumu', 'saksak', 'kaukau', 'tulip'],
+  'Dominican Republic': ['dominican', 'dominicana', 'mangu', 'sancocho', 'la-bandera', 'mofongo', 'chimichurri'],
+  'Puerto Rico': ['puerto-rican', 'puerto-rico', 'mofongo', 'arroz-con-gandules', 'pernil', 'alcapurria', 'asopao'],
+  'Hawaii (US)': ['hawaiian', 'hawaii', 'poke', 'loco-moco', 'spam-musubi', 'kalua-pig', 'haupia', 'lau-lau'],
+  'Barbados': ['barbadian', 'bajan', 'barbados', 'cou-cou', 'flying-fish', 'macaroni-pie', 'fishcakes', 'conkies'],
+  'Cyprus': ['cypriot', 'cyprus', 'halloumi', 'souvlakia', 'sheftalia', 'koupepia', 'kolokasi', 'kleftiko'],
+  'Iceland': ['icelandic', 'iceland', 'plokkfiskur', 'hangikjot', 'kleinur', 'hardfiskur', 'skyr', 'pylsur', 'rúgbrauð'],
+  'Bulgaria': ['bulgarian', 'bulgaria', 'shopska', 'banitsa', 'tarator', 'kavarma', 'sarmi', 'kebapche'],
+  'Croatia': ['croatian', 'croatia', 'strukli', 'peka', 'ćevapi', 'soparnik', 'fritule', 'pašticada'],
+  'Slovakia': ['slovak', 'slovakia', 'bryndzove-halusky', 'kapustnica', 'lokše', 'zemiakové-placky'],
+  'Czech Republic': ['czech', 'bohemian', 'svíčková', 'trdelník', 'knedlíky', 'vepřo-knedlo-zelo', 'bramborák'],
+  'Hungary': ['hungarian', 'hungary', 'goulash', 'langos', 'chicken-paprikash', 'dobos-torta', 'töltött-káposzta'],
+  'Romania': ['romanian', 'romania', 'sarmale', 'mici', 'ciorbă', 'mămăligă', 'cozonac', 'papanasi', 'tochitura'],
+  'Azerbaijan': ['azerbaijani', 'azerbaijan', 'plov', 'dolma', 'piti', 'qutab', 'shah-plov', 'lyulya-kebab'],
+  'Armenia': ['armenian', 'armenia', 'lavash', 'khorovats', 'harissa', 'ghapama', 'tolma', 'lahmajun'],
+  'Afghanistan': ['afghan', 'afghanistan', 'kabuli-pulao', 'mantu', 'bolani', 'ashak', 'chapli-kebab'],
+  'Bangladesh': ['bangladeshi', 'bangladesh', 'biryani', 'hilsa', 'pitha', 'bhuna-khichuri', 'fuchka', 'shemai'],
+  'Pakistan': ['pakistani', 'pakistan', 'biryani', 'nihari', 'haleem', 'chapli-kebab', 'seekh-kebab', 'paya'],
+  'Finland': ['finnish', 'finland', 'karjalanpiirakka', 'kalakukko', 'lohikeitto', 'poronkäristys', 'ruisleipä'],
+  'Colombia': ['colombian', 'colombia', 'bandeja-paisa', 'arepas', 'ajiaco', 'empanadas', 'sancocho', 'lechona'],
+  'Brazil': ['brazilian', 'brazil', 'feijoada', 'pão-de-queijo', 'coxinha', 'moqueca', 'brigadeiro', 'açaí'],
+  'Ecuador': ['ecuadorian', 'ecuador', 'encebollado', 'llapingachos', 'ceviche', 'locro', 'bolón-de-verde'],
+  'Chile': ['chilean', 'chile', 'pastel-de-choclo', 'empanadas', 'cazuela', 'curanto', 'sopaipillas'],
+  'Bolivia': ['bolivian', 'bolivia', 'salteñas', 'pique-macho', 'silpancho', 'api', 'anticucho'],
+  'Uruguay': ['uruguayan', 'uruguay', 'chivito', 'asado', 'milanesa', 'torta-frita', 'dulce-de-leche'],
+  'Venezuela': ['venezuelan', 'venezuela', 'arepas', 'pabellón-criollo', 'tequeños', 'cachapa', 'hallaca'],
 };
 
 function extractSitemapUrls(xml) {
@@ -236,41 +339,50 @@ async function searchForRecipes(countryName, numResults = 40) {
   }
   console.log(`    Phase 1 (keyword): ${matched.length} URLs`);
 
-  // Phase 2: if too few, use 196flavors and internationalcuisine (they have per-country pages)
-  if (matched.length < 10) {
-    const specialSources = ['196flavors', 'internationalcuisine', 'globalkitchentravels', 'daringgourmet'];
-    for (const srcName of specialSources) {
-      const src = RECIPE_SOURCES.find(s => s.name === srcName);
-      if (!src) continue;
-      for (const sitemap of src.sitemaps) {
+  // Phase 2: search ALL sources for country keywords (not just special ones)
+  if (matched.length < numResults) {
+    for (const source of RECIPE_SOURCES) {
+      for (const sitemap of source.sitemaps) {
         const urls = await fetchSitemapCached(sitemap);
-        const shuffled = [...urls].sort(() => Math.random() - 0.5);
-        for (const url of shuffled.slice(0, 30)) {
-          if (!seenUrls.has(url)) {
+        for (const url of urls) {
+          if (seenUrls.has(url)) continue;
+          const urlLower = url.toLowerCase();
+          // Match country name directly in URL path
+          if (urlLower.includes(countryName.toLowerCase().replace(/ /g, '-'))) {
             seenUrls.add(url);
             matched.push(url);
           }
           if (matched.length >= numResults) break;
         }
       }
+      if (matched.length >= numResults) break;
     }
-    console.log(`    Phase 2 (broad): ${matched.length} URLs`);
+    console.log(`    Phase 2 (deep search): ${matched.length} URLs`);
   }
 
-  // Phase 3: still short? grab from recipetineats (largest source, diverse cuisines)
-  if (matched.length < 10) {
-    for (const sitemap of RECIPE_SOURCES[0].sitemaps) { // recipetineats
-      const urls = await fetchSitemapCached(sitemap);
-      const shuffled = [...urls].sort(() => Math.random() - 0.5);
-      for (const url of shuffled.slice(0, 40)) {
-        if (!seenUrls.has(url)) {
-          seenUrls.add(url);
-          matched.push(url);
+  // Phase 3: try 196flavors per-country URLs (they have /country-name/ pages with authentic recipes)
+  if (matched.length < numResults) {
+    const slug = countryName.toLowerCase().replace(/ /g, '-');
+    const countryUrls = [
+      `https://www.196flavors.com/${slug}/`,
+      `https://www.internationalcuisine.com/?s=${encodeURIComponent(countryName)}`,
+    ];
+    for (const url of countryUrls) {
+      try {
+        const { body } = await fetchUrl(url, 15000);
+        // Extract recipe links from the page
+        const links = [...body.matchAll(/href="(https?:\/\/[^"]+recipe[^"]*|https?:\/\/[^"]+\/[a-z]+-[a-z]+-[a-z]+[^"]*)"/gi)]
+          .map(m => m[1])
+          .filter(u => !EXCLUDED_DOMAINS.has(new URL(u).hostname.replace('www.', '')))
+          .filter(u => !seenUrls.has(u));
+        for (const link of links.slice(0, 20)) {
+          seenUrls.add(link);
+          matched.push(link);
+          if (matched.length >= numResults) break;
         }
-        if (matched.length >= numResults) break;
-      }
+      } catch {}
     }
-    console.log(`    Phase 3 (fallback): ${matched.length} URLs`);
+    console.log(`    Phase 3 (country pages): ${matched.length} URLs`);
   }
 
   return matched.slice(0, numResults);
@@ -508,6 +620,7 @@ async function main() {
     .filter(c => {
       if (c.name === 'Anna' || c.name === 'Dan') return false; // skip demo/admin profiles
       if (c.name.includes(' US') || c.name === 'Tex-Mex') return false; // skip US regions
+      if (c.name === 'Romania') return false; // Romanian recipes handled separately
       if (onlyCountry) return c.name.toLowerCase() === onlyCountry.toLowerCase();
       if (c.current >= minThreshold) return false;
       if (progress.done[c.name] && progress.done[c.name] >= minThreshold) return false;
