@@ -105,7 +105,13 @@ function useRealUser() {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
+    // Clear ALL Supabase data from localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-') || key.includes('supabase')) {
+        localStorage.removeItem(key)
+      }
+    })
     localStorage.removeItem('mock_user')
     setUser(null)
     window.location.href = '/'
