@@ -58,7 +58,7 @@ export default function MeCookbookClient() {
         setItems(recipes)
       }
     } catch {
-      push({ message: "Failed to load saved recipes", type: "error" })
+      push({ message: "Eroare la încărcarea rețetelor salvate", type: "error" })
     } finally {
       setLoading(false)
     }
@@ -153,8 +153,8 @@ export default function MeCookbookClient() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Cookbook</h1>
-            <p className="text-sm text-gray-500">{items.length} saved recipe{items.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Rețetele mele</h1>
+            <p className="text-sm text-gray-500">{items.length} rețet{items.length !== 1 ? "e" : "ă"} salvat{items.length !== 1 ? "e" : "ă"}</p>
           </div>
         </div>
       </div>
@@ -164,15 +164,15 @@ export default function MeCookbookClient() {
         <div className="flex flex-wrap items-center gap-3 mb-6">
           {/* Sort */}
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Sort</label>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Sortare</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortMode)}
               className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="date_added">Date Added</option>
-              <option value="name">Name A-Z</option>
-              <option value="newest">Newest First</option>
+              <option value="date_added">Data adăugării</option>
+              <option value="name">Nume A-Z</option>
+              <option value="newest">Cele mai noi</option>
             </select>
           </div>
 
@@ -239,9 +239,9 @@ export default function MeCookbookClient() {
               <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">No recipes saved yet</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Nicio rețetă salvată</h2>
           <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Explore recipes and tap the heart icon to save them here for quick access.
+            Explorează rețetele și apasă pe inimioară pentru a le salva aici.
           </p>
           <Link
             href="/"
@@ -251,7 +251,7 @@ export default function MeCookbookClient() {
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
-            Explore Recipes
+            Explorează rețete
           </Link>
         </div>
       ) : (
