@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import FallbackImage from '@/components/FallbackImage'
 import { useTheme } from '@/components/theme-provider'
+import { supabase } from '@/lib/supabase-client'
 
 interface PantryItem {
   id: string
@@ -88,13 +89,28 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
   const cardBg = isDark ? 'rgba(255,255,255,0.06)' : '#fff'
   const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'
 
+  /**
+   * Returns headers including an Authorization Bearer token when a Supabase
+   * session exists in localStorage (Google OAuth / implicit flow). This allows
+   * API routes that rely on cookie-based auth to fall back to JWT verification.
+   */
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch(`/api/pantry?category=${category}`)
+      const headers = await getAuthHeaders()
+      const res = await fetch(`/api/pantry?category=${category}`, { headers })
       if (res.ok) setItems(await res.json())
     } catch { /* ignore */ }
     setLoading(false)
-  }, [category])
+  }, [category, getAuthHeaders])
 
   useEffect(() => { fetchItems() }, [fetchItems])
 
@@ -104,7 +120,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
 
     await fetch('/api/pantry', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({
         name: newName.trim(),
         quantity: newQty || null,
@@ -123,7 +139,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
   const deleteItem = async (id: string) => {
     await fetch('/api/pantry', {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ id }),
     })
     fetchItems()
@@ -132,7 +148,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
   const updateItem = async (id: string) => {
     await fetch('/api/pantry', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({
         id,
         quantity: editQty || null,
@@ -148,7 +164,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
     const next = Math.max(0, current + delta)
     await fetch('/api/pantry', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ id: item.id, quantity: next }),
     })
     fetchItems()
@@ -157,7 +173,8 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
   const searchByInventory = async () => {
     setMatchLoading(true)
     try {
-      const res = await fetch(`/api/search/by-inventory?category=${category}&sort=closest&limit=20`)
+      const headers = await getAuthHeaders()
+      const res = await fetch(`/api/search/by-inventory?category=${category}&sort=closest&limit=20`, { headers })
       if (res.ok) {
         const data = await res.json()
         setMatches(data.results || [])

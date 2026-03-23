@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RecognitionResult, RecognisedIngredient } from '@/lib/ai-provider'
 import { isAlcoholicIngredient } from '@/lib/normalize-for-search'
+import { supabase } from '@/lib/supabase-client'
 
 const BG = '#dde3ee'
 
@@ -41,6 +42,20 @@ export default function ScanPantryClient({ sessionId }: { sessionId: string }) {
     setRows(prev => prev.map((r, i) => i === idx ? { ...r, destination: r.destination === 'pantry' ? 'bar' : 'pantry' } : r))
   }
 
+  /**
+   * Returns headers including an Authorization Bearer token when a Supabase
+   * session exists in localStorage (Google OAuth / implicit flow). This allows
+   * API routes that rely on cookie-based auth to fall back to JWT verification.
+   */
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }
+
   const handleSync = async () => {
     setSyncing(true)
     setError(null)
@@ -65,7 +80,7 @@ export default function ScanPantryClient({ sessionId }: { sessionId: string }) {
 
         const res = await fetch('/api/pantry', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({
             name,
             quantity,
