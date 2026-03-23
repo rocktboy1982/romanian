@@ -44,7 +44,7 @@ const MOBILE_TABS = [
   { href: '/',                 icon: '🏠', label: 'Acasă'     },
   { href: '/search',           icon: '🔍', label: 'Explorează'  },
   { href: '/me/scan',          icon: '📷', label: 'Scanează'     },
-  { href: '/me/grocery',       icon: '🛒', label: 'Cumpărături'     },
+  { href: '/me/pantry',        icon: '🥫', label: 'Cămara'     },
   { href: '/me',               icon: '👤', label: 'Profil'  },
 ]
 
@@ -288,30 +288,6 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
 
           {/* Auth area */}
           <div className="flex-shrink-0 flex items-center gap-3">
-            {/* ＋ Create dropdown */}
-            <div className="relative group">
-              <button
-                className="w-8 h-8 rounded-full flex items-center justify-center transition-all text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
-                aria-label="Creează"
-              >
-                ＋
-              </button>
-              <div
-                className="absolute right-0 top-full mt-2 w-52 rounded-xl overflow-hidden shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
-                style={{ background: theme === 'dark' ? '#111' : '#fff', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)' }}
-              >
-                <Link href="/submit/recipe" className="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors" style={{ color: theme === 'dark' ? '#ccc' : '#333' }}>
-                  <span>📝</span> Adaugă rețetă
-                </Link>
-                <Link href="/submit/cocktail" className="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors" style={{ color: theme === 'dark' ? '#ccc' : '#333', borderTop: theme === 'dark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
-                  <span>🥂</span> Adaugă băutură
-                </Link>
-                <Link href="/chefs/me/new-post" className="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors" style={{ color: theme === 'dark' ? '#ccc' : '#333', borderTop: theme === 'dark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
-                  <span>✍️</span> Postare Chef
-                </Link>
-              </div>
-            </div>
             <button
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Activează tema luminoasă' : 'Activează tema întunecoasă'}
@@ -371,6 +347,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             { href: '/plan',          label: 'Plan de masă' },
             { href: '/me/preferred',  label: 'Preferate' },
             { href: '/me/pantry',     label: 'Cămara' },
+            { href: '/me/scan',       label: '📷 Scanează' },
           ].map(item => {
             const active = isActive(item.href)
             return (
@@ -394,6 +371,8 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           <div className="flex-1" />
 
             {/* secondary links */}
+            <Link href="/submit/recipe" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Rețetă</Link>
+            <Link href="/submit/cocktail" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Băutură</Link>
             <Link href="/search" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#555' : 'rgba(255,255,255,0.6)' }}>Toate rețetele</Link>
             <Link href="/rankings" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#555' : 'rgba(255,255,255,0.6)' }}>Clasament</Link>
         </div>
