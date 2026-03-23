@@ -184,41 +184,67 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
         </div>
 
         {/* Add form */}
-        <form onSubmit={addItem} className="flex flex-wrap gap-2">
-          <input
-            type="text"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder={addPlaceholder}
-            className="flex-1 min-w-[180px] px-3 py-2 rounded-lg text-sm outline-none"
-            style={{ background: cardBg, border: `1px solid ${border}` }}
-          />
-          <input
-            type="number"
-            value={newQty}
-            onChange={e => setNewQty(e.target.value)}
-            placeholder="Cant."
-            className="w-16 px-2 py-2 rounded-lg text-sm outline-none"
-            style={{ background: cardBg, border: `1px solid ${border}` }}
-          />
-          <input
-            type="text"
-            value={newUnit}
-            onChange={e => setNewUnit(e.target.value)}
-            placeholder="Unit"
-            className="w-14 px-2 py-2 rounded-lg text-sm outline-none"
-            style={{ background: cardBg, border: `1px solid ${border}` }}
-          />
-          <input
-            type="date"
-            value={newExpiry}
-            onChange={e => setNewExpiry(e.target.value)}
-            className="px-2 py-2 rounded-lg text-sm outline-none"
-            style={{ background: cardBg, border: `1px solid ${border}` }}
-          />
+        <form onSubmit={addItem} className="flex flex-wrap gap-2 items-end">
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-xs font-medium opacity-60 mb-1 block">Ingredient *</label>
+            <input
+              type="text"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              placeholder={addPlaceholder}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ background: cardBg, border: `1px solid ${border}` }}
+            />
+          </div>
+          <div className="w-20">
+            <label className="text-xs font-medium opacity-60 mb-1 block">Cantitate</label>
+            <input
+              type="number"
+              step="any"
+              value={newQty}
+              onChange={e => setNewQty(e.target.value)}
+              placeholder="1"
+              className="w-full px-2 py-2 rounded-lg text-sm outline-none"
+              style={{ background: cardBg, border: `1px solid ${border}` }}
+            />
+          </div>
+          <div className="w-20">
+            <label className="text-xs font-medium opacity-60 mb-1 block">Unitate</label>
+            <select
+              value={newUnit}
+              onChange={e => setNewUnit(e.target.value)}
+              className="w-full px-2 py-2 rounded-lg text-sm outline-none appearance-none"
+              style={{ background: cardBg, border: `1px solid ${border}` }}
+            >
+              <option value="">—</option>
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+              <option value="ml">ml</option>
+              <option value="l">l</option>
+              <option value="buc">buc</option>
+              <option value="linguri">linguri</option>
+              <option value="lingurițe">lingurițe</option>
+              <option value="căni">căni</option>
+              <option value="felii">felii</option>
+              <option value="pachete">pachete</option>
+              <option value="sticle">sticle</option>
+              <option value="conserve">conserve</option>
+            </select>
+          </div>
+          <div className="w-[130px]">
+            <label className="text-xs font-medium opacity-60 mb-1 block">Expiră (opțional)</label>
+            <input
+              type="date"
+              value={newExpiry}
+              onChange={e => setNewExpiry(e.target.value)}
+              className="w-full px-2 py-2 rounded-lg text-sm outline-none"
+              style={{ background: cardBg, border: `1px solid ${border}` }}
+            />
+          </div>
           <button
             type="submit"
-            className="px-4 py-2 rounded-lg text-sm font-semibold"
+            disabled={!newName.trim()}
+            className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
             style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
           >
             + Adaugă
