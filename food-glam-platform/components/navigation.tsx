@@ -357,10 +357,24 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           {/* separator */}
           <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
 
-          {/* Group 2: Planifică & Organizează */}
+          {/* Group 2: Planifică */}
           {[
             { href: '/plan',          label: 'Plan de masă' },
             { href: '/party',         label: 'Plan de petrecere' },
+          ].map(item => {
+            const active = isActive(item.href)
+            return (
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >{item.label}</Link>
+            )
+          })}
+
+          {/* separator */}
+          <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
+
+          {/* Group 3: Bucătărie */}
+          {[
             { href: '/me/pantry',     label: 'Cămara' },
             { href: '/me/bar',        label: 'Barul' },
           ].map(item => {
@@ -375,9 +389,9 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           {/* separator */}
           <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
 
-          {/* Group 3: Personal */}
+          {/* Group 4: Personal */}
           {[
-            { href: '/me/cookbook',    label: 'Cartea mea' },
+            { href: '/me/cookbook',    label: 'Rețetele mele' },
           ].map(item => {
             const active = isActive(item.href)
             return (
