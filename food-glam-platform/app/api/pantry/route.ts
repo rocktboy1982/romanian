@@ -53,10 +53,37 @@ export async function POST(req: NextRequest) {
     const canonical = resolveIngredientName(name.trim().toLowerCase())
     const qtyNum = quantity != null ? Number(quantity) : null
 
-    const { data, error } = await supabase
+    // Check if item already exists for this user+name+category
+    const { data: existing } = await supabase
       .from('pantry')
-      .upsert(
-        {
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('canonical_name', canonical)
+      .eq('category', category)
+      .maybeSingle()
+
+    let data, error
+    if (existing) {
+      // Update existing item
+      ;({ data, error } = await supabase
+        .from('pantry')
+        .update({
+          item_name: name.trim(),
+          quantity: quantity != null ? String(quantity) : null,
+          qty_numeric: qtyNum,
+          unit: unit || null,
+          expiration_date: expiration_date || null,
+          source,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single())
+    } else {
+      // Insert new item
+      ;({ data, error } = await supabase
+        .from('pantry')
+        .insert({
           user_id: user.id,
           item_name: name.trim(),
           canonical_name: canonical,
@@ -66,12 +93,10 @@ export async function POST(req: NextRequest) {
           category,
           expiration_date: expiration_date || null,
           source,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,canonical_name,category', ignoreDuplicates: false }
-      )
-      .select()
-      .single()
+        })
+        .select()
+        .single())
+    }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data)
