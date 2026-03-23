@@ -115,8 +115,7 @@ function useRealUser() {
     })
     localStorage.removeItem('mock_user')
     setUser(null)
-    // Redirect to Google logout to clear Google session, then back to homepage
-    window.location.href = 'https://accounts.google.com/Logout?continue=https://marechef.ro'
+    window.location.href = '/'
   }
 
   return { user, hydrated, signOut }
