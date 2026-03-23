@@ -53,7 +53,10 @@ export default function MeClientPage() {
         if (data.user) {
           if (mounted) setProfileLoading(true)
           try {
-            const res = await fetch('/api/profiles/me')
+            const { data: { session } } = await supabase.auth.getSession()
+            const profileHeaders: Record<string, string> = {}
+            if (session?.access_token) profileHeaders['Authorization'] = `Bearer ${session.access_token}`
+            const res = await fetch('/api/profiles/me', { headers: profileHeaders })
             if (res.ok) {
               const profileData = await res.json()
               if (mounted && profileData.profile) {
@@ -75,7 +78,9 @@ export default function MeClientPage() {
       if (session?.user) {
         // Fetch profile when auth state changes
         if (mounted) setProfileLoading(true)
-        fetch('/api/profiles/me')
+        const profileHeaders: Record<string, string> = {}
+        if (session?.access_token) profileHeaders['Authorization'] = `Bearer ${session.access_token}`
+        fetch('/api/profiles/me', { headers: profileHeaders })
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (mounted && data?.profile) {

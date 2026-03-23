@@ -43,10 +43,20 @@ export default function MeCookbookClient() {
   const [filterFoodTag, setFilterFoodTag] = useState("")
   const [pickerPostId, setPickerPostId] = useState<string | null>(null)
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   const fetchSavedItems = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/collection-items")
+      const headers = await getAuthHeaders()
+      const res = await fetch("/api/collection-items", { headers })
       if (res.ok) {
         const data: CollectionItem[] = await res.json()
         // Filter to only recipe-type posts (exclude video/short)
@@ -62,7 +72,7 @@ export default function MeCookbookClient() {
     } finally {
       setLoading(false)
     }
-  }, [push])
+  }, [push, getAuthHeaders])
 
   useEffect(() => {
     ;(async () => {
@@ -130,7 +140,7 @@ export default function MeCookbookClient() {
     try {
       await fetch("/api/collection-items", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ post_id: postId }),
       })
       push({ message: "Recipe removed from cookbook", type: "success" })

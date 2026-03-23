@@ -93,6 +93,15 @@ useEffect(() => {
   fetchPlans();
 }, []);
 
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+  return headers;
+};
+
 const createPlan = async (title: string) => {
   if (!title) return;
   // optimistic UI: add temp plan locally first
@@ -101,7 +110,7 @@ const createPlan = async (title: string) => {
   persistLocal([temp, ...plans]);
 
   try {
-    const res = await fetch('/api/meal-plans', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) });
+    const res = await fetch('/api/meal-plans', { method: 'POST', headers: await getAuthHeaders(), body: JSON.stringify({ title }) });
     if (!res.ok) throw new Error('Create failed')
     const created = await res.json()
     setPlans((p) => p.map((pl) => (pl.id === temp.id ? (created as MealPlan) : pl)));
@@ -120,7 +129,7 @@ const deletePlan = async (id: string) => {
   setPlans((p) => p.filter((pl) => pl.id !== id));
   persistLocal(plans.filter((pl) => pl.id !== id));
   try {
-    const res = await fetch('/api/meal-plans', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    const res = await fetch('/api/meal-plans', { method: 'DELETE', headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
     if (!res.ok) throw new Error('Delete failed')
   } catch (e) {
     // rollback
@@ -136,7 +145,7 @@ const updatePlan = async (id: string, title: string, meals: string[]) => {
   setPlans((p) => p.map((pl) => (pl.id === id ? { ...pl, title } : pl)));
   persistLocal(plans.map((pl) => (pl.id === id ? { ...pl, title } : pl)));
   try {
-    const res = await fetch('/api/meal-plans', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, title, meals }) });
+    const res = await fetch('/api/meal-plans', { method: 'PUT', headers: await getAuthHeaders(), body: JSON.stringify({ id, title, meals }) });
     if (!res.ok) throw new Error('Update failed')
     const updated = await res.json()
     setPlans((p) => p.map((pl) => (pl.id === id ? (updated as MealPlan) : pl)));

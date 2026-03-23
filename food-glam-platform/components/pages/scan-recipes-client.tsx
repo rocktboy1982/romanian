@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { RecognitionResult, BudgetTier } from '@/lib/ai-provider'
+import { supabase } from '@/lib/supabase-client'
 
 interface RecipeMatch {
   recipe_id: string
@@ -33,10 +34,14 @@ export default function ScanRecipesClient({ sessionId }: { sessionId: string }) 
   const [budgetTier, setBudgetTier] = useState<BudgetTier>('normal')
   const [orderingFor, setOrderingFor] = useState<string | null>(null)
 
-  const userId =
-    typeof window !== 'undefined'
-      ? (() => { try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' } })()
-      : 'anonymous'
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
 
   const fetchRecipes = useCallback(async (tier: BudgetTier) => {
     setLoading(true)
@@ -76,7 +81,7 @@ export default function ScanRecipesClient({ sessionId }: { sessionId: string }) 
   useEffect(() => {
     // Fetch budget tier once, then immediately fetch recipes with that tier
     let cancelled = false
-    fetch('/api/grocery/budget-prefs', { headers: { 'x-mock-user-id': userId } })
+    getAuthHeaders().then(headers => fetch('/api/grocery/budget-prefs', { headers }))
       .then(r => r.ok ? r.json() : { tier: 'normal' })
       .then(d => {
         const tier = (d.tier as BudgetTier) ?? 'normal'
@@ -87,7 +92,7 @@ export default function ScanRecipesClient({ sessionId }: { sessionId: string }) 
       })
       .catch(() => { if (!cancelled) fetchRecipes('normal') })
     return () => { cancelled = true }
-  }, [fetchRecipes, userId])
+  }, [fetchRecipes, getAuthHeaders])
 
   const handleOrderMissing = async (recipe: RecipeMatch) => {
     if (!recipe.missing_ingredients.length) return

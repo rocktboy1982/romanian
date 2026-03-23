@@ -5,6 +5,7 @@ import Image from 'next/image'
 import FallbackImage from '@/components/FallbackImage'
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/toast'
+import { supabase } from '@/lib/supabase-client'
 
 type Post = {
   id: string
@@ -40,10 +41,20 @@ export default function ModerationClient() {
   const [rejectReason, setRejectReason] = useState('')
   const toast = useToast()
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   const fetchPending = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/moderation')
+      const headers = await getAuthHeaders()
+      const res = await fetch('/api/moderation', { headers })
       if (!res.ok) throw new Error('Fetch failed')
       const data = await res.json()
       setItems(Array.isArray(data) ? data : [])
@@ -52,12 +63,13 @@ export default function ModerationClient() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
   const fetchReports = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/reports?status=open')
+      const headers = await getAuthHeaders()
+      const res = await fetch('/api/reports?status=open', { headers })
       if (!res.ok) throw new Error('Fetch failed')
       const data = await res.json()
       setReports(data.reports || [])
@@ -66,7 +78,7 @@ export default function ModerationClient() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
   useEffect(() => {
     if (tab === 'queue') fetchPending()
@@ -79,7 +91,7 @@ export default function ModerationClient() {
       if (reason) body.reason = reason
       const res = await fetch('/api/moderation', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error('Action failed')
@@ -104,7 +116,7 @@ export default function ModerationClient() {
     try {
       const res = await fetch('/api/reports', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ id: reportId, status: 'closed' }),
       })
       if (!res.ok) throw new Error('Failed')

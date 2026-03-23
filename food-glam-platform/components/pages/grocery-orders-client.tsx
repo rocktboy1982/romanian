@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase-client'
 
 interface GroceryOrder {
   id: string
@@ -31,26 +32,27 @@ const VENDOR_LABELS: Record<string, string> = {
 
 const BG = '#dde3ee'
 
-function getUserId() {
-  if (typeof window === 'undefined') return 'anonymous'
-  try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' }
-}
-
 export default function GroceryOrdersClient() {
   const router = useRouter()
   const [orders, setOrders] = useState<GroceryOrder[]>([])
   const [loading, setLoading] = useState(true)
 
-  const userId = getUserId()
-  const headers = { 'x-mock-user-id': userId }
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch('/api/grocery/orders', { headers })
+      const res = await fetch('/api/grocery/orders', { headers: await getAuthHeaders() })
       if (res.ok) setOrders(await res.json())
     } catch { /* ignore */ }
     finally { setLoading(false) }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [getAuthHeaders])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 

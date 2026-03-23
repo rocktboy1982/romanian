@@ -43,6 +43,15 @@ export default function CollectionsRemoteClient() {
 
   useEffect(() => { fetchCols(); }, []);
 
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+    return headers;
+  };
+
   const add = async () => {
     if (!title.trim()) return;
     const temp: Collection = { id: `temp-${Date.now()}`, title: title.trim(), items: [], created_at: new Date().toISOString() };
@@ -50,7 +59,7 @@ export default function CollectionsRemoteClient() {
     persist([temp, ...cols]);
     setTitle("");
     try {
-      const res = await fetch('/api/collections', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: temp.title }) });
+      const res = await fetch('/api/collections', { method: 'POST', headers: await getAuthHeaders(), body: JSON.stringify({ title: temp.title }) });
       if (!res.ok) throw new Error('Create failed');
       const created = await res.json();
       setCols((s) => s.map((c) => c.id === temp.id ? created as Collection : c));
@@ -70,7 +79,7 @@ export default function CollectionsRemoteClient() {
     setItemInputs((s) => ({ ...s, [colId]: '' }));
     try {
       const updatedItems = next.find(c => c.id === colId)?.items || [];
-      const res = await fetch('/api/collections', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: colId, items: updatedItems }) });
+      const res = await fetch('/api/collections', { method: 'PUT', headers: await getAuthHeaders(), body: JSON.stringify({ id: colId, items: updatedItems }) });
       if (!res.ok) throw new Error('Update failed');
       const updated = await res.json();
       setCols((s) => s.map(c => c.id === colId ? updated as Collection : c));
@@ -85,7 +94,7 @@ export default function CollectionsRemoteClient() {
     setCols((s) => s.filter((c) => c.id !== id));
     persist(cols.filter((c) => c.id !== id));
     try {
-      const res = await fetch('/api/collections', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/collections', { method: 'DELETE', headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
       if (!res.ok) throw new Error('Delete failed');
     } catch (e) {
       setCols(prev); persist(prev); push({ message: 'Failed to delete remotely', type: 'error' });
@@ -99,7 +108,7 @@ export default function CollectionsRemoteClient() {
     persist(next);
     try {
       const updatedItems = next.find(c => c.id === colId)?.items || [];
-      const res = await fetch('/api/collections', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: colId, items: updatedItems }) });
+      const res = await fetch('/api/collections', { method: 'PUT', headers: await getAuthHeaders(), body: JSON.stringify({ id: colId, items: updatedItems }) });
       if (!res.ok) throw new Error('Update failed');
       const updated = await res.json();
       setCols((s) => s.map(c => c.id === colId ? updated as Collection : c));

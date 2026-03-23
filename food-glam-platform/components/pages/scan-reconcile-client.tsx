@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase-client'
 
 interface ShoppingList {
   id: string
@@ -19,10 +20,6 @@ const BG = '#dde3ee'
 
 export default function ScanReconcileClient({ sessionId }: { sessionId: string }) {
   const router = useRouter()
-  const userId =
-    typeof window !== 'undefined'
-      ? (() => { try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' } })()
-      : 'anonymous'
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,8 +27,17 @@ export default function ScanReconcileClient({ sessionId }: { sessionId: string }
   const [result, setResult] = useState<ReconcileResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   useEffect(() => {
-    fetch('/api/shopping-lists', { headers: { 'x-mock-user-id': userId } })
+    getAuthHeaders().then(headers => fetch('/api/shopping-lists', { headers }))
       .then(r => r.ok ? r.json() : [])
       .then((data: ShoppingList[]) => {
         setLists(data)
@@ -39,7 +45,7 @@ export default function ScanReconcileClient({ sessionId }: { sessionId: string }
       })
       .catch(() => { /* ignore */ })
       .finally(() => setLoading(false))
-  }, [])
+  }, [getAuthHeaders])
 
   const handleReconcile = useCallback(async () => {
     if (!selectedListId) return
@@ -48,7 +54,7 @@ export default function ScanReconcileClient({ sessionId }: { sessionId: string }
     try {
       const res = await fetch('/api/vision/reconcile-list', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': userId },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ session_id: sessionId, list_id: selectedListId }),
       })
       if (!res.ok) {
@@ -61,7 +67,7 @@ export default function ScanReconcileClient({ sessionId }: { sessionId: string }
     } finally {
       setReconciling(false)
     }
-  }, [sessionId, selectedListId, userId])
+  }, [sessionId, selectedListId, getAuthHeaders])
 
   if (loading) {
     return (

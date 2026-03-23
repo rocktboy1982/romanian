@@ -7,6 +7,7 @@ import { usePreferredRecipes } from '@/lib/preferred-recipes';
 import ReportButton from '@/components/ReportButton';
 import DeleteContentButton from '@/components/DeleteContentButton';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase-client';
 
 interface ExportData {
   servings?: number;
@@ -41,6 +42,15 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData,
     setSaved(preferredIds.has(recipeId));
   }, [preferredIds, recipeId]);
 
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }
+
   const handleSave = async () => {
     try {
       if (saved) {
@@ -52,7 +62,7 @@ export default function RecipeActionsClient({ recipeId, slug, title, exportData,
       // Also try API call for cookbook
       const res = await fetch('/api/collection-items', {
         method: saved ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ post_id: recipeId })
       });
 

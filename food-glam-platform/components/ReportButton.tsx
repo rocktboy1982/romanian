@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { supabase } from '@/lib/supabase-client'
 
 const REPORT_THRESHOLD = 20
 
@@ -88,18 +89,15 @@ export default function ReportButton({
     if (!reason) return
     setSubmitting(true)
 
-    /* get reporter handle from mock_user */
-    let reporterHandle = 'anonymous'
     try {
-      const raw = localStorage.getItem('mock_user')
-      if (raw) reporterHandle = JSON.parse(raw).handle ?? 'anonymous'
-    } catch { /* ignore */ }
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
 
-    try {
       const res = await fetch('/api/report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentId, contentType, contentTitle, reason, detail, reporterHandle }),
+        headers,
+        body: JSON.stringify({ contentId, contentType, contentTitle, reason, detail }),
       })
       const data = await res.json()
 

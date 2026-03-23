@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import FallbackImage from '@/components/FallbackImage'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '@/lib/supabase-client'
 
 const BG = '#dde3ee'
 
@@ -28,11 +29,21 @@ export default function ScanClient() {
   const [keyError, setKeyError] = useState<string | null>(null)
   const [keySuccess, setKeySuccess] = useState(false)
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   // Check if user has a Gemini API key configured
   useEffect(() => {
     async function checkApiKey() {
       try {
-        const res = await fetch('/api/profiles/me/api-key')
+        const headers = await getAuthHeaders()
+        const res = await fetch('/api/profiles/me/api-key', { headers })
         if (res.ok) {
           const data = await res.json()
           setKeyStatus(data.has_key ? 'present' : 'missing')
@@ -45,7 +56,7 @@ export default function ScanClient() {
       }
     }
     checkApiKey()
-  }, [])
+  }, [getAuthHeaders])
 
   // If we're in merge mode, show how many ingredients already found
   useEffect(() => {
@@ -91,7 +102,7 @@ export default function ScanClient() {
     try {
       const res = await fetch('/api/profiles/me/api-key', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ key: trimmed }),
       })
       if (res.ok) {
@@ -140,7 +151,7 @@ export default function ScanClient() {
 
         const mergeRes = await fetch('/api/vision/recognise/merge', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({
             session_id: existingSessionId,
             merge_ingredients: newIngredients,

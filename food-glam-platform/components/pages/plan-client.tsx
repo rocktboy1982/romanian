@@ -9,6 +9,7 @@ import { useUserTier } from '@/lib/use-user-tier'
 import ProPaywallModal from '@/components/ui/pro-paywall-modal'
 import { isAlcoholicIngredient, getEmagSearchUrl, getBauturiSearchUrl, parseIngredientString } from '@/lib/normalize-for-search'
 import { resolveIngredientName } from '@/lib/ingredient-aliases'
+import { supabase } from '@/lib/supabase-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -409,7 +410,11 @@ export default function PlanClient() {
   const [pantryMap, setPantryMap] = useState<Map<string, { qty: number; unit: string }>>(new Map())
   useEffect(() => {
     if (view !== 'shopping') return
-    fetch('/api/pantry?category=pantry')
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const pantryHeaders: Record<string, string> = {}
+      if (session?.access_token) pantryHeaders['Authorization'] = `Bearer ${session.access_token}`
+      return fetch('/api/pantry?category=pantry', { headers: pantryHeaders })
+    })
       .then(r => r.ok ? r.json() : [])
       .then((items: Array<{ canonical_name: string; item_name: string; qty_numeric: number | null; unit: string | null }>) => {
         const map = new Map<string, { qty: number; unit: string }>()
@@ -573,21 +578,18 @@ export default function PlanClient() {
     setShopSaveState('saving')
     setShopSaveError('')
     try {
-      let mockUserId = 'anonymous'
-      try {
-        const stored = localStorage.getItem('mock_user')
-        if (stored) {
-          const parsed = JSON.parse(stored) as { id?: string }
-          if (parsed.id) mockUserId = parsed.id
-        }
-      } catch { /* ignore */ }
+      const { data: { session } } = await supabase.auth.getSession()
+      const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (session?.access_token) {
+        authHeaders['Authorization'] = `Bearer ${session.access_token}`
+      }
 
        const now = new Date()
        const listName = `Plan de Masă \u2013 ${now.toLocaleDateString('ro-RO', { month: 'short', day: 'numeric', year: 'numeric' })}`
 
       const createRes = await fetch('/api/shopping-lists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': mockUserId },
+        headers: authHeaders,
         body: JSON.stringify({ name: listName, source_type: 'meal_plan' }),
       })
       if (!createRes.ok) {
@@ -601,7 +603,7 @@ export default function PlanClient() {
         shopItems.map((item) =>
           fetch(`/api/shopping-lists/${created.id}/items`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-mock-user-id': mockUserId },
+            headers: authHeaders,
             body: JSON.stringify({
               name: item.name,
               amount: item.totalQty,

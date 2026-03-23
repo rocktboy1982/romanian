@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { supabase } from "@/lib/supabase-client";
 
 export default function ShoppingListClient() {
   const { push } = useToast();
@@ -13,7 +14,10 @@ export default function ShoppingListClient() {
       <div className="flex gap-2">
         <Button onClick={async () => {
           try {
-            const res = await fetch('/api/shopping-lists/merge', { method: 'POST' });
+            const { data: { session } } = await supabase.auth.getSession()
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+            if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+            const res = await fetch('/api/shopping-lists/merge', { method: 'POST', headers });
              if (!res.ok) throw new Error('Combinarea a eșuat');
              push({ message: 'Liste combinate (placeholder)', type: 'success' });
            } catch (e) {

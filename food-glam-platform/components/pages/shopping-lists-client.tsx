@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { sanitizeUrl } from '@/lib/sanitize'
+import { supabase } from '@/lib/supabase-client'
 
 type ShoppingList = {
   id: string
@@ -10,11 +11,6 @@ type ShoppingList = {
   source_type?: string | null
   created_at: string
   shopping_list_items?: { count: number }[] | null
-}
-
-function getUserId() {
-  if (typeof window === 'undefined') return 'anonymous'
-  try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' }
 }
 
 export default function ShoppingListsClient() {
@@ -25,10 +21,19 @@ export default function ShoppingListsClient() {
   const [newName, setNewName] = useState('')
   const [showCreate, setShowCreate] = useState(false)
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   const fetchLists = useCallback(async () => {
     try {
       const res = await fetch('/api/shopping-lists', {
-        headers: { 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
       })
       if (!res.ok) return
       const data = await res.json()
@@ -38,7 +43,7 @@ export default function ShoppingListsClient() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
   useEffect(() => {
     fetchLists()
@@ -51,7 +56,7 @@ export default function ShoppingListsClient() {
     try {
       const res = await fetch('/api/shopping-lists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ name, source_type: 'manual' }),
       })
       if (!res.ok) return
@@ -71,7 +76,7 @@ export default function ShoppingListsClient() {
     try {
       await fetch('/api/shopping-lists', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ id }),
       })
       setLists((prev) => prev.filter((l) => l.id !== id))
@@ -84,7 +89,7 @@ export default function ShoppingListsClient() {
      try {
        const res = await fetch('/api/shopping-lists/share', {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+         headers: await getAuthHeaders(),
          body: JSON.stringify({ id }),
        })
        if (!res.ok) return

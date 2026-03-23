@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation'
 import { freshfulReferralUrl } from '@/lib/affiliate'
 import { sanitizeUrl } from '@/lib/sanitize'
 import IngredientLink from '@/components/ui/ingredient-link'
-
-function getUserId() {
-  if (typeof window === 'undefined') return 'anonymous'
-  try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' }
-}
+import { supabase } from '@/lib/supabase-client'
 
 type ItemMeta = { subtype?: string; category?: string; recipes?: string[] }
 
@@ -80,11 +76,21 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
   const [loadingPantry, setLoadingPantry] = useState(false)
   const addInputRef = useRef<HTMLInputElement>(null)
 
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
+
   const fetchData = useCallback(async () => {
     try {
+      const headers = await getAuthHeaders()
       const [listsRes, itemsRes] = await Promise.all([
-        fetch('/api/shopping-lists', { headers: { 'x-mock-user-id': getUserId() } }),
-        fetch(`/api/shopping-lists/${listId}/items`, { headers: { 'x-mock-user-id': getUserId() } }),
+        fetch('/api/shopping-lists', { headers }),
+        fetch(`/api/shopping-lists/${listId}/items`, { headers }),
       ])
       if (listsRes.ok) {
         const allLists = await listsRes.json()
@@ -103,7 +109,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     } finally {
       setLoading(false)
     }
-  }, [listId])
+  }, [listId, getAuthHeaders])
 
   useEffect(() => {
     fetchData()
@@ -116,7 +122,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     try {
       const res = await fetch('/api/shopping-lists', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ id: listId, name: trimmed }),
       })
       if (res.ok) {
@@ -135,7 +141,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     try {
       const res = await fetch(`/api/shopping-lists/${listId}/items`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           name,
           amount: newItemAmount ? parseFloat(newItemAmount) : undefined,
@@ -163,7 +169,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     try {
       await fetch(`/api/shopping-lists/${listId}/items`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ item_id: item.id, checked: newChecked }),
       })
     } catch {
@@ -175,11 +181,12 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     const prev = [...items]
     setItems((items) => items.map((i) => ({ ...i, checked })))
     try {
+      const batchHeaders = await getAuthHeaders()
       await Promise.all(
         items.map((item) =>
           fetch(`/api/shopping-lists/${listId}/items`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+            headers: batchHeaders,
             body: JSON.stringify({ item_id: item.id, checked }),
           })
         )
@@ -194,7 +201,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     try {
       await fetch(`/api/shopping-lists/${listId}/items`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ item_id: itemId }),
       })
     } catch {
@@ -219,7 +226,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     try {
       const res = await fetch(`/api/shopping-lists/${listId}/items`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           item_id: editingItemId,
           name,
@@ -241,7 +248,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
      try {
        const res = await fetch('/api/shopping-lists/share', {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+         headers: await getAuthHeaders(),
          body: JSON.stringify({ id: listId }),
        })
        if (res.ok) {
@@ -291,7 +298,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
   const handleFetchPantry = async () => {
     setLoadingPantry(true)
     try {
-      const res = await fetch('/api/pantry', { headers: { 'x-mock-user-id': getUserId() } })
+      const res = await fetch('/api/pantry', { headers: await getAuthHeaders() })
       if (res.ok) {
         const data = await res.json()
         setPantryItems(data)
@@ -314,11 +321,12 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
 
     setItems((prev) => prev.map((i) => matchedIds.includes(i.id) ? { ...i, checked: true } : i))
     try {
+      const pantryMatchHeaders = await getAuthHeaders()
       await Promise.all(
         matchedIds.map((itemId) =>
           fetch(`/api/shopping-lists/${listId}/items`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+            headers: pantryMatchHeaders,
             body: JSON.stringify({ item_id: itemId, checked: true }),
           })
         )
@@ -337,11 +345,12 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
     const checkedIds = checked.map((i) => i.id)
     setItems((prev) => prev.filter((i) => !checkedIds.includes(i.id)))
     try {
+      const clearHeaders = await getAuthHeaders()
       await Promise.all(
         checkedIds.map((itemId) =>
           fetch(`/api/shopping-lists/${listId}/items`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json', 'x-mock-user-id': getUserId() },
+            headers: clearHeaders,
             body: JSON.stringify({ item_id: itemId }),
           })
         )

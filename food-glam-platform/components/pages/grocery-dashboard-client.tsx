@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { BudgetTier } from '@/lib/ai-provider'
 import type { GroceryVendor } from '@/lib/grocery/vendors'
+import { supabase } from '@/lib/supabase-client'
 
 interface ShoppingList {
   id: string
@@ -33,11 +34,6 @@ const BUDGET_META: Record<BudgetTier, { label: string; color: string; bg: string
 
 const BG = '#dde3ee'
 
-function getUserId() {
-  if (typeof window === 'undefined') return 'anonymous'
-  try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' }
-}
-
 export default function GroceryDashboardClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -53,11 +49,18 @@ export default function GroceryDashboardClient() {
   const [togglingVendor, setTogglingVendor] = useState<string | null>(null)
   const [showSetup, setShowSetup] = useState(false) // accordion for budget/vendor config
 
-  const userId = getUserId()
-  const headers = { 'x-mock-user-id': userId }
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
 
   const fetchAll = useCallback(async () => {
     try {
+      const headers = await getAuthHeaders()
       const [listsRes, vendorsRes, myVRes, budgetRes] = await Promise.all([
         fetch('/api/shopping-lists', { headers }),
         fetch('/api/grocery/vendors'),
@@ -75,7 +78,7 @@ export default function GroceryDashboardClient() {
       if (budgetRes.ok) setBudgetPrefs(await budgetRes.json())
     } catch { /* ignore */ }
     finally { setLoading(false) }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [getAuthHeaders])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
@@ -86,14 +89,14 @@ export default function GroceryDashboardClient() {
       if (isActive) {
         await fetch('/api/grocery/vendors/my', {
           method: 'DELETE',
-          headers: { ...headers, 'Content-Type': 'application/json' },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({ vendor_id: vendorId }),
         })
         setMyVendors(prev => prev.filter(v => v.vendor_id !== vendorId))
       } else {
         const res = await fetch('/api/grocery/vendors/my', {
           method: 'POST',
-          headers: { ...headers, 'Content-Type': 'application/json' },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({ vendor_id: vendorId, is_default: myVendors.length === 0 }),
         })
         if (res.ok) {
@@ -112,7 +115,7 @@ export default function GroceryDashboardClient() {
     try {
       const res = await fetch('/api/grocery/budget-prefs', {
         method: 'PATCH',
-        headers: { ...headers, 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ default_budget_tier: tier }),
       })
       if (res.ok) setBudgetPrefs(await res.json())

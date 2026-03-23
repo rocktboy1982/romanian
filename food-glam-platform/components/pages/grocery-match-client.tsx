@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { BudgetTier, CartResult, IngredientMatch } from '@/lib/ai-provider'
+import { supabase } from '@/lib/supabase-client'
 
 interface ListItem {
   id: string
@@ -51,18 +52,22 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
   const [showVendorPicker, setShowVendorPicker] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
-  const userId =
-    typeof window !== 'undefined'
-      ? (() => { try { return JSON.parse(localStorage.getItem('mock_user') ?? '{}')?.id ?? 'anonymous' } catch { return 'anonymous' } })()
-      : 'anonymous'
-  const authHeaders = { 'x-mock-user-id': userId }
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+    return headers
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
+      const headers = await getAuthHeaders()
       const [itemsRes, budgetRes, vendorRes] = await Promise.all([
-        fetch(`/api/shopping-lists/${listId}/items`, { headers: authHeaders }),
-        fetch('/api/grocery/budget-prefs', { headers: authHeaders }),
-        fetch('/api/grocery/vendors/my', { headers: authHeaders }),
+        fetch(`/api/shopping-lists/${listId}/items`, { headers }),
+        fetch('/api/grocery/budget-prefs', { headers }),
+        fetch('/api/grocery/vendors/my', { headers }),
       ])
       if (itemsRes.ok) setItems(await itemsRes.json())
       if (budgetRes.ok) { const d = await budgetRes.json(); setBudgetTier(d.default_budget_tier) }
@@ -88,7 +93,7 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
       )
       const res = await fetch('/api/grocery/match', {
         method: 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ ingredients, vendor_id: vendorId, budget_tier: budgetTier }),
       })
        if (!res.ok) throw new Error('Potrivirea a eșuat')
@@ -118,7 +123,7 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
 
       const res = await fetch('/api/grocery/checkout', {
         method: 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ vendor_id: vendorId, items: cartItems, budget_tier: budgetTier }),
       })
       if (!res.ok) throw new Error('Comanda a eșuat')
@@ -128,7 +133,7 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
       // Save order to Supabase
       await fetch('/api/grocery/orders', {
         method: 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           shopping_list_id: listId,
           vendor_id: vendorId,

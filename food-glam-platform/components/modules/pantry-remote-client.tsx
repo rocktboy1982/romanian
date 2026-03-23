@@ -42,6 +42,15 @@ export default function PantryRemoteClient() {
 
   useEffect(() => { fetchItems(); }, []);
 
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+    return headers;
+  };
+
   const add = async () => {
     if (!name.trim()) return;
     const temp: PantryItem = { id: `temp-${Date.now()}`, name: name.trim(), qty: qty.trim(), created_at: new Date().toISOString() };
@@ -49,7 +58,7 @@ export default function PantryRemoteClient() {
     persist([temp, ...items]);
     setName(""); setQty("");
     try {
-      const res = await fetch('/api/pantry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: temp.name, qty: temp.qty }) });
+      const res = await fetch('/api/pantry', { method: 'POST', headers: await getAuthHeaders(), body: JSON.stringify({ name: temp.name, qty: temp.qty }) });
       if (!res.ok) throw new Error('Create failed');
       const created = await res.json();
       setItems((s) => s.map((it) => it.id === temp.id ? created as PantryItem : it));
@@ -65,7 +74,7 @@ export default function PantryRemoteClient() {
     setItems((s) => s.filter((it) => it.id !== id));
     persist(items.filter((it) => it.id !== id));
     try {
-      const res = await fetch('/api/pantry', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/pantry', { method: 'DELETE', headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
       if (!res.ok) throw new Error('Delete failed');
     } catch (e) {
       setItems(prev); persist(prev); push({ message: 'Failed to delete remotely', type: 'error' });
