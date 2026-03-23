@@ -340,41 +340,62 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           className="flex items-center gap-1 px-6 pb-1"
           style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
         >
+          {/* Group 1: Descoperă */}
           {[
             { href: '/',              label: 'Acasă' },
             { href: '/cookbooks',     label: 'Cărți de bucate' },
             { href: '/cocktailbooks', label: 'Cocktailuri' },
+          ].map(item => {
+            const active = isActive(item.href)
+            return (
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >{item.label}</Link>
+            )
+          })}
+
+          {/* separator */}
+          <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
+
+          {/* Group 2: Planifică & Organizează */}
+          {[
             { href: '/plan',          label: 'Plan de masă' },
             { href: '/party',         label: 'Plan de petrecere' },
             { href: '/me/pantry',     label: 'Cămara' },
             { href: '/me/bar',        label: 'Barul' },
+          ].map(item => {
+            const active = isActive(item.href)
+            return (
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >{item.label}</Link>
+            )
+          })}
+
+          {/* separator */}
+          <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
+
+          {/* Group 3: Personal */}
+          {[
             { href: '/me/cookbook',    label: 'Cartea mea' },
           ].map(item => {
             const active = isActive(item.href)
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                 style={active
-                   ? (theme === 'dark'
-                       ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }
-                       : { background: '#fff', color: '#8B1A2B' })
-                   : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }
-                 }
-              >
-                {item.label}
-              </Link>
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >{item.label}</Link>
             )
           })}
 
           {/* spacer */}
           <div className="flex-1" />
 
-            {/* secondary links */}
-            <Link href="/me/preferred" className="text-xs px-2 py-1 font-medium" style={{ color: theme === 'dark' ? '#ff9500' : 'rgba(255,255,255,0.85)' }}>⭐ Rețete Preferate</Link>
+            {/* secondary links — right side */}
             <Link href="/submit/recipe" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Rețetă</Link>
             <Link href="/submit/cocktail" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#888' : 'rgba(255,255,255,0.7)' }}>＋ Băutură</Link>
+            <div className="w-px h-3 self-center mx-1" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)' }} />
+            <Link href="/me/preferred" className="text-xs px-2 py-1 font-medium" style={{ color: theme === 'dark' ? '#ff9500' : 'rgba(255,255,255,0.85)' }}>⭐ Rețete Preferate</Link>
+            <div className="w-px h-3 self-center mx-1" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)' }} />
             <Link href="/search" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#555' : 'rgba(255,255,255,0.6)' }}>Toate rețetele</Link>
             <Link href="/rankings" className="text-xs px-2 py-1" style={{ color: theme === 'dark' ? '#555' : 'rgba(255,255,255,0.6)' }}>Clasament</Link>
         </div>
