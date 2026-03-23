@@ -60,7 +60,9 @@ function useRealUser() {
 
     const initAuth = async () => {
       try {
-        // Check current session
+        // First call getSession() — this detects #access_token in URL hash after OAuth
+        await supabase.auth.getSession()
+        // Then getUser() to validate the session server-side
         const { data: { user: authUser } } = await supabase.auth.getUser()
         
         if (mounted && authUser) {
