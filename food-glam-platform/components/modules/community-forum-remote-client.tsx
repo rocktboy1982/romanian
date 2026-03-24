@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { supabase } from '@/lib/supabase-client'
 import { useFeatureFlags } from "@/components/feature-flags-provider";
 
 /* ── Types ─────────────────────────────────────────────── */
@@ -31,8 +32,11 @@ function getMockUserId(): string {
   }
 }
 
-function authHeaders(): Record<string, string> {
-  return { "Content-Type": "application/json", "x-mock-user-id": getMockUserId() };
+async function authHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (session?.access_token) headers["Authorization"] = "Bearer " + session.access_token;
+  return headers;
 }
 
 /* ── Component ─────────────────────────────────────────── */
@@ -60,7 +64,7 @@ export default function CommunityForumRemoteClient() {
   const fetchThreads = useCallback(async () => {
     setLoadingRemote(true);
     try {
-      const res = await fetch("/api/threads", { headers: authHeaders() });
+      const res = await fetch("/api/threads", { headers: await authHeaders() });
       if (res.ok) {
         const json = (await res.json()) as { threads: Thread[] };
         setThreads(json.threads);
@@ -82,7 +86,7 @@ export default function CommunityForumRemoteClient() {
     try {
       const res = await fetch("/api/threads", {
         method: "POST",
-        headers: authHeaders(),
+        headers: await authHeaders(),
         body: JSON.stringify({ title: title.trim(), body: body.trim() || null }),
       });
       if (res.status === 429) {
@@ -116,7 +120,7 @@ export default function CommunityForumRemoteClient() {
     setExpandedId(threadId);
     setReplies([]);
     try {
-      const res = await fetch(`/api/replies?thread_id=${threadId}`, { headers: authHeaders() });
+      const res = await fetch(`/api/replies?thread_id=${threadId}`, { headers: await authHeaders() });
       if (res.ok) {
         const json = (await res.json()) as { replies: Reply[] };
         setReplies(json.replies);
@@ -134,7 +138,7 @@ export default function CommunityForumRemoteClient() {
     try {
       const res = await fetch("/api/replies", {
         method: "POST",
-        headers: authHeaders(),
+        headers: await authHeaders(),
         body: JSON.stringify({ thread_id: threadId, body: replyBody.trim() }),
       });
       if (res.status === 429) {
@@ -150,7 +154,7 @@ export default function CommunityForumRemoteClient() {
       }
       setReplyBody("");
       // Re-fetch replies
-      const rRes = await fetch(`/api/replies?thread_id=${threadId}`, { headers: authHeaders() });
+      const rRes = await fetch(`/api/replies?thread_id=${threadId}`, { headers: await authHeaders() });
       if (rRes.ok) {
         const json = (await rRes.json()) as { replies: Reply[] };
         setReplies(json.replies);

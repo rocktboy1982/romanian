@@ -1,5 +1,6 @@
 'use client'
 
+import { supabase } from '@/lib/supabase-client'
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
@@ -32,7 +33,7 @@ export function ReportButton({ entityType, entityId, className }: ReportButtonPr
     try {
       const mockUserId = typeof window !== 'undefined' ? localStorage.getItem('mock_user') : null
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (mockUserId) headers['x-mock-user-id'] = mockUserId
+      const { data: { session: _s } } = await supabase.auth.getSession(); if (_s?.access_token) headers['Authorization'] = 'Bearer ' + _s.access_token
 
       const res = await fetch('/api/reports', {
         method: 'POST',
