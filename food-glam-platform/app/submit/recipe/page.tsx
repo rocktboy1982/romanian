@@ -180,7 +180,7 @@ function SubmitRecipePageContent() {
   const [rateLimited, setRateLimited] = useState(false)
   /* auth check */
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => { setUser(data.user ? { id: data.user.id } : null); setAuthChecked(true) })
+    supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ? { id: data.session.user.id } : null); setAuthChecked(true) })
   }, [])
 
   /* load existing post for editing */
