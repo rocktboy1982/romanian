@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { isLocalSupabase } from '@/lib/supabase-utils'
 import { slugify } from '@/lib/slug'
 import { validateContent } from '@/lib/profanity-filter'
+import { getRequestUser } from '@/lib/get-user'
 
 const ALLOWED_TYPES = ['recipe', 'short', 'image', 'video'] as const
 const ALLOWED_STATUSES = ['draft', 'active'] as const
@@ -20,7 +21,7 @@ function hasPostedTodayDev(userId: string): boolean {
   )
 }
 /* ── POST: Create a new post ──────────────────────────────── */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { title, type, slug, hero_image_url, approach_id, diet_tags, food_tags, recipe_json, status } = body
@@ -67,11 +68,14 @@ export async function POST(req: Request) {
     }
 
     // ── Real Supabase ───────────────────────────────────────────────
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+
+    // Use service client for data operations (bypasses RLS with verified user id)
+    const supabase = createServiceSupabaseClient()
 
     // Rate limit: 1 post per day per user
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -113,7 +117,7 @@ export async function POST(req: Request) {
 }
 
 /* ── PATCH: Update an existing post ───────────────────────── */
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
     const { id, title, hero_image_url, approach_id, diet_tags, recipe_json, status } = body
@@ -122,12 +126,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Post id is required' }, { status: 400 })
     }
 
-    // Auth
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // Auth — supports both cookie sessions and Bearer token (Google OAuth via localStorage)
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+
+    const supabase = createServiceSupabaseClient()
 
     // Verify ownership
     const { data: existing } = await supabase
@@ -167,7 +173,7 @@ export async function PATCH(req: Request) {
 }
 
 /* ── DELETE: Archive a post (soft delete) ─────────────────── */
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
@@ -176,11 +182,13 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Post id is required' }, { status: 400 })
     }
 
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+
+    const supabase = createServiceSupabaseClient()
 
     // Verify ownership
     const { data: existing } = await supabase

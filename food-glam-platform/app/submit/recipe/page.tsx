@@ -381,9 +381,14 @@ function SubmitRecipePageContent() {
         status,
       }
 
+      const { data: { session: submitSession } } = await supabase.auth.getSession()
+      const submitHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (submitSession?.access_token) {
+        submitHeaders['Authorization'] = `Bearer ${submitSession.access_token}`
+      }
       const res = await fetch('/api/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: submitHeaders,
         body: JSON.stringify(payload),
       })
       const d = await res.json().catch(() => ({}))

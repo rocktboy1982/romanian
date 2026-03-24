@@ -80,6 +80,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
   const [newExpiry, setNewExpiry] = useState('')
   const [editId, setEditId] = useState<string | null>(null)
   const [editQty, setEditQty] = useState('')
+  const [editUnit, setEditUnit] = useState('')
   const [editExpiry, setEditExpiry] = useState('')
   const [matches, setMatches] = useState<MatchResult[] | null>(null)
   const [matchLoading, setMatchLoading] = useState(false)
@@ -152,6 +153,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
       body: JSON.stringify({
         id,
         quantity: editQty || null,
+        unit: editUnit || null,
         expiration_date: editExpiry || null,
       }),
     })
@@ -306,6 +308,26 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
                         className="w-14 px-1 py-1 rounded text-xs text-center"
                         style={{ background: cardBg, border: `1px solid ${border}` }}
                       />
+                      <select
+                        value={editUnit}
+                        onChange={e => setEditUnit(e.target.value)}
+                        className="px-1 py-1 rounded text-xs appearance-none"
+                        style={{ background: cardBg, border: `1px solid ${border}` }}
+                      >
+                        <option value="">—</option>
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="l">l</option>
+                        <option value="buc">buc</option>
+                        <option value="linguri">linguri</option>
+                        <option value="lingurițe">lingurițe</option>
+                        <option value="căni">căni</option>
+                        <option value="felii">felii</option>
+                        <option value="pachete">pachete</option>
+                        <option value="sticle">sticle</option>
+                        <option value="conserve">conserve</option>
+                      </select>
                       <input
                         type="date"
                         value={editExpiry}
@@ -343,6 +365,7 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
                     onClick={() => {
                       setEditId(item.id)
                       setEditQty(String(item.qty_numeric ?? item.quantity ?? ''))
+                      setEditUnit(item.unit ?? '')
                       setEditExpiry(item.expiration_date ?? '')
                     }}
                     className="text-xs opacity-40 hover:opacity-100"
