@@ -283,14 +283,23 @@ export default function AdminClient() {
   const [authEmail, setAuthEmail] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const email = data.session?.user?.email ?? null
+    const checkAuth = (session: { user?: { email?: string | null }; access_token?: string } | null) => {
+      const email = session?.user?.email ?? null
       setAuthEmail(email)
       setIsAdminUser(!!email && ADMIN_EMAILS.includes(email))
-      // Invalidate cached token on mount
-      _cachedToken = data.session?.access_token ?? null
+      _cachedToken = session?.access_token ?? null
       setAuthChecked(true)
+    }
+
+    // Check immediately
+    supabase.auth.getSession().then(({ data }) => checkAuth(data.session))
+
+    // Also listen for auth changes (handles race condition on page load)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      checkAuth(session)
     })
+
+    return () => subscription?.unsubscribe()
   }, [])
 
   /* content state */
