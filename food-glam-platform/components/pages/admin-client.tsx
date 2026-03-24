@@ -283,7 +283,10 @@ export default function AdminClient() {
   const [authEmail, setAuthEmail] = useState<string | null>(null)
 
   useEffect(() => {
+    let mounted = true
+
     const checkAuth = (session: { user?: { email?: string | null }; access_token?: string } | null) => {
+      if (!mounted) return
       const email = session?.user?.email ?? null
       setAuthEmail(email)
       setIsAdminUser(!!email && ADMIN_EMAILS.includes(email))
@@ -291,15 +294,25 @@ export default function AdminClient() {
       setAuthChecked(true)
     }
 
-    // Check immediately
-    supabase.auth.getSession().then(({ data }) => checkAuth(data.session))
-
-    // Also listen for auth changes (handles race condition on page load)
+    // Listen for auth changes first (most reliable)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       checkAuth(session)
     })
 
-    return () => subscription?.unsubscribe()
+    // Also check immediately + retry after delay (localStorage may not be ready)
+    supabase.auth.getSession().then(({ data }) => {
+      checkAuth(data.session)
+      // If no session found, retry after 1s (localStorage race)
+      if (!data.session) {
+        setTimeout(() => {
+          supabase.auth.getSession().then(({ data: d2 }) => {
+            if (d2.session && mounted) checkAuth(d2.session)
+          })
+        }, 1500)
+      }
+    })
+
+    return () => { mounted = false; subscription?.unsubscribe() }
   }, [])
 
   /* content state */
