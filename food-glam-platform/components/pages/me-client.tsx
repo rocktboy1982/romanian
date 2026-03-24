@@ -45,7 +45,7 @@ export default function MeClientPage() {
     let mounted = true;
     (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
+        const { data: { session: _sess } } = await supabase.auth.getSession(); const data = { user: _sess?.user ?? null };
         if (!mounted) return;
         setUser(data.user ?? null);
 

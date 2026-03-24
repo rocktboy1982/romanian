@@ -51,7 +51,7 @@ export default function ChannelSeriesClient({ handle }: ChannelSeriesClientProps
       }
 
       // Get current user
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: { session: userSession } } = await supabase.auth.getSession(); const userData = { user: userSession?.user ?? null }
       setCurrentUserId(userData.user?.id || null)
     } catch {
       push({ message: "Failed to load series", type: "error" })

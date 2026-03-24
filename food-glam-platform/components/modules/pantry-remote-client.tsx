@@ -28,7 +28,7 @@ export default function PantryRemoteClient() {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (user) {
         const { data, error } = await supabase.from('pantry').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
         if (!error && data) { setItems(data as PantryItem[]); setLoading(false); return; }

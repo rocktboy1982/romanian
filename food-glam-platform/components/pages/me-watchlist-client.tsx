@@ -58,7 +58,7 @@ export default function MeWatchlistClient() {
 
   useEffect(() => {
     ;(async () => {
-      const { data } = await supabase.auth.getUser()
+      const { data: { session: _sess } } = await supabase.auth.getSession(); const data = { user: _sess?.user ?? null }
       setUser(data.user ? { id: data.user.id } : null)
     })()
     fetchItems()

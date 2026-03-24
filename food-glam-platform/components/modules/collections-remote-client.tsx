@@ -29,7 +29,7 @@ export default function CollectionsRemoteClient() {
   const fetchCols = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (user) {
         const { data, error } = await supabase.from('collections').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
         if (!error && data) { setCols(data as Collection[]); setLoading(false); return; }

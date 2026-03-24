@@ -37,8 +37,9 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const fetchFlags = async () => {
     setLoading(true);
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (user) {
       const res = await supabase.from("profiles").select("feature_flags").eq("id", user.id).single();
       const { data, error } = unwrapSupabase<any>(res);
