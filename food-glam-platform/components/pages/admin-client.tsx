@@ -11,8 +11,9 @@ import { supabase } from '@/lib/supabase-client'
 type ContentStatus = 'active' | 'pending' | 'rejected' | 'removed'
 type ChefStatus    = 'active' | 'suspended' | 'banned'
 type UserStatus    = 'active' | 'warned' | 'blocked' | 'deleted'
-type AdminTab      = 'dashboard' | 'content' | 'chefs' | 'users' | 'reports' | 'settings' | 'analytics' | 'audit'
+type AdminTab      = 'dashboard' | 'content' | 'chefs' | 'users' | 'reports' | 'settings' | 'analytics' | 'audit' | 'statistici'
 type ReportCategory = 'all' | 'spam' | 'hate' | 'harassment' | 'copyright' | 'misinfo' | 'other'
+type UserRoleFilter = 'all' | 'active' | 'warned' | 'blocked' | 'deleted' | 'admins' | 'moderators' | 'banned'
 
 interface Stats {
   totalRecipes: number
@@ -73,6 +74,8 @@ interface AdminUser {
   notes: string
   joined_at: string
   recipe_count: number
+  pantry_count?: number
+  saved_recipes_count?: number
   tier?: 'pro' | 'amateur' | 'user'
   warned_at?: string
   is_moderator?: boolean
@@ -87,10 +90,13 @@ interface ReportItem {
   reason: string
   category: Exclude<ReportCategory, 'all'>
   reporter: string
+  reporterId: string
   date: string
   img: string
   slug: string
   status: 'open' | 'dismissed' | 'actioned'
+  contentOwnerId?: string
+  contentOwnerName?: string
 }
 
 interface AuditEntry {
@@ -307,13 +313,24 @@ export default function AdminClient() {
 
   /* users state */
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [userFilter, setUserFilter] = useState<UserStatus | 'all'>('all')
+  const [userFilter, setUserFilter] = useState<UserRoleFilter>('all')
   const [userSearch, setUserSearch] = useState('')
   const [usersLoading, setUsersLoading] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
   const [userNotesDraft, setUserNotesDraft] = useState('')
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
   const [promotingUser, setPromotingUser] = useState<AdminUser | null>(null)
+
+  /* statistici state */
+  const [statisticiLoading, setStatisticiLoading] = useState(false)
+  const [statisticiData, setStatisticiData] = useState<{
+    recipesByCountry: { country: string; count: number }[]
+    typeBreakdown: { type: string; count: number }[]
+    weeklyGrowth: { week: string; count: number }[]
+    mostViewed: { title: string; quality_score: number; slug: string }[]
+    totalCocktails: number
+    totalRecipes: number
+  } | null>(null)
 
   /* reports state */
   const [reports, setReports] = useState<ReportItem[]>(MOCK_REPORTS)
@@ -332,6 +349,7 @@ export default function AdminClient() {
           reason: r.details || r.category,
           category: (['spam', 'hate', 'harassment', 'copyright', 'misinfo', 'other'].includes(r.category) ? r.category : 'other') as Exclude<ReportCategory, 'all'>,
           reporter: r.reporter_id?.slice(0, 8) || 'anonim',
+          reporterId: r.reporter_id || '',
           date: new Date(r.created_at).toLocaleDateString('ro-RO'),
           img: '',
           slug: r.entity_id,
@@ -436,11 +454,19 @@ export default function AdminClient() {
     setUsersLoading(true)
     try {
       const params = new URLSearchParams()
-      if (userFilter !== 'all') params.set('status', userFilter)
+      // Map role filters to status or role params
+      if (userFilter === 'admins') params.set('role', 'admin')
+      else if (userFilter === 'moderators') params.set('role', 'moderator')
+      else if (userFilter === 'banned') params.set('status', 'blocked')
+      else if (userFilter !== 'all') params.set('status', userFilter)
       if (userSearch) params.set('q', userSearch)
       const res = await adminFetch(`/api/admin/users?${params}`)
       const data = await res.json()
-      setUsers(data.users ?? [])
+      let fetched: AdminUser[] = data.users ?? []
+      // Client-side filter for admins/moderators
+      if (userFilter === 'admins') fetched = fetched.filter(u => u.is_admin)
+      if (userFilter === 'moderators') fetched = fetched.filter(u => u.is_moderator && !u.is_admin)
+      setUsers(fetched)
     } finally { setUsersLoading(false) }
   }, [userFilter, userSearch])
 
@@ -451,6 +477,13 @@ export default function AdminClient() {
     if (tab !== 'analytics') return
     setAnalyticsLoading(true)
     adminFetch('/api/admin/analytics').then(r => r.json()).then(setAnalytics).catch(() => {}).finally(() => setAnalyticsLoading(false))
+  }, [tab])
+
+  /* ── fetch statistici ── */
+  useEffect(() => {
+    if (tab !== 'statistici') return
+    setStatisticiLoading(true)
+    adminFetch('/api/admin/statistici').then(r => r.json()).then(setStatisticiData).catch(() => {}).finally(() => setStatisticiLoading(false))
   }, [tab])
 
   /* ── fetch sanctions ── */
@@ -638,6 +671,29 @@ export default function AdminClient() {
     } catch { showToast('Eroare la actualizare', 'error') }
   }, [users, showToast, addAudit])
 
+  /* ── send email placeholder ── */
+  const sendEmailPlaceholder = useCallback((userName: string) => {
+    showToast('Funcție în dezvoltare', 'info')
+    addAudit('Email trimis', userName, 'Funcție în dezvoltare', 'info')
+  }, [showToast, addAudit])
+
+  /* ── ban user from report ── */
+  const banUserFromReport = useCallback(async (userId: string, userName: string) => {
+    setConfirm({
+      message: `Suspendă permanent contul lui ${userName}? Această acțiune este definitivă.`,
+      confirmLabel: 'Suspendă',
+      danger: true,
+      onConfirm: async () => {
+        setConfirm(null)
+        try {
+          await adminFetch('/api/admin/users', { method: 'PUT', body: JSON.stringify({ id: userId, status: 'blocked' }) })
+          showToast(`${userName} a fost suspendat`)
+          addAudit('Utilizator suspendat (din raport)', userName, '', 'danger')
+        } catch { showToast('Eroare la suspendare', 'error') }
+      },
+    })
+  }, [showToast, addAudit])
+
   /* ── report actions ── */
   const dismissReport = useCallback(async (id: string, title: string) => {
     try {
@@ -739,14 +795,15 @@ export default function AdminClient() {
   }
 
   const TABS: { id: AdminTab; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'Panou Principal', icon: '📊' },
-    { id: 'content',   label: 'Conținut',        icon: '🍽️' },
-    { id: 'chefs',     label: 'Bucătari',        icon: '👨‍🍳' },
-    { id: 'users',     label: 'Utilizatori',     icon: '👥' },
-    { id: 'reports',   label: 'Rapoarte',        icon: '🚩' },
-    { id: 'analytics', label: 'Analiză',         icon: '📈' },
-    { id: 'settings',  label: 'Setări',          icon: '⚙️' },
-    { id: 'audit',     label: 'Jurnal Audit',    icon: '🗂️' },
+    { id: 'dashboard',  label: 'Panou Principal', icon: '📊' },
+    { id: 'content',    label: 'Conținut',        icon: '🍽️' },
+    { id: 'chefs',      label: 'Bucătari',        icon: '👨‍🍳' },
+    { id: 'users',      label: 'Utilizatori',     icon: '👥' },
+    { id: 'reports',    label: 'Rapoarte',        icon: '🚩' },
+    { id: 'statistici', label: 'Statistici',      icon: '📉' },
+    { id: 'analytics',  label: 'Analiză',         icon: '📈' },
+    { id: 'settings',   label: 'Setări',          icon: '⚙️' },
+    { id: 'audit',      label: 'Jurnal Audit',    icon: '🗂️' },
   ]
 
   return (
@@ -792,6 +849,27 @@ export default function AdminClient() {
              </div>
            </div>
         </header>
+
+        {/* ── Quick actions bar ── */}
+        <div className="flex flex-wrap gap-2 px-6 py-3 border-b" style={{ background: 'rgba(13,13,13,0.7)', borderColor: 'rgba(255,255,255,0.05)' }}>
+          <span className="text-xs font-bold uppercase tracking-widest self-center mr-1" style={{ color: '#444' }}>Acțiuni Rapide:</span>
+          <a href="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+            style={{ background: 'linear-gradient(135deg,rgba(255,77,109,0.2),rgba(255,149,0,0.2))', color: '#ff9500', border: '1px solid rgba(255,149,0,0.3)', textDecoration: 'none' }}>
+            Importă rețete
+          </a>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+            style={{ background: 'rgba(255,255,255,0.06)', color: '#aaa', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none' }}>
+            Verifică site-ul
+          </a>
+          <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+            style={{ background: 'rgba(66,133,244,0.12)', color: '#60a5fa', border: '1px solid rgba(66,133,244,0.25)', textDecoration: 'none' }}>
+            Google Analytics
+          </a>
+          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+            style={{ background: 'rgba(62,207,142,0.12)', color: '#34d399', border: '1px solid rgba(62,207,142,0.25)', textDecoration: 'none' }}>
+            Supabase
+          </a>
+        </div>
 
         {/* ── Tab nav ── */}
         <div className="flex gap-1 px-6 pt-5 pb-0 overflow-x-auto">
@@ -938,6 +1016,22 @@ export default function AdminClient() {
                <div className="flex items-center justify-between mb-5">
                  <h2 className="ff-display text-2xl font-bold">Moderare Conținut</h2>
                  <span className="text-xs" style={{ color: '#555' }}>{content.length} elemente</span>
+               </div>
+
+               {/* Content counts summary */}
+               {stats && (
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                   <StatCard label="Total Rețete"     value={stats.totalRecipes}  sub="rețete active" accent="#ff4d6d" />
+                   <StatCard label="În Așteptare"     value={stats.pendingReview} sub="necesită acțiune" accent="#ff9500" />
+                   <StatCard label="Semnalate"        value={stats.reportedContent} sub="rapoarte deschise" accent="#f59e0b" />
+                   <StatCard label="Aprobate Azi"     value={stats.approvedToday} sub="astăzi" accent="#22c55e" />
+                 </div>
+               )}
+
+               {/* Recent content (last 10) info box */}
+               <div className="flex items-center gap-2 mb-4 px-4 py-2.5 rounded-xl text-xs"
+                 style={{ background: 'rgba(255,149,0,0.06)', border: '1px solid rgba(255,149,0,0.15)', color: '#888' }}>
+                 Listând cele mai recente {content.length} elemente. Folosiți căutarea și filtrele pentru a găsi conținut specific.
                </div>
 
                <div className="flex flex-wrap gap-3 mb-5">
@@ -1359,12 +1453,26 @@ export default function AdminClient() {
                  <input className="admin-input flex-1 min-w-[180px]" placeholder="Caută utilizatori…"
                    value={userSearch} onChange={e => setUserSearch(e.target.value)}
                    onKeyDown={e => e.key === 'Enter' && fetchUsers()} />
-                 {(['all', 'active', 'warned', 'blocked', 'deleted'] as const).map(s => (
-                   <button key={s} onClick={() => setUserFilter(s)} className="chip"
-                     style={userFilter === s
-                       ? { background: 'rgba(255,149,0,0.2)', color: '#ff9500', borderColor: 'rgba(255,149,0,0.4)' }
+                 {([
+                   { id: 'all',        label: 'Toți' },
+                   { id: 'active',     label: '✓ Activi' },
+                   { id: 'admins',     label: 'Admini' },
+                   { id: 'moderators', label: 'Moderatori' },
+                   { id: 'banned',     label: '🚫 Suspendați' },
+                   { id: 'warned',     label: '⚠️ Avertizați' },
+                   { id: 'deleted',    label: '🗑 Șterși' },
+                 ] as const).map(s => (
+                   <button key={s.id} onClick={() => setUserFilter(s.id)} className="chip"
+                     style={userFilter === s.id
+                       ? s.id === 'admins'
+                         ? { background: 'rgba(255,77,109,0.2)', color: '#ff4d6d', borderColor: 'rgba(255,77,109,0.4)' }
+                         : s.id === 'moderators'
+                           ? { background: 'rgba(59,130,246,0.2)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.4)' }
+                           : s.id === 'banned'
+                             ? { background: 'rgba(239,68,68,0.2)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }
+                             : { background: 'rgba(255,149,0,0.2)', color: '#ff9500', borderColor: 'rgba(255,149,0,0.4)' }
                        : { background: 'rgba(255,255,255,0.04)', color: '#666', borderColor: 'rgba(255,255,255,0.08)' }}>
-                     {s === 'all' ? 'Toți' : s === 'active' ? '✓ Activi' : s === 'warned' ? '⚠️ Avertizați' : s === 'blocked' ? '🚫 Blocați' : '🗑 Șterși'}
+                     {s.label}
                    </button>
                  ))}
                </div>
@@ -1460,6 +1568,8 @@ export default function AdminClient() {
                               </span>
                             )}
                             <span>📖 {user.recipe_count} rețete</span>
+                            {user.pantry_count !== undefined && <span>🥕 {user.pantry_count} cămară</span>}
+                            {user.saved_recipes_count !== undefined && <span>❤️ {user.saved_recipes_count} salvate</span>}
                             <span>Înregistrat {new Date(user.joined_at).toLocaleDateString('ro-RO')}</span>
                             {user.last_sign_in_at && (
                               <span style={{ color: '#555' }}>Ultima autentificare: {new Date(user.last_sign_in_at).toLocaleDateString('ro-RO')}</span>
@@ -1473,7 +1583,13 @@ export default function AdminClient() {
                           )}
                         </div>
 
-                        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 300 }}>
+                        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 320 }}>
+                           {/* Trimite email placeholder */}
+                           <button onClick={() => sendEmailPlaceholder(user.display_name)}
+                             className="action-btn"
+                             style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.25)' }}>
+                             Trimite email
+                           </button>
                            {/* Moderator toggle — only for non-admin users */}
                            {!user.is_admin && (
                              <button onClick={() => toggleModerator(user.id, !!user.is_moderator)}
@@ -1653,8 +1769,15 @@ export default function AdminClient() {
                          <button onClick={() => actionReport(report.id, report.title)}
                            className="action-btn"
                            style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}>
-                           🗑 Elimină
+                           🗑 Elimină conținut
                          </button>
+                         {report.reporterId && (
+                           <button onClick={() => banUserFromReport(report.reporterId, report.reporter)}
+                             className="action-btn"
+                             style={{ background: 'rgba(239,68,68,0.3)', color: '#fca5a5', borderColor: 'rgba(239,68,68,0.45)' }}>
+                             🚫 Suspendă utilizator
+                           </button>
+                         )}
                       </div>
                     </div>
                   ))}
@@ -1737,6 +1860,183 @@ export default function AdminClient() {
                       )})}
                     </div>
                   </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════
+              STATISTICI TAB
+          ════════════════════════════════ */}
+          {tab === 'statistici' && (
+            <div>
+              <h2 className="ff-display text-2xl font-bold mb-6">Statistici Platformă</h2>
+              {statisticiLoading ? (
+                <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-48 rounded-2xl animate-pulse" style={{ background: '#1a1a1a' }} />)}</div>
+              ) : !statisticiData ? (
+                <div className="py-16 text-center">
+                  <div className="text-4xl mb-3">📉</div>
+                  <div className="text-sm font-semibold" style={{ color: '#555' }}>Nu s-au putut încărca statisticile</div>
+                  <button onClick={() => { setStatisticiLoading(true); adminFetch('/api/admin/statistici').then(r => r.json()).then(setStatisticiData).catch(() => {}).finally(() => setStatisticiLoading(false)) }}
+                    className="mt-4 px-4 py-2 rounded-xl text-sm font-semibold"
+                    style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500', border: '1px solid rgba(255,149,0,0.3)' }}>
+                    Reîncarcă
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Tip conținut */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="rounded-2xl p-5 text-center" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="text-3xl font-bold mb-1" style={{ color: '#ff4d6d' }}>{statisticiData.totalRecipes}</div>
+                      <div className="text-xs uppercase tracking-widest" style={{ color: '#555' }}>Total Rețete</div>
+                    </div>
+                    <div className="rounded-2xl p-5 text-center" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="text-3xl font-bold mb-1" style={{ color: '#ff9500' }}>{statisticiData.totalCocktails}</div>
+                      <div className="text-xs uppercase tracking-widest" style={{ color: '#555' }}>Total Cocktailuri</div>
+                    </div>
+                    <div className="rounded-2xl p-5 text-center" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="text-3xl font-bold mb-1" style={{ color: '#22c55e' }}>{statisticiData.totalRecipes + statisticiData.totalCocktails}</div>
+                      <div className="text-xs uppercase tracking-widest" style={{ color: '#555' }}>Total Conținut</div>
+                    </div>
+                    <div className="rounded-2xl p-5 text-center" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="text-3xl font-bold mb-1" style={{ color: '#3b82f6' }}>
+                        {statisticiData.totalRecipes + statisticiData.totalCocktails > 0
+                          ? `${Math.round((statisticiData.totalCocktails / (statisticiData.totalRecipes + statisticiData.totalCocktails)) * 100)}%`
+                          : '0%'}
+                      </div>
+                      <div className="text-xs uppercase tracking-widest" style={{ color: '#555' }}>Cocktailuri / Total</div>
+                    </div>
+                  </div>
+
+                  {/* Tip breakdown donut-style */}
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <h3 className="ff-display font-bold mb-4 text-sm uppercase tracking-widest" style={{ color: '#555' }}>Distribuție pe Tip</h3>
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                      {/* CSS donut */}
+                      <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
+                        {(() => {
+                          const total = statisticiData.typeBreakdown.reduce((s, t) => s + t.count, 0) || 1
+                          const colors = ['#ff4d6d','#ff9500','#3b82f6','#22c55e','#a855f7','#f59e0b']
+                          let cumulative = 0
+                          const segments = statisticiData.typeBreakdown.map((t, i) => {
+                            const pct = (t.count / total) * 100
+                            const start = cumulative
+                            cumulative += pct
+                            return { ...t, pct, start, color: colors[i % colors.length] }
+                          })
+                          const r = 50, cx = 70, cy = 70, stroke = 22
+                          const circumference = 2 * Math.PI * r
+                          return (
+                            <svg width="140" height="140" viewBox="0 0 140 140">
+                              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} />
+                              {segments.map((seg, i) => (
+                                <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+                                  stroke={seg.color} strokeWidth={stroke}
+                                  strokeDasharray={`${(seg.pct / 100) * circumference} ${circumference}`}
+                                  strokeDashoffset={`${-((seg.start / 100) * circumference - circumference / 4)}`}
+                                  style={{ transition: 'all 0.5s' }} />
+                              ))}
+                              <text x={cx} y={cy - 6} textAnchor="middle" fill="#f0f0f0" fontSize="20" fontWeight="700">{total}</text>
+                              <text x={cx} y={cy + 12} textAnchor="middle" fill="#555" fontSize="10">total</text>
+                            </svg>
+                          )
+                        })()}
+                      </div>
+                      <div className="flex-1 space-y-3 w-full">
+                        {statisticiData.typeBreakdown.map((t, i) => {
+                          const total = statisticiData.typeBreakdown.reduce((s, x) => s + x.count, 0) || 1
+                          const colors = ['#ff4d6d','#ff9500','#3b82f6','#22c55e','#a855f7','#f59e0b']
+                          const color = colors[i % colors.length]
+                          return (
+                            <div key={i} className="flex items-center gap-3">
+                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
+                              <span className="text-sm capitalize flex-1">{t.type === 'recipe' ? 'Rețete' : t.type === 'cocktail' ? 'Cocktailuri' : t.type}</span>
+                              <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', maxWidth: 200 }}>
+                                <div className="h-full rounded-full" style={{ width: `${(t.count / total) * 100}%`, background: color }} />
+                              </div>
+                              <span className="text-sm font-bold w-12 text-right" style={{ color }}>{t.count}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rețete pe țară — bar chart CSS */}
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <h3 className="ff-display font-bold mb-4 text-sm uppercase tracking-widest" style={{ color: '#555' }}>Rețete pe Țară / Regiune (Top 20)</h3>
+                    {statisticiData.recipesByCountry.length === 0 ? (
+                      <div className="text-xs text-center py-8" style={{ color: '#555' }}>Nicio dată disponibilă</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {statisticiData.recipesByCountry.slice(0, 20).map((item, i) => {
+                          const max = statisticiData.recipesByCountry[0]?.count || 1
+                          const pct = Math.max((item.count / max) * 100, 2)
+                          const hue = (i * 18) % 360
+                          const barColor = i === 0 ? '#ff4d6d' : i === 1 ? '#ff9500' : i === 2 ? '#f59e0b' : `hsl(${hue},65%,55%)`
+                          return (
+                            <div key={i} className="flex items-center gap-3">
+                              <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{ color: '#555' }}>{i + 1}</span>
+                              <span className="text-xs w-32 truncate flex-shrink-0 capitalize" style={{ color: '#bbb' }}>{item.country || 'necunoscut'}</span>
+                              <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                                <div className="h-full rounded-full flex items-center" style={{ width: `${pct}%`, background: barColor, transition: 'width 0.6s ease' }}>
+                                  <span className="text-[10px] font-bold px-2 text-white opacity-90 whitespace-nowrap">{item.count > 5 ? item.count : ''}</span>
+                                </div>
+                              </div>
+                              <span className="text-xs font-bold w-10 text-right flex-shrink-0" style={{ color: barColor }}>{item.count}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Creștere utilizatori săptămânală */}
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <h3 className="ff-display font-bold mb-4 text-sm uppercase tracking-widest" style={{ color: '#555' }}>Creștere Utilizatori (Ultimele 4 Săptămâni)</h3>
+                    {statisticiData.weeklyGrowth.length === 0 ? (
+                      <div className="text-xs text-center py-8" style={{ color: '#555' }}>Nicio dată disponibilă</div>
+                    ) : (
+                      <div className="flex items-end gap-4 h-36">
+                        {statisticiData.weeklyGrowth.map((w, i) => {
+                          const max = Math.max(...statisticiData.weeklyGrowth.map(x => x.count), 1)
+                          const h = Math.max((w.count / max) * 100, 4)
+                          return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                              <span className="text-xs font-bold" style={{ color: '#22c55e' }}>{w.count}</span>
+                              <div className="w-full rounded-t-xl" style={{ height: `${h}%`, background: 'linear-gradient(180deg,#22c55e,#16a34a)', transition: 'height 0.5s ease' }} />
+                              <span className="text-[10px] text-center" style={{ color: '#555' }}>{w.week}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cele mai vizualizate (quality_score) */}
+                  {statisticiData.mostViewed.length > 0 && (
+                    <div className="rounded-2xl p-5" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <h3 className="ff-display font-bold mb-4 text-sm uppercase tracking-widest" style={{ color: '#555' }}>Cele Mai Populare Rețete (quality_score)</h3>
+                      <div className="space-y-2">
+                        {statisticiData.mostViewed.map((r, i) => {
+                          const max = statisticiData.mostViewed[0]?.quality_score || 1
+                          return (
+                            <div key={i} className="flex items-center gap-3">
+                              <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{ color: '#555' }}>{i + 1}.</span>
+                              <Link href={`/recipes/${r.slug}`} target="_blank" className="text-xs w-48 truncate flex-shrink-0" style={{ color: '#bbb', textDecoration: 'none' }}>
+                                {r.title}
+                              </Link>
+                              <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                <div className="h-full rounded-full" style={{ width: `${(r.quality_score / max) * 100}%`, background: 'linear-gradient(90deg,#ff4d6d,#ff9500)' }} />
+                              </div>
+                              <span className="text-xs font-bold w-10 text-right" style={{ color: '#ff9500' }}>⭐{r.quality_score}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
