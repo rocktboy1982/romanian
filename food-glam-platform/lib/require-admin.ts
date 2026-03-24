@@ -2,14 +2,24 @@ import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getRequestUser, RequestUser } from '@/lib/get-user'
 
 /**
- * Resolves admin access. In development, any authenticated mock user is
- * granted admin — no DB role check needed. In production, requires either
- * an app_roles entry ('admin' or 'moderator') or profiles.is_moderator = true.
+ * Hard-coded admin email list. Users with these emails always get admin access.
+ */
+export const ADMIN_EMAILS = ['iancu1982@gmail.com']
+
+/**
+ * Resolves admin access. Checks:
+ * 1. Email is in ADMIN_EMAILS list (always allowed)
+ * 2. app_roles entry ('admin' or 'moderator')
+ * 3. profiles.is_moderator = true
+ * In development, mock users are also granted access.
  */
 export async function requireAdmin(req: Request): Promise<RequestUser | null> {
   const supabase = createServiceSupabaseClient()
   const user = await getRequestUser(req, supabase)
   if (!user) return null
+
+  // Always allow if email is in admin list
+  if (ADMIN_EMAILS.includes(user.email)) return user
 
   // In development, grant admin to any resolved mock user — no DB check needed
   if (process.env.NODE_ENV === 'development') return user

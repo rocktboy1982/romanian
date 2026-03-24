@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase-client'
 
 /* ─── types ─────────────────────────────────────────────────────────────── */
 
@@ -25,6 +26,9 @@ interface Stats {
   rejectedToday: number
   newUsersToday: number
   weeklyGrowth: number
+  totalUsers: number
+  newUsersThisWeek: number
+  activeUsersLast7Days: number
 }
 
 interface ContentItem {
@@ -71,6 +75,10 @@ interface AdminUser {
   recipe_count: number
   tier?: 'pro' | 'amateur' | 'user'
   warned_at?: string
+  is_moderator?: boolean
+  is_admin?: boolean
+  provider?: string
+  last_sign_in_at?: string | null
 }
 
 interface ReportItem {
@@ -98,6 +106,10 @@ interface AuditEntry {
 /* ─── mock reports ───────────────────────────────────────────────────────── */
 
 const MOCK_REPORTS: ReportItem[] = []
+
+/* ─── admin email list (client-side gate) ────────────────────────────────── */
+
+const ADMIN_EMAILS = ['iancu1982@gmail.com']
 
 /* ─── helpers ────────────────────────────────────────────────────────────── */
 
@@ -226,31 +238,54 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function getMockUserId(): string {
-  try {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("mock_user") : null
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      return parsed.id || "a0000000-0000-0000-0000-000000000001"
-    }
-  } catch { /* ignore */ }
-  return "a0000000-0000-0000-0000-000000000001"
+let _cachedToken: string | null = null
+
+async function getAdminToken(): Promise<string | null> {
+  if (_cachedToken) return _cachedToken
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token ?? null
+  _cachedToken = token
+  return token
 }
 
-function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  return fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "x-mock-user-id": getMockUserId(),
-      ...(options.headers || {}),
-    },
-  })
+async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = await getAdminToken()
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {}),
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  } else {
+    // Dev fallback: send mock user id
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("mock_user") : null
+      const mockId = raw ? (JSON.parse(raw).id || "a0000000-0000-0000-0000-000000000001") : "a0000000-0000-0000-0000-000000000001"
+      headers["x-mock-user-id"] = mockId
+    } catch { /* ignore */ }
+  }
+  return fetch(url, { ...options, headers })
 }
 
 export default function AdminClient() {
   const [tab, setTab] = useState<AdminTab>('dashboard')
   const [stats, setStats] = useState<Stats | null>(null)
+
+  /* auth state */
+  const [authChecked, setAuthChecked] = useState(false)
+  const [isAdminUser, setIsAdminUser] = useState(false)
+  const [authEmail, setAuthEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = data.session?.user?.email ?? null
+      setAuthEmail(email)
+      setIsAdminUser(!!email && ADMIN_EMAILS.includes(email))
+      // Invalidate cached token on mount
+      _cachedToken = data.session?.access_token ?? null
+      setAuthChecked(true)
+    })
+  }, [])
 
   /* content state */
   const [content, setContent] = useState<ContentItem[]>([])
@@ -356,10 +391,11 @@ export default function AdminClient() {
     setAuditLog(prev => [entry, ...prev].slice(0, 100))
   }, [])
 
-  /* ── fetch stats ── */
+  /* ── fetch stats (only after auth is confirmed) ── */
   useEffect(() => {
+    if (!isAdminUser) return
     adminFetch('/api/admin/stats').then(r => r.json()).then(setStats).catch(() => {})
-  }, [])
+  }, [isAdminUser])
 
   /* ── fetch content ── */
   const fetchContent = useCallback(async () => {
@@ -368,7 +404,7 @@ export default function AdminClient() {
       const params = new URLSearchParams()
       if (contentFilter !== 'all') params.set('status', contentFilter)
       if (contentSearch) params.set('q', contentSearch)
-      const res = await fetch(`/api/admin/content?${params}`)
+      const res = await adminFetch(`/api/admin/content?${params}`)
       const data = await res.json()
       setContent(data.items ?? [])
     } finally {
@@ -385,7 +421,7 @@ export default function AdminClient() {
       const params = new URLSearchParams()
       if (chefFilter !== 'all') params.set('status', chefFilter)
       if (chefSearch) params.set('q', chefSearch)
-      const res = await fetch(`/api/admin/chefs?${params}`)
+      const res = await adminFetch(`/api/admin/chefs?${params}`)
       const data = await res.json()
       setChefs(data.chefs ?? [])
     } finally {
@@ -402,7 +438,7 @@ export default function AdminClient() {
       const params = new URLSearchParams()
       if (userFilter !== 'all') params.set('status', userFilter)
       if (userSearch) params.set('q', userSearch)
-      const res = await fetch(`/api/admin/users?${params}`)
+      const res = await adminFetch(`/api/admin/users?${params}`)
       const data = await res.json()
       setUsers(data.users ?? [])
     } finally { setUsersLoading(false) }
@@ -534,18 +570,19 @@ export default function AdminClient() {
   /* ── user actions ── */
   const setUserStatus = useCallback(async (id: string, status: UserStatus) => {
     const user = users.find(u => u.id === id)
-    const labels: Record<UserStatus, string> = { active: 'Restore', warned: 'Warn', blocked: 'Block', deleted: 'Delete' }
+    const labels: Record<UserStatus, string> = { active: 'Restaurează', warned: 'Avertizează', blocked: 'Blochează', deleted: 'Șterge' }
     const verb = labels[status]
     setConfirm({
-      message: `${verb} ${user?.display_name ?? 'this user'}?${status === 'deleted' ? ' This is irreversible.' : ''}`,
+      message: `${verb} ${user?.display_name ?? 'acest utilizator'}?${status === 'deleted' ? ' Această acțiune este ireversibilă.' : ''}`,
       confirmLabel: verb,
       danger: status === 'blocked' || status === 'deleted',
       onConfirm: async () => {
         setConfirm(null)
         try {
-          await adminFetch('/api/admin/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) })
-          showToast(`User ${status === 'active' ? 'restored' : status}`)
-          addAudit(`User ${status}`, user?.display_name ?? id, `Status → ${status}`, status === 'deleted' ? 'danger' : status === 'blocked' ? 'warn' : 'info')
+          await adminFetch('/api/admin/users', { method: 'PUT', body: JSON.stringify({ id, status }) })
+          const statusLabels: Record<UserStatus, string> = { active: 'restaurat', warned: 'avertizat', blocked: 'blocat', deleted: 'șters' }
+          showToast(`Utilizator ${statusLabels[status]}`)
+          addAudit(`Utilizator ${status}`, user?.display_name ?? id, `Status → ${status}`, status === 'deleted' ? 'danger' : status === 'blocked' ? 'warn' : 'info')
           fetchUsers()
         } catch { showToast('Action failed', 'error') }
       },
@@ -555,25 +592,25 @@ export default function AdminClient() {
   const promoteUser = useCallback(async (userId: string, tier: 'amateur' | 'pro') => {
     const user = users.find(u => u.id === userId)
     try {
-      await adminFetch('/api/admin/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: userId, tier }) })
+      await adminFetch('/api/admin/users', { method: 'PUT', body: JSON.stringify({ id: userId, tier }) })
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, tier } : u))
-      showToast(`${user?.display_name ?? 'User'} promoted to ${tier} chef!`)
-      addAudit('User promoted', user?.display_name ?? userId, `→ ${tier} chef`, 'info')
-    } catch { showToast('Promotion failed', 'error') }
+      showToast(`${user?.display_name ?? 'Utilizatorul'} a fost promovat la ${tier === 'pro' ? 'bucătar profesionist' : 'amateur'}!`)
+      addAudit('Utilizator promovat', user?.display_name ?? userId, `→ ${tier} chef`, 'info')
+    } catch { showToast('Promovare eșuată', 'error') }
   }, [users, showToast, addAudit])
 
   const bulkBlockUsers = useCallback(() => {
     if (selectedUsers.size === 0) return
     setConfirm({
-      message: `Block ${selectedUsers.size} selected user(s)?`,
+      message: `Blochează ${selectedUsers.size} utilizator(i) selectați?`,
       danger: true,
       onConfirm: async () => {
         setConfirm(null)
         await Promise.all(Array.from(selectedUsers).map(id =>
-          adminFetch('/api/admin/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: 'blocked' }) })
+          adminFetch('/api/admin/users', { method: 'PUT', body: JSON.stringify({ id, status: 'blocked' }) })
         ))
-        showToast(`${selectedUsers.size} users blocked`)
-        addAudit('Bulk block', `${selectedUsers.size} users`, '', 'danger')
+        showToast(`${selectedUsers.size} utilizatori blocați`)
+        addAudit('Blocare în masă', `${selectedUsers.size} utilizatori`, '', 'danger')
         setSelectedUsers(new Set())
         fetchUsers()
       },
@@ -582,10 +619,24 @@ export default function AdminClient() {
 
   const saveUserNotes = useCallback(async (id: string, notes: string) => {
     try {
-      await adminFetch('/api/admin/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, notes }) })
-      showToast('Notes saved'); setEditingUser(null); fetchUsers()
-    } catch { showToast('Save failed', 'error') }
+      await adminFetch('/api/admin/users', { method: 'PUT', body: JSON.stringify({ id, notes }) })
+      showToast('Notițe salvate'); setEditingUser(null); fetchUsers()
+    } catch { showToast('Eroare la salvare', 'error') }
   }, [fetchUsers, showToast])
+
+  const toggleModerator = useCallback(async (id: string, currentValue: boolean) => {
+    const user = users.find(u => u.id === id)
+    const newValue = !currentValue
+    try {
+      await adminFetch('/api/admin/users', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, is_moderator: newValue }),
+      })
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, is_moderator: newValue } : u))
+      showToast(newValue ? `${user?.display_name ?? 'Utilizatorul'} este acum moderator` : `${user?.display_name ?? 'Utilizatorul'} nu mai este moderator`, 'success')
+      addAudit(newValue ? 'Moderator acordat' : 'Moderator revocat', user?.display_name ?? id, '', newValue ? 'warn' : 'info')
+    } catch { showToast('Eroare la actualizare', 'error') }
+  }, [users, showToast, addAudit])
 
   /* ── report actions ── */
   const dismissReport = useCallback(async (id: string, title: string) => {
@@ -654,6 +705,39 @@ export default function AdminClient() {
      RENDER
   ───────────────────────────────────────────────────────────── */
 
+  // Auth loading state
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d0d' }}>
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#ff4d6d', borderTopColor: 'transparent' }} />
+          <p className="text-sm" style={{ color: '#555' }}>Se verifică accesul...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied
+  if (!isAdminUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d0d' }}>
+        <div className="text-center max-w-sm mx-auto px-6">
+          <div className="text-5xl mb-4">🔒</div>
+          <h1 className="ff-display text-2xl font-bold mb-2" style={{ color: '#f0f0f0' }}>Acces Restricționat</h1>
+          <p className="text-sm mb-6" style={{ color: '#555' }}>
+            {authEmail
+              ? `Contul ${authEmail} nu are acces la panoul de administrare.`
+              : 'Trebuie să fii autentificat cu un cont de administrator.'}
+          </p>
+          <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
+            Înapoi la site
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   const TABS: { id: AdminTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Panou Principal', icon: '📊' },
     { id: 'content',   label: 'Conținut',        icon: '🍽️' },
@@ -699,9 +783,12 @@ export default function AdminClient() {
                  🗂️ {auditLog.length} acțiuni înregistrate
                </button>
              )}
+             {authEmail && (
+               <span className="text-xs hidden md:block" style={{ color: '#555' }}>{authEmail}</span>
+             )}
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
                style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}>
-               🔒 Mod Admin
+               Admin
              </div>
            </div>
         </header>
@@ -749,6 +836,12 @@ export default function AdminClient() {
                  </div>
                ) : (
                  <>
+                   {/* User stats */}
+                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                     <StatCard label="Total Utilizatori"  value={stats.totalUsers}              sub="înregistrați" accent="#3b82f6" />
+                     <StatCard label="Utilizatori Noi (7 zile)" value={stats.newUsersThisWeek}  sub="această săptămână" accent="#22c55e" />
+                     <StatCard label="Activi (7 zile)"   value={stats.activeUsersLast7Days}     sub="ultimele 7 zile" accent="#ff9500" />
+                   </div>
                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                      <StatCard label="Total Rețete"   value={stats.totalRecipes}   sub="total" />
                      <StatCard label="În Așteptare"  value={stats.pendingReview}  sub="necesită acțiune" accent="#ff9500" />
@@ -1338,34 +1431,65 @@ export default function AdminClient() {
                           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                             <span className="font-bold">{user.display_name}</span>
                             <Badge status={user.status} />
+                            {user.is_admin && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                                style={{ background: 'rgba(255,77,109,0.2)', color: '#ff4d6d', border: '1px solid rgba(255,77,109,0.4)' }}>
+                                Admin
+                              </span>
+                            )}
+                            {user.is_moderator && !user.is_admin && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                                style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.4)' }}>
+                                Moderator
+                              </span>
+                            )}
                             {user.tier && user.tier !== 'user' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                                 style={{ background: user.tier === 'pro' ? 'rgba(255,77,109,0.2)' : 'rgba(255,255,255,0.1)', color: user.tier === 'pro' ? '#ff4d6d' : '#ccc', border: '1px solid rgba(255,255,255,0.15)' }}>
-                                {user.tier === 'pro' ? '🔴 Pro Chef' : '⬜ Amateur'}
+                                {user.tier === 'pro' ? 'Pro Chef' : 'Amateur'}
                               </span>
                             )}
                           </div>
                           <div className="text-xs flex gap-3 flex-wrap" style={{ color: '#666' }}>
                             <span>{user.handle}</span>
                             <span style={{ color: '#444' }}>{user.email}</span>
-                            <span>📖 {user.recipe_count} recipes</span>
-                            <span>Joined {new Date(user.joined_at).toLocaleDateString()}</span>
+                            {user.provider && user.provider !== 'email' && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                                style={{ background: 'rgba(66,133,244,0.15)', color: '#60a5fa', border: '1px solid rgba(66,133,244,0.3)' }}>
+                                {user.provider === 'google' ? 'Google' : user.provider}
+                              </span>
+                            )}
+                            <span>📖 {user.recipe_count} rețete</span>
+                            <span>Înregistrat {new Date(user.joined_at).toLocaleDateString('ro-RO')}</span>
+                            {user.last_sign_in_at && (
+                              <span style={{ color: '#555' }}>Ultima autentificare: {new Date(user.last_sign_in_at).toLocaleDateString('ro-RO')}</span>
+                            )}
                           </div>
                           {user.notes && (
                             <div className="mt-1 text-xs px-2 py-0.5 rounded-lg inline-block"
                               style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>
-                              📝 {user.notes}
+                              {user.notes}
                             </div>
                           )}
                         </div>
 
-                        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 280 }}>
+                        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 300 }}>
+                           {/* Moderator toggle — only for non-admin users */}
+                           {!user.is_admin && (
+                             <button onClick={() => toggleModerator(user.id, !!user.is_moderator)}
+                               className="action-btn"
+                               style={user.is_moderator
+                                 ? { background: 'rgba(59,130,246,0.2)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.4)' }
+                                 : { background: 'rgba(255,255,255,0.06)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}>
+                               {user.is_moderator ? 'Moderator ON' : 'Moderator OFF'}
+                             </button>
+                           )}
                            {/* Promote to chef */}
                            {(!user.tier || user.tier === 'user') && user.status === 'active' && (
                              <button onClick={() => setPromotingUser(user)}
                                className="action-btn"
                                style={{ background: 'rgba(255,149,0,0.15)', color: '#ff9500', borderColor: 'rgba(255,149,0,0.3)' }}>
-                               👨‍🍳 Fă Bucătar
+                               Fă Bucătar
                              </button>
                            )}
                            {user.tier && user.tier !== 'user' && (
@@ -1373,19 +1497,19 @@ export default function AdminClient() {
                                className="action-btn"
                                style={{ background: 'rgba(255,255,255,0.06)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}
                                title="Retrogradează la utilizator obișnuit">
-                               ↩ Retrogradează
+                               Retrogradează
                              </button>
                            )}
                            <button onClick={() => { setEditingUser(editingUser?.id === user.id ? null : user); setUserNotesDraft(user.notes) }}
                              className="action-btn"
                              style={{ background: 'rgba(255,255,255,0.07)', color: '#aaa', borderColor: 'rgba(255,255,255,0.1)' }}>
-                             📝 Notițe
+                             Notițe
                            </button>
                            {user.status !== 'warned' && user.status !== 'blocked' && user.status !== 'deleted' && (
                              <button onClick={() => setUserStatus(user.id, 'warned')}
                                className="action-btn"
                                style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' }}>
-                               ⚠️ Avertizează
+                               Avertizează
                              </button>
                            )}
                            {user.status !== 'blocked' && user.status !== 'deleted' ? (
