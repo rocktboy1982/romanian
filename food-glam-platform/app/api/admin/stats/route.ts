@@ -107,15 +107,21 @@ export async function GET(req: Request) {
     ? ((((thisWeekPosts || 0) - (lastWeekPosts || 0)) / (lastWeekPosts || 1)) * 100).toFixed(1)
     : 0
 
-  // 12. Total users (from profiles table)
+  // 12. Total users (exclude Chef bot profiles with @seed.local or example.com emails)
   const { count: totalUsers } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
+    .not('email', 'like', '%@seed.local')
+    .not('email', 'like', '%@example.com')
+    .neq('email', '')
 
-  // 13. New users this week
+  // 13. New users this week (real users only)
   const { count: newUsersThisWeek } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
+    .not('email', 'like', '%@seed.local')
+    .not('email', 'like', '%@example.com')
+    .neq('email', '')
     .gte('created_at', thisWeekISO)
 
   // 14. Active users last 7 days (signed in — from auth via admin API)
