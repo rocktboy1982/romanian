@@ -248,6 +248,20 @@ let _cachedToken: string | null = null
 
 async function getAdminToken(): Promise<string | null> {
   if (_cachedToken) return _cachedToken
+  // Try localStorage directly first
+  try {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+    for (const key of keys) {
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const parsed = JSON.parse(raw)
+      if (parsed?.access_token) {
+        _cachedToken = parsed.access_token
+        return _cachedToken
+      }
+    }
+  } catch { /* ignore */ }
+  // Fallback to Supabase client
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token ?? null
   _cachedToken = token
@@ -285,34 +299,57 @@ export default function AdminClient() {
   useEffect(() => {
     let mounted = true
 
-    const checkAuth = (session: { user?: { email?: string | null }; access_token?: string } | null) => {
+    const checkAuth = () => {
       if (!mounted) return
-      const email = session?.user?.email ?? null
+
+      // Read session directly from localStorage — most reliable across page navigations
+      let email: string | null = null
+      let token: string | null = null
+
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+        for (const key of keys) {
+          const raw = localStorage.getItem(key)
+          if (!raw) continue
+          const parsed = JSON.parse(raw)
+          if (parsed?.user?.email) {
+            email = parsed.user.email
+            token = parsed.access_token || null
+            break
+          }
+        }
+      } catch { /* ignore */ }
+
+      // Fallback: try Supabase client
+      if (!email) {
+        supabase.auth.getSession().then(({ data }) => {
+          if (!mounted) return
+          const sess = data.session
+          const e = sess?.user?.email ?? null
+          setAuthEmail(e)
+          setIsAdminUser(!!e && ADMIN_EMAILS.includes(e))
+          _cachedToken = sess?.access_token ?? null
+          setAuthChecked(true)
+        })
+        return
+      }
+
       setAuthEmail(email)
-      setIsAdminUser(!!email && ADMIN_EMAILS.includes(email))
-      _cachedToken = session?.access_token ?? null
+      setIsAdminUser(ADMIN_EMAILS.includes(email))
+      _cachedToken = token
       setAuthChecked(true)
     }
 
-    // Listen for auth changes first (most reliable)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      checkAuth(session)
-    })
+    // Check immediately
+    checkAuth()
 
-    // Also check immediately + retry after delay (localStorage may not be ready)
-    supabase.auth.getSession().then(({ data }) => {
-      checkAuth(data.session)
-      // If no session found, retry after 1s (localStorage race)
-      if (!data.session) {
-        setTimeout(() => {
-          supabase.auth.getSession().then(({ data: d2 }) => {
-            if (d2.session && mounted) checkAuth(d2.session)
-          })
-        }, 1500)
-      }
-    })
+    // Also listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => checkAuth())
 
-    return () => { mounted = false; subscription?.unsubscribe() }
+    // Retry after 2s in case localStorage wasn't ready
+    const timer = setTimeout(checkAuth, 2000)
+
+    return () => { mounted = false; subscription?.unsubscribe(); clearTimeout(timer) }
   }, [])
 
   /* content state */
