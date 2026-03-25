@@ -79,6 +79,14 @@ function useRealUser() {
       if (session?.user) {
         setUser(buildUser(session.user))
         setHydrated(true)
+        // Persist session to localStorage so other pages (admin, pantry) can read it
+        try {
+          localStorage.setItem('marechef-session', JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            user: { id: session.user.id, email: session.user.email, user_metadata: session.user.user_metadata }
+          }))
+        } catch {}
         // Enhance with profile
         try {
           const { data: profile } = await supabase
@@ -124,12 +132,13 @@ function useRealUser() {
   const signOut = async () => {
     // Revoke session on Supabase server
     await supabase.auth.signOut({ scope: 'global' })
-    // Clear ALL Supabase data from localStorage
+    // Clear ALL Supabase + session data from localStorage
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('sb-') || key.includes('supabase')) {
         localStorage.removeItem(key)
       }
     })
+    localStorage.removeItem('marechef-session')
     localStorage.removeItem('mock_user')
     setUser(null)
     window.location.href = '/'

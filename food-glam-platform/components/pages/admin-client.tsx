@@ -248,9 +248,17 @@ let _cachedToken: string | null = null
 
 async function getAdminToken(): Promise<string | null> {
   if (_cachedToken) return _cachedToken
-  // Try localStorage directly first
+  // Try our backup key first, then standard sb-* keys
   try {
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+    const backup = localStorage.getItem('marechef-session')
+    if (backup) {
+      const parsed = JSON.parse(backup)
+      if (parsed?.access_token) {
+        _cachedToken = parsed.access_token
+        return _cachedToken
+      }
+    }
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
     for (const key of keys) {
       const raw = localStorage.getItem(key)
       if (!raw) continue
@@ -302,20 +310,33 @@ export default function AdminClient() {
     const checkAuth = () => {
       if (!mounted) return
 
-      // Read session directly from localStorage — most reliable across page navigations
+      // Read session from localStorage — check both sb-* keys and our custom backup key
       let email: string | null = null
       let token: string | null = null
 
       try {
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
-        for (const key of keys) {
-          const raw = localStorage.getItem(key)
-          if (!raw) continue
-          const parsed = JSON.parse(raw)
+        // First try our custom backup key (set by navigation on login)
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
           if (parsed?.user?.email) {
             email = parsed.user.email
             token = parsed.access_token || null
-            break
+          }
+        }
+
+        // Also check standard Supabase keys
+        if (!email) {
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
+          for (const key of keys) {
+            const raw = localStorage.getItem(key)
+            if (!raw) continue
+            const parsed = JSON.parse(raw)
+            if (parsed?.user?.email) {
+              email = parsed.user.email
+              token = parsed.access_token || null
+              break
+            }
           }
         }
       } catch { /* ignore */ }
