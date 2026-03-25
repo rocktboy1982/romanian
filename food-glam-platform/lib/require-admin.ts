@@ -11,7 +11,7 @@ export const ADMIN_EMAILS = ['iancu1982@gmail.com']
  * 1. Email is in ADMIN_EMAILS list (always allowed)
  * 2. app_roles entry ('admin' or 'moderator')
  * 3. profiles.is_moderator = true
- * In development, mock users are also granted access.
+ * The check is identical in all environments — no dev bypass.
  */
 export async function requireAdmin(req: Request): Promise<RequestUser | null> {
   const supabase = createServiceSupabaseClient()
@@ -21,10 +21,7 @@ export async function requireAdmin(req: Request): Promise<RequestUser | null> {
   // Always allow if email is in admin list
   if (ADMIN_EMAILS.includes(user.email)) return user
 
-  // In development, grant admin to any resolved mock user — no DB check needed
-  if (process.env.NODE_ENV === 'development') return user
-
-  // Production: check app_roles table first
+  // Check app_roles table first
   const { data: roles } = await supabase
     .from('app_roles')
     .select('role')

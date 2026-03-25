@@ -78,31 +78,22 @@ export default function ChatBot() {
       return
     }
 
-    // Check if user has Gemini API key
+    // Read the Gemini API key from localStorage where scan-client stores it after setup.
+    // We never fetch the key from the API — only its presence is reported server-side.
     try {
-      const backup = localStorage.getItem('marechef-session')
-      const headers: Record<string, string> = {}
-      if (backup) {
-        const parsed = JSON.parse(backup)
-        if (parsed?.access_token) headers['Authorization'] = `Bearer ${parsed.access_token}`
-      }
-
-      const res = await fetch('/api/profiles/me/api-key?include_key=true', { headers })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.has_key && data.key) {
-          setApiKey(data.key)
-          apiKeyRef.current = data.key
-          setState('open')
-          if (messages.length === 0) {
-            setMessages([{
-              id: 'welcome',
-              role: 'bot',
-              content: 'Salut! 👨‍🍳 Sunt asistentul MareChef. Cu ce te pot ajuta? Pot să te ghidez prin rețete, planuri de masă, cămară sau cocktailuri!'
-            }])
-          }
-          return
+      const storedKey = localStorage.getItem('marechef-gemini-key')
+      if (storedKey && storedKey.trim().length > 0) {
+        setApiKey(storedKey.trim())
+        apiKeyRef.current = storedKey.trim()
+        setState('open')
+        if (messages.length === 0) {
+          setMessages([{
+            id: 'welcome',
+            role: 'bot',
+            content: 'Salut! 👨‍🍳 Sunt asistentul MareChef. Cu ce te pot ajuta? Pot să te ghidez prin rețete, planuri de masă, cămară sau cocktailuri!'
+          }])
         }
+        return
       }
     } catch {}
 

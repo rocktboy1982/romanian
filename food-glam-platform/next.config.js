@@ -9,6 +9,33 @@ const nextConfig = {
     ],
   },
   async headers() {
+    // Build the Content-Security-Policy value.
+    // unsafe-inline and unsafe-eval are required for Next.js (inline scripts/styles and HMR).
+    const cspDirectives = [
+      "default-src 'self'",
+      // Scripts: self + inline/eval (Next.js) + Google services
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://pagead2.googlesyndication.com https://adservice.google.com https://googleads.g.doubleclick.net",
+      // Styles: self + inline (Tailwind/Next.js) + Google Fonts
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // Fonts
+      "font-src 'self' https://fonts.gstatic.com",
+      // Images: self + https + data URIs (inline previews)
+      "img-src 'self' data: https:",
+      // Connections: self + Supabase + Gemini API + Google Analytics + AdSense
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://www.google-analytics.com https://region1.google-analytics.com https://accounts.google.com https://pagead2.googlesyndication.com",
+      // Frames: Google OAuth popup + AdSense
+      "frame-src https://accounts.google.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+      // Workers: self only
+      "worker-src 'self' blob:",
+      // Object/media: none
+      "object-src 'none'",
+      // Base URI: self only
+      "base-uri 'self'",
+      // Form actions: self only
+      "form-action 'self'",
+    ]
+    const csp = cspDirectives.join('; ')
+
     return [
       {
         source: '/(.*)',
@@ -18,8 +45,7 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
-          // CSP removed — was blocking Google OAuth, Analytics, and AdSense.
-          // TODO: re-add with proper allowlist once auth flow is stable.
+          { key: 'Content-Security-Policy', value: csp },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },

@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ handle: string }> }
 ) {
   try {
+    // Rate limit: 100 requests per minute per IP
+    const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim()
+    const { success } = rateLimit(`profile:${ip}`, 100, 60 * 1000)
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const { handle } = await params
     const supabase = await createServerSupabaseClient()
 

@@ -4,6 +4,11 @@ import { getRequestUser } from '@/lib/get-user'
 import { rateLimit } from '@/lib/rate-limit'
 import { slugify } from '@/lib/slug'
 
+/** Strip all HTML tags from user-submitted text to prevent stored XSS. */
+function stripHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, '').trim()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -42,13 +47,17 @@ export async function POST(req: NextRequest) {
       garnish,
     } = body
 
+    // Sanitize user-submitted text fields — strip HTML tags before validation/storage
+    const sanitizedTitle = typeof title === 'string' ? stripHtml(title) : ''
+    const sanitizedSummary = typeof summary === 'string' ? stripHtml(summary) : ''
+
     // Basic validation
-    if (!title?.trim()) return NextResponse.json({ error: 'Titlul e obligatoriu' }, { status: 400 })
-    if (!summary?.trim()) return NextResponse.json({ error: 'Descrierea e obligatorie' }, { status: 400 })
+    if (!sanitizedTitle) return NextResponse.json({ error: 'Titlul e obligatoriu' }, { status: 400 })
+    if (!sanitizedSummary) return NextResponse.json({ error: 'Descrierea e obligatorie' }, { status: 400 })
     if (!hero_image_url?.trim()) return NextResponse.json({ error: 'Imaginea e obligatorie' }, { status: 400 })
     if (!category) return NextResponse.json({ error: 'Categoria e obligatorie' }, { status: 400 })
 
-    const slug = slugify(title)
+    const slug = slugify(sanitizedTitle)
 
     // Build recipe_json with cocktail-specific fields
     const recipeJson = {
@@ -71,8 +80,8 @@ export async function POST(req: NextRequest) {
         type: 'cocktail',
         status: 'active',
         slug,
-        title: title.trim(),
-        summary: summary.trim(),
+        title: sanitizedTitle,
+        summary: sanitizedSummary,
         hero_image_url: hero_image_url.trim(),
         recipe_json: recipeJson,
         food_tags: Array.isArray(tags) ? tags : [],

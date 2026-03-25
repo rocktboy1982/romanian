@@ -96,6 +96,20 @@ export async function PATCH(req: Request) {
       }
     }
 
+    // Validate avatar_url — only allow https:// URLs to prevent javascript: and data: injection
+    if (avatar_url !== undefined && avatar_url !== null && avatar_url !== '') {
+      if (typeof avatar_url !== 'string' || !avatar_url.startsWith('https://')) {
+        errors.avatar_url = 'URL-ul avatarului trebuie să înceapă cu https://.'
+      }
+    }
+
+    // Validate banner_url — only allow https:// URLs
+    if (banner_url !== undefined && banner_url !== null && banner_url !== '') {
+      if (typeof banner_url !== 'string' || !banner_url.startsWith('https://')) {
+        errors.banner_url = 'URL-ul bannerului trebuie să înceapă cu https://.'
+      }
+    }
+
     if (Object.keys(errors).length > 0) {
       return NextResponse.json({ errors }, { status: 400 })
     }

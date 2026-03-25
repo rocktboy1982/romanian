@@ -118,6 +118,8 @@ export default function ScanClient() {
         body: JSON.stringify({ key: trimmed }),
       })
       if (res.ok) {
+        // Also persist locally so the ChatBot can read it without going back to the API
+        try { localStorage.setItem('marechef-gemini-key', trimmed) } catch {}
         setKeySuccess(true)
         setKeyStatus('present')
       } else {

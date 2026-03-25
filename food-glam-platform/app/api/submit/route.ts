@@ -9,6 +9,11 @@ const ALLOWED_TYPES = ['recipe', 'short', 'image', 'video'] as const
 const ALLOWED_STATUSES = ['draft', 'active'] as const
 const MAX_POSTS_PER_DAY = 1
 
+/** Strip all HTML tags from user-submitted text to prevent stored XSS. */
+function stripHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, '').trim()
+}
+
 // In-memory fallback store for local dev (resets on server restart)
 const DEV_POSTS: Record<string, unknown>[] = []
 const DEV_USER_ID = 'dev-user-001'
@@ -24,9 +29,11 @@ function hasPostedTodayDev(userId: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title, type, slug, hero_image_url, approach_id, diet_tags, food_tags, recipe_json, status } = body
+    const { title: rawTitle, type, slug, hero_image_url, approach_id, diet_tags, food_tags, recipe_json, status } = body
+    // Sanitize user-submitted text fields — strip HTML tags before any further processing
+    const title = typeof rawTitle === 'string' ? stripHtml(rawTitle) : ''
     // Validation
-    if (!title || typeof title !== 'string' || !title.trim()) {
+    if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
     if (!ALLOWED_TYPES.includes(type)) {
@@ -150,7 +157,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const update: Record<string, unknown> = {}
-    if (title !== undefined) update.title = String(title).trim()
+    if (title !== undefined) update.title = stripHtml(String(title))
     if (hero_image_url !== undefined) update.hero_image_url = hero_image_url || null
     if (approach_id !== undefined) update.approach_id = approach_id || null
     if (diet_tags !== undefined) update.diet_tags = Array.isArray(diet_tags) ? diet_tags : null

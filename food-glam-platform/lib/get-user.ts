@@ -36,7 +36,9 @@ export async function getRequestUser(
     if (tokenUser) return { id: tokenUser.id, email: tokenUser.email ?? '' }
   }
 
-  // 2. Fallback: mock user id sent as a header by the client (DEV ONLY)
+  // 2. Fallback: mock user id sent as a header by the client (DEV ONLY).
+  // The NODE_ENV guard ensures this branch is compiled out in production builds.
+  // Never remove the guard — it would allow unauthenticated access in production.
   if (process.env.NODE_ENV === 'development') {
     const mockId = req.headers.get('x-mock-user-id')
     if (mockId && mockId !== 'anonymous') {

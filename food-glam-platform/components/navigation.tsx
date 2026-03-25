@@ -141,6 +141,8 @@ function useRealUser() {
     })
     localStorage.removeItem('marechef-session')
     localStorage.removeItem('mock_user')
+    // Clear the user's Gemini API key from localStorage on sign-out
+    localStorage.removeItem('marechef-gemini-key')
     setUser(null)
     window.location.href = '/'
   }
