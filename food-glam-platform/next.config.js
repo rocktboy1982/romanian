@@ -31,8 +31,8 @@ const nextConfig = {
       "object-src 'none'",
       // Base URI: self only
       "base-uri 'self'",
-      // Form actions: self only
-      "form-action 'self'",
+      // Form actions: self + Supabase OAuth + Google OAuth
+      "form-action 'self' https://*.supabase.co https://accounts.google.com",
     ]
     const csp = cspDirectives.join('; ')
 
