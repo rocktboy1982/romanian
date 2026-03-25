@@ -17,12 +17,22 @@ function hasSubmittedTodayDev(): boolean {
 
 export async function POST(req: NextRequest): Promise<NextResponse<SubmissionResponse>> {
   try {
-    // Rate limit: 5 submissions per hour per IP
+    // Rate limit: 5 submissions per hour per IP (admins bypass)
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const { success } = rateLimit(`submit:recipe:${ip}`, 5, 60 * 60 * 1000);
+    const authHeader = req.headers.get('authorization');
+    let userEmail: string | null = null;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { createServiceSupabaseClient } = await import('@/lib/supabase-server');
+        const sb = createServiceSupabaseClient();
+        const { data: { user: u } } = await sb.auth.getUser(authHeader.slice(7));
+        userEmail = u?.email ?? null;
+      } catch {}
+    }
+    const { success } = rateLimit(`submit:recipe:${ip}`, 5, 60 * 60 * 1000, userEmail);
     if (!success) {
       return NextResponse.json(
-        { success: false, message: 'Too many requests. Please try again later.' },
+        { success: false, message: 'Prea multe cereri. Încearcă mai târziu.' },
         { status: 429 }
       );
     }

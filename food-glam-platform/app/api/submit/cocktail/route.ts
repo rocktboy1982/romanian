@@ -6,17 +6,24 @@ import { slugify } from '@/lib/slug'
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limit: 5 submissions per hour per IP
+    const body = await req.json()
+
+    // Auth first
+    const authClient = createServerSupabaseClient()
+    const supabase = createServiceSupabaseClient()
+    const user = await getRequestUser(req, authClient)
+    if (!user) return NextResponse.json({ error: 'Trebuie să fii autentificat' }, { status: 401 })
+    const createdBy = user.id
+
+    // Rate limit: 5 submissions per hour (admins bypass)
     const ip = req.headers.get('x-forwarded-for') || 'unknown'
-    const { success } = rateLimit(`submit:cocktail:${ip}`, 5, 60 * 60 * 1000)
+    const { success } = rateLimit(`submit:cocktail:${ip}`, 5, 60 * 60 * 1000, user.email)
     if (!success) {
       return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
+        { error: 'Prea multe cereri. Încearcă mai târziu.' },
         { status: 429 }
       )
     }
-
-    const body = await req.json()
 
     const {
       title,
@@ -36,19 +43,12 @@ export async function POST(req: NextRequest) {
     } = body
 
     // Basic validation
-    if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-    if (!summary?.trim()) return NextResponse.json({ error: 'Summary is required' }, { status: 400 })
-    if (!hero_image_url?.trim()) return NextResponse.json({ error: 'Hero image is required' }, { status: 400 })
-    if (!category) return NextResponse.json({ error: 'Category is required' }, { status: 400 })
+    if (!title?.trim()) return NextResponse.json({ error: 'Titlul e obligatoriu' }, { status: 400 })
+    if (!summary?.trim()) return NextResponse.json({ error: 'Descrierea e obligatorie' }, { status: 400 })
+    if (!hero_image_url?.trim()) return NextResponse.json({ error: 'Imaginea e obligatorie' }, { status: 400 })
+    if (!category) return NextResponse.json({ error: 'Categoria e obligatorie' }, { status: 400 })
 
     const slug = slugify(title)
-
-    // Get authenticated user
-    const authClient = createServerSupabaseClient()
-    const supabase = createServiceSupabaseClient()
-    const user = await getRequestUser(req, authClient)
-    if (!user) return NextResponse.json({ error: 'Trebuie să fii autentificat' }, { status: 401 })
-    const createdBy = user.id
 
     // Build recipe_json with cocktail-specific fields
     const recipeJson = {
