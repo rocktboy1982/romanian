@@ -21,9 +21,7 @@ export async function GET(req: NextRequest) {
         food_style_id,
         is_public,
         created_at,
-        owner:profiles(id, display_name, handle, avatar_url),
-        cuisines(id, name, slug),
-        food_styles(id, name, slug)
+        owner:profiles(id, display_name, handle, avatar_url)
       `)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
@@ -34,17 +32,17 @@ export async function GET(req: NextRequest) {
     const { data: cookbooks, error } = await query
 
     if (error) {
-      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+      return NextResponse.json({ data: [], error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ data: cookbooks, error: null }, {
+    return NextResponse.json({ data: cookbooks ?? [], error: null }, {
       headers: {
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
       },
     })
   } catch (err: unknown) {
     return NextResponse.json(
-      { data: null, error: String(err instanceof Error ? err.message : err) },
+      { data: [], error: String(err instanceof Error ? err.message : err) },
       { status: 500 }
     )
   }
