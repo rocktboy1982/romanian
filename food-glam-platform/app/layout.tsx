@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
-import dynamic from 'next/dynamic'
+// dynamic import removed — ChatBot uses 'use client' directly
 import '@/styles/globals.css'
 import { Navigation } from '@/components/navigation'
 import { FeatureFlagsProvider } from '@/components/feature-flags-provider'
@@ -13,7 +13,7 @@ import ToastClient from '@/components/ui/toast-client'
 import { ADSENSE_PUB_ID, ADS_ENABLED } from '@/lib/adsense-config'
 import { Analytics } from '@vercel/analytics/next'
 
-const ChatBot = dynamic(() => import('@/components/ChatBot'), { ssr: false })
+import ChatBot from '@/components/ChatBot'
 
 const inter = Inter({ subsets: ['latin'] })
 
