@@ -121,26 +121,15 @@ export default function ChatBot() {
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-      // Build history — exclude welcome message, ensure first message is from user
-      const chatHistory = messages
-        .filter(m => m.id !== 'welcome')
-        .slice(-10)
-        .map(m => ({
-          role: m.role === 'user' ? 'user' as const : 'model' as const,
-          parts: [{ text: m.content }],
-        }))
+      // Build conversation as a single prompt (simpler, avoids startChat issues)
+      const recentMsgs = messages.filter(m => m.id !== 'welcome').slice(-8)
+      const conversationText = recentMsgs.map(m =>
+        m.role === 'user' ? `Utilizator: ${m.content}` : `Asistent: ${m.content}`
+      ).join('\n')
 
-      // Gemini requires history to start with user message or be empty
-      const validHistory = chatHistory.length > 0 && chatHistory[0].role === 'model'
-        ? chatHistory.slice(1)
-        : chatHistory
+      const fullPrompt = `${SYSTEM_PROMPT}\n\n${conversationText ? conversationText + '\n' : ''}Utilizator: ${input.trim()}\nAsistent:`
 
-      const chat = model.startChat({
-        history: validHistory,
-        systemInstruction: SYSTEM_PROMPT,
-      })
-
-      const result = await chat.sendMessage(input.trim())
+      const result = await model.generateContent(fullPrompt)
       const reply = result.response.text()
 
       setMessages(prev => [...prev, { id: generateId(), role: 'bot', content: reply }])
