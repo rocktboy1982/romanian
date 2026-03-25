@@ -2,6 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
+import dynamic from 'next/dynamic'
 import '@/styles/globals.css'
 import { Navigation } from '@/components/navigation'
 import { FeatureFlagsProvider } from '@/components/feature-flags-provider'
@@ -11,6 +12,8 @@ import CookieConsent from '@/components/CookieConsent'
 import ToastClient from '@/components/ui/toast-client'
 import { ADSENSE_PUB_ID, ADS_ENABLED } from '@/lib/adsense-config'
 import { Analytics } from '@vercel/analytics/next'
+
+const ChatBot = dynamic(() => import('@/components/ChatBot'), { ssr: false })
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -193,6 +196,7 @@ gtag('config', 'G-4X6TFY53BY');`}
               </footer>
               <Analytics />
               <CookieConsent />
+              <ChatBot />
               {process.env.NODE_ENV !== 'production' && <FeatureFlagPanel />}
             </ToastClient>
           </FeatureFlagsProvider>
