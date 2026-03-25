@@ -387,7 +387,7 @@ function SubmitRecipePageContent() {
         type: 'recipe',
         slug,
         hero_image_url: form.heroImageUrl || null,
-        approach_id: form.countryId || null,   // keep existing FK for now
+        approach_id: null,   // countryId is a string label, not a UUID — stored in recipe_json instead
         meal_type: form.mealType || null,
         diet_tags: form.dietTags.length > 0 ? form.dietTags : null,
         food_tags: form.foodTags.length > 0 ? form.foodTags : null,
