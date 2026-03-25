@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { resolveCountrySlug } from '@/lib/country-slug-map'
+import { resolveCountrySlug, COUNTRY_SLUG_MAP } from '@/lib/country-slug-map'
+
+// Reverse map: slug prefix → display name (e.g., 'japan' → 'Japan')
+const SLUG_TO_DISPLAY: Record<string, string> = {}
+for (const [adj, slug] of Object.entries(COUNTRY_SLUG_MAP)) {
+  if (slug && !SLUG_TO_DISPLAY[slug]) {
+    SLUG_TO_DISPLAY[slug] = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  }
+}
 
 /**
  * GET /api/recipes/by-country?country=cambodian&limit=60&offset=0
  *
- * Accepts both taxonomy IDs ("cambodian") and DB prefixes ("cambodia").
- * Resolves to the DB slug prefix via country-slug-map.
+ * Searches by BOTH slug prefix AND country column for maximum coverage.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -18,26 +25,26 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'country param required' }, { status: 400 })
   }
 
-  const country = resolveCountrySlug(rawCountry)
-  if (!country) {
-    return NextResponse.json({ recipes: [], total: 0 })
-  }
+  const slugPrefix = resolveCountrySlug(rawCountry)
+  // Derive display name for country column match
+  const displayName = SLUG_TO_DISPLAY[slugPrefix] || slugPrefix.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Query by BOTH slug prefix OR country column
     const { data: posts, error, count } = await supabase
       .from('posts')
       .select(`
-        id, title, slug, summary, hero_image_url,
+        id, title, slug, summary, hero_image_url, country,
         diet_tags, food_tags, is_tested, quality_score, source_url,
         created_by:profiles(id, display_name, handle, avatar_url),
         approaches(id, name, slug)
       `, { count: 'exact' })
       .eq('type', 'recipe')
       .eq('status', 'active')
-      .like('slug', `${country}-%`)
-      .order('created_at', { ascending: false })
+      .or(`slug.like.${slugPrefix}-%,country.ilike.${displayName}`)
+      .order('quality_score', { ascending: false, nullsFirst: false })
       .range(offset, offset + limit - 1)
 
     if (error) {
@@ -56,6 +63,7 @@ export async function GET(req: Request) {
       is_tested: post.is_tested,
       quality_score: post.quality_score,
       source_url: post.source_url || null,
+      country: post.country,
       votes: 0,
       comments: 0,
       created_by: Array.isArray(post.created_by) ? post.created_by[0] : post.created_by,
