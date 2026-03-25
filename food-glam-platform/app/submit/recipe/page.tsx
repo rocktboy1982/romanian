@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { REGION_META, COURSES } from '@/lib/recipe-taxonomy'
 import { IngredientInput } from '@/components/ui/ingredient-input'
+import RecipeScanButton from '@/components/RecipeScanButton'
 
 /* ── Derive flat country list from taxonomy ──────────────── */
 const ALL_REGIONS = Object.entries(REGION_META).map(([id, r]) => ({
@@ -327,6 +328,20 @@ function SubmitRecipePageContent() {
     set('ingredients', form.ingredients.filter((_, i) => i !== idx))
   }
 
+  /* ── OCR scan handler ────────────────────────────────────── */
+  const handleScanComplete = useCallback((data: { title?: string; summary?: string; servings?: number; cookTime?: number; ingredients?: { qty: string; unit: string; name: string }[]; steps?: string[] }) => {
+    setForm(prev => ({
+      ...prev,
+      title: data.title || prev.title,
+      summary: data.summary || prev.summary,
+      servings: data.servings ? String(data.servings) : prev.servings,
+      cookTime: data.cookTime ? String(data.cookTime) : prev.cookTime,
+      ingredients: data.ingredients?.length ? data.ingredients : prev.ingredients,
+      steps: data.steps?.length ? data.steps : prev.steps,
+    }))
+    setErrors({})
+  }, [])
+
   const toggleDietTag = (tag: string) => {
     set('dietTags', form.dietTags.includes(tag)
       ? form.dietTags.filter(t => t !== tag)
@@ -409,7 +424,7 @@ function SubmitRecipePageContent() {
       const d = await res.json().catch(() => ({}))
       if (res.status === 429) {
         setRateLimited(true)
-        throw new Error(d.error || 'Poți publica doar 1 postare pe zi. Încearcă mâine.')
+        throw new Error(d.error || 'Poți publica maxim 3 rețete pe zi. Încearcă mâine.')
       }
       if (!res.ok) throw new Error(d.error || d.message || 'Trimiterea a eșuat')
 
@@ -545,6 +560,15 @@ function SubmitRecipePageContent() {
         </div>
       </div>
 
+      {/* ── OCR Scan ────────────────────────────────────── */}
+      <div className="rounded-xl p-4 flex items-center gap-4" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.15)' }}>
+        <div className="flex-1">
+          <p className="text-sm font-semibold" style={{ color: '#4f46e5' }}>Ai o rețetă scrisă sau tipărită?</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6366f1' }}>Fotografiaz-o și formularul se completează automat cu AI</p>
+        </div>
+        <RecipeScanButton type="recipe" onScanComplete={handleScanComplete} />
+      </div>
+
       {/* ── Auth notice ───────────────────────────────────── */}
       {authChecked && !user && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
@@ -569,7 +593,7 @@ function SubmitRecipePageContent() {
           </svg>
           <div className="flex-1">
             <p className="text-sm font-semibold text-red-800">Limita zilnică atinsă</p>
-            <p className="text-xs text-red-700 mt-0.5">Poți publica doar 1 postare pe zi. Revino mâine pentru a trimite o altă rețetă.</p>
+            <p className="text-xs text-red-700 mt-0.5">Poți publica maxim 3 rețete pe zi. Revino mâine pentru a trimite alte rețete.</p>
           </div>
         </div>
       )}

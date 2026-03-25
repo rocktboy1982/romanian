@@ -99,6 +99,7 @@ export async function GET(req: Request) {
     const lastSignInAt = authUser?.last_sign_in_at ?? null
     const email = (profile.email as string) || authUser?.email || ''
     const isModerator = (profile.is_moderator as boolean) ?? false
+    const isCertifiedCreator = (profile.is_certified_creator as boolean) ?? false
     const isAdmin = ADMIN_EMAILS.includes(email)
 
     return {
@@ -112,6 +113,7 @@ export async function GET(req: Request) {
       joined_at: profile.created_at as string,
       recipe_count: recipeCount || 0,
       is_moderator: isModerator,
+      is_certified_creator: isCertifiedCreator,
       is_admin: isAdmin,
       provider,
       last_sign_in_at: lastSignInAt,
@@ -129,7 +131,7 @@ export async function PATCH(req: Request) {
   if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
 
   const supabase = createServiceSupabaseClient()
-  const body = await req.json() as { id: string; is_moderator?: boolean }
+  const body = await req.json() as { id: string; is_moderator?: boolean; is_certified_creator?: boolean }
 
   if (typeof body.is_moderator === 'boolean') {
     const { error } = await supabase
@@ -140,6 +142,18 @@ export async function PATCH(req: Request) {
     if (error) {
       console.error('Error updating moderator status:', error)
       return NextResponse.json({ error: 'Failed to update moderator status' }, { status: 500 })
+    }
+  }
+
+  if (typeof body.is_certified_creator === 'boolean') {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_certified_creator: body.is_certified_creator })
+      .eq('id', body.id)
+
+    if (error) {
+      console.error('Error updating certified creator status:', error)
+      return NextResponse.json({ error: 'Failed to update certified creator status' }, { status: 500 })
     }
   }
 

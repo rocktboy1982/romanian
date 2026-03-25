@@ -305,11 +305,22 @@ export default function MeClientPage() {
                 href="/submit/cocktail"
                 className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
                 style={{
-                  color: 'hsl(var(--foreground))'
+                  color: 'hsl(var(--foreground))',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)'
                 }}
               >
                 <span className="text-lg">🍹</span>
                 <span className="text-sm font-medium">Adaugă băutură</span>
+              </Link>
+              <Link
+                href="/me/messages"
+                className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                style={{
+                  color: 'hsl(var(--foreground))'
+                }}
+              >
+                <span className="text-lg">✉️</span>
+                <span className="text-sm font-medium">Mesaje</span>
               </Link>
             </nav>
           </section>

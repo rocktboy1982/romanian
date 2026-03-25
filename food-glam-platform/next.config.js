@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  productionBrowserSourceMaps: false,
   images: {
     // Disable Vercel Image Optimization to stay within free tier (5000 transformations/month)
     // Images served directly from source (Pexels, Unsplash, food blogs)

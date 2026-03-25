@@ -188,7 +188,9 @@ export async function PATCH(req: Request) {
         .eq('id', user.id)
         .single()
 
-      const displayName = (profile as { display_name?: string } | null)?.display_name || (isAdmin ? 'Admin' : 'Utilizator')
+      const profileName = (profile as { display_name?: string } | null)?.display_name || 'Utilizator'
+      // Admin replies show as "Moderator" — don't expose admin's real name/handle
+      const displayName = isAdmin ? 'Moderator' : profileName
 
       const meta = ((post as Record<string, unknown>).recipe_json as Record<string, unknown>) || {}
       const existingReplies: MessageReply[] = Array.isArray(meta.replies) ? (meta.replies as MessageReply[]) : []

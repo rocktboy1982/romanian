@@ -7,7 +7,7 @@ import { getRequestUser } from '@/lib/get-user'
 
 const ALLOWED_TYPES = ['recipe', 'short', 'image', 'video'] as const
 const ALLOWED_STATUSES = ['draft', 'active'] as const
-const MAX_POSTS_PER_DAY = 1
+const MAX_POSTS_PER_DAY = 3
 
 /** Strip all HTML tags from user-submitted text to prevent stored XSS. */
 function stripHtml(input: string): string {
@@ -18,18 +18,19 @@ function stripHtml(input: string): string {
 const DEV_POSTS: Record<string, unknown>[] = []
 const DEV_USER_ID = 'dev-user-001'
 
-/** Check if user has already posted today (local dev fallback) */
+/** Check if user hit daily post limit (local dev fallback) */
 function hasPostedTodayDev(userId: string): boolean {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  return DEV_POSTS.some(
+  const count = DEV_POSTS.filter(
     (p) => p.created_by === userId && typeof p.created_at === 'string' && p.created_at > oneDayAgo
-  )
+  ).length
+  return count >= MAX_POSTS_PER_DAY
 }
 /* ── POST: Create a new post ──────────────────────────────── */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title: rawTitle, type, slug, hero_image_url, approach_id, diet_tags, food_tags, recipe_json, status } = body
+    const { title: rawTitle, type, slug, hero_image_url, approach_id, diet_tags, food_tags, recipe_json, status, source_url } = body
     // Sanitize user-submitted text fields — strip HTML tags before any further processing
     const title = typeof rawTitle === 'string' ? stripHtml(rawTitle) : ''
     // Validation
@@ -47,10 +48,10 @@ export async function POST(req: NextRequest) {
 
     // ── Local dev fallback (no real Supabase) ──────────────────────
     if (isLocalSupabase()) {
-      // Rate limit: 1 post per day per user
+      // Rate limit: 3 posts per day per user
       if (hasPostedTodayDev(DEV_USER_ID)) {
         return NextResponse.json(
-          { error: 'You can only publish 1 post per day. Try again tomorrow.' },
+          { error: 'Poți publica maxim 3 rețete pe zi. Încearcă mâine.' },
           { status: 429 }
         )
       }
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
         diet_tags: Array.isArray(diet_tags) ? diet_tags : null,
         food_tags: Array.isArray(food_tags) ? food_tags : null,
         recipe_json: recipe_json || null,
+        source_url: source_url || null,
         status: postStatus,
         created_by: DEV_USER_ID,
         created_at: new Date().toISOString(),
@@ -84,7 +86,7 @@ export async function POST(req: NextRequest) {
     // Use service client for data operations (bypasses RLS with verified user id)
     const supabase = createServiceSupabaseClient()
 
-    // Rate limit: 1 post per day per user
+    // Rate limit: 3 posts per day per user
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { count: recentCount } = await supabase
       .from('posts')
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
       .gte('created_at', oneDayAgo)
     if (recentCount !== null && recentCount >= MAX_POSTS_PER_DAY) {
       return NextResponse.json(
-        { error: 'You can only publish 1 post per day. Try again tomorrow.' },
+        { error: 'Poți publica maxim 3 rețete pe zi. Încearcă mâine.' },
         { status: 429 }
       )
     }
@@ -109,6 +111,7 @@ export async function POST(req: NextRequest) {
       diet_tags: Array.isArray(diet_tags) ? diet_tags : null,
       food_tags: Array.isArray(food_tags) ? food_tags : null,
       recipe_json: recipe_json || null,
+      source_url: source_url || null,
       status: postStatus,
       created_by: user.id,
     }

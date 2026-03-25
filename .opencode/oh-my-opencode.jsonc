@@ -1,0 +1,102 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+
+  // Configure agents to use local llama.cpp servers
+  "agents": {
+    // Main orchestrator - dGPU server (14B model, strongest)
+    "sisyphus": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+
+    // Research agents - CPU server (3B model, fastest for simple tasks)
+    "librarian": {
+      "model": "local-cpu/bartowski_Qwen2.5-Coder-3B-Instruct-GGUF_Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+    "explore": {
+      "model": "local-cpu/bartowski_Qwen2.5-Coder-3B-Instruct-GGUF_Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+
+    // Architecture/debugging - dGPU server (14B model for complex reasoning)
+    "oracle": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+
+    // Planner - dGPU server (14B model)
+    "prometheus": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    }
+  },
+
+  // Configure task categories to use local models
+  "categories": {
+    // Quick tasks - CPU server (3B, fastest)
+    "quick": {
+      "model": "local-cpu/bartowski_Qwen2.5-Coder-3B-Instruct-GGUF_Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+
+    // Visual engineering - iGPU server (7B, balanced)
+    "visual-engineering": {
+      "model": "local-igpu/bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q5_K_M.gguf",
+      "stream": false
+    },
+
+    // Complex tasks - dGPU server (14B, strongest)
+    "ultrabrain": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+    "deep": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+    "unspecified-high": {
+      "model": "local-dgpu/bartowski_Qwen2.5-Coder-14B-Instruct-GGUF_Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "stream": false
+    },
+
+    // Low effort tasks - iGPU server (7B)
+    "unspecified-low": {
+      "model": "local-igpu/bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q5_K_M.gguf",
+      "stream": false
+    },
+
+    // Writing - iGPU server (7B, good for prose)
+    "writing": {
+      "model": "local-igpu/bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q5_K_M.gguf",
+      "stream": false
+    },
+
+    // Artistry - iGPU server (7B)
+    "artistry": {
+      "model": "local-igpu/bartowski_Qwen2.5-7B-Instruct-GGUF_Qwen2.5-7B-Instruct-Q5_K_M.gguf",
+      "stream": false
+    }
+  },
+
+  // Background task limits
+  "background_task": {
+    "defaultConcurrency": 10,
+    "providerConcurrency": {
+      "local-dgpu": 2,
+      "local-igpu": 2,
+      "local-cpu": 2
+    }
+  },
+
+  // Enable experimental features
+  "experimental": {
+    "aggressive_truncation": true,
+    "task_system": true
+  },
+
+  // Disable tmux (not needed on Windows)
+  "tmux": {
+    "enabled": false
+  }
+}

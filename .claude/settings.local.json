@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)",
+      "WebFetch(*)",
+      "WebSearch",
+      "mcp__supabase__*",
+      "mcp__vercel__*",
+      "mcp__gcloud__*",
+      "mcp__playwright__*",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__navigate_page"
+    ]
+  }
+}

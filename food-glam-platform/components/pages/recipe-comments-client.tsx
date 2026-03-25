@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { sanitizeText } from '@/lib/sanitize'
 
-interface MockUser {
+interface AuthUser {
   id: string
   display_name: string
   handle: string
@@ -27,39 +27,6 @@ interface RecipeCommentsClientProps {
   recipeId: string
   slug: string
 }
-
-const MOCK_COMMENTS: Comment[] = [
-  {
-    id: '1',
-    author: {
-      name: 'Sofia Martinez',
-      handle: 'sofiachef',
-      avatar: 'https://i.pravatar.cc/150?img=12'
-    },
-    text: 'Absolutely loved this recipe! The flavor profile was perfectly balanced. Made it for dinner last night and everyone asked for seconds.',
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-  },
-  {
-    id: '2',
-    author: {
-      name: 'James Chen',
-      handle: 'jamescooks',
-      avatar: 'https://i.pravatar.cc/150?img=15'
-    },
-    text: "Quick question - can I substitute the main ingredient? I'm allergic to one of them.",
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000)
-  },
-  {
-    id: '3',
-    author: {
-      name: 'Emma Wilson',
-      handle: 'emmaeats',
-      avatar: 'https://i.pravatar.cc/150?img=18'
-    },
-    text: 'Made this for meal prep Sunday and it reheated perfectly. Definitely adding to my regular rotation!',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
-  }
-]
 
 /* ─── captcha helpers ────────────────────────────────────────────────────── */
 
@@ -117,8 +84,8 @@ function timeAgo(date: Date): string {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsClientProps) {
-  const [mockUser, setMockUser] = useState<MockUser | null>(null)
-  const [comments, setComments] = useState<Comment[]>(MOCK_COMMENTS)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [hydrated, setHydrated] = useState(false)
 
@@ -133,10 +100,23 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
   const honeypotRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const userStr = localStorage.getItem('mock_user')
-    if (userStr) {
-      try { setMockUser(JSON.parse(userStr)) } catch { /* ignore */ }
-    }
+    // Read real auth from marechef-session (set by navigation on Google sign-in)
+    try {
+      const sessionStr = localStorage.getItem('marechef-session')
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr)
+        const u = session?.user
+        if (u?.id) {
+          const meta = u.user_metadata || {}
+          setAuthUser({
+            id: u.id,
+            display_name: meta.full_name || meta.name || u.email?.split('@')[0] || 'User',
+            handle: u.email?.split('@')[0] || 'user',
+            avatar_url: meta.avatar_url || meta.picture || null,
+          })
+        }
+      }
+    } catch { /* ignore */ }
     setHydrated(true)
   }, [])
 
@@ -144,7 +124,7 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
 
   /* ── logged-out gate ──────────────────────────────────────────────────── */
 
-  if (!mockUser) {
+  if (!authUser) {
     return (
        <div id="comments" className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
          <p className="ff-display text-lg font-bold mb-4">Comentarii</p>
@@ -225,14 +205,14 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
     /* honeypot final check */
     if (honeypotRef.current?.value) return
 
-    if (!mockUser) return
+    if (!authUser) return
 
     const comment: Comment = {
       id: String(Date.now()),
       author: {
-        name: mockUser.display_name,
-        handle: mockUser.handle,
-        avatar: mockUser.avatar_url || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+        name: authUser.display_name,
+        handle: authUser.handle,
+        avatar: authUser.avatar_url || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
       },
       text: newComment,
       createdAt: new Date()
@@ -250,6 +230,9 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
        <p className="ff-display text-lg font-bold mb-4">Comentarii ({comments.length})</p>
 
       {/* Comments list */}
+      {comments.length === 0 && (
+        <p className="text-sm mb-6" style={{ color: '#999' }}>Fii primul care comentează această rețetă!</p>
+      )}
       <div className="space-y-4 mb-6">
         {comments.map(comment => (
           <div key={comment.id} className="flex gap-3">
@@ -280,15 +263,15 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
         <div className="flex gap-3 mb-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={mockUser.avatar_url || `https://i.pravatar.cc/150?img=5`}
-            alt={mockUser.display_name}
+            src={authUser.avatar_url || `https://i.pravatar.cc/150?img=5`}
+            alt={authUser.display_name}
             width={40}
             height={40}
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
           <div className="flex-1">
-            <p className="text-sm font-semibold">{mockUser.display_name}</p>
-            <p className="text-xs" style={{ color: '#666' }}>@{mockUser.handle}</p>
+            <p className="text-sm font-semibold">{authUser.display_name}</p>
+            <p className="text-xs" style={{ color: '#666' }}>@{authUser.handle}</p>
           </div>
         </div>
 

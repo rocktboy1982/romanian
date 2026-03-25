@@ -325,7 +325,7 @@ export default function MessagesClient() {
                           <span className="text-sm font-semibold">{r.from_display_name}</span>
                           {r.is_admin && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-                              style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500' }}>Admin</span>
+                              style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500' }}>Moderator</span>
                           )}
                           <span className="text-xs" style={{ color: '#555' }}>{formatDate(r.created_at)}</span>
                         </div>

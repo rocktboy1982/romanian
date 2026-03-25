@@ -73,12 +73,23 @@ export default function NewPostPage() {
   const [productDisclosure, setProductDisclosure] = useState<'Ad' | 'Sponsored' | 'Partner' | 'Gifted'>('Sponsored')
 
   useEffect(() => {
-    const userStr = localStorage.getItem('mock_user')
-    if (userStr) {
-      try {
-        setMockUser(JSON.parse(userStr))
-      } catch {}
-    }
+    // Read real auth from marechef-session
+    try {
+      const sessionStr = localStorage.getItem('marechef-session')
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr)
+        const u = session?.user
+        if (u?.id) {
+          const meta = u.user_metadata || {}
+          setMockUser({
+            id: u.id,
+            display_name: meta.full_name || meta.name || u.email?.split('@')[0] || 'User',
+            handle: u.email?.split('@')[0] || 'user',
+            avatar_url: meta.avatar_url || meta.picture || null,
+          })
+        }
+      }
+    } catch {}
     setHydrated(true)
   }, [])
 

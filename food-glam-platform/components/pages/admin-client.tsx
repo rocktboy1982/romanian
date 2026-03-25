@@ -79,6 +79,7 @@ interface AdminUser {
   tier?: 'pro' | 'amateur' | 'user'
   warned_at?: string
   is_moderator?: boolean
+  is_certified_creator?: boolean
   is_admin?: boolean
   provider?: string
   last_sign_in_at?: string | null
@@ -834,6 +835,30 @@ export default function AdminClient() {
       setUsers(prev => prev.map(u => u.id === id ? { ...u, is_moderator: newValue } : u))
       showToast(newValue ? `${user?.display_name ?? 'Utilizatorul'} este acum moderator` : `${user?.display_name ?? 'Utilizatorul'} nu mai este moderator`, 'success')
       addAudit(newValue ? 'Moderator acordat' : 'Moderator revocat', user?.display_name ?? id, '', newValue ? 'warn' : 'info')
+    } catch { showToast('Eroare la actualizare', 'error') }
+  }, [users, showToast, addAudit])
+
+  const toggleCertifiedCreator = useCallback(async (id: string, currentValue: boolean) => {
+    const user = users.find(u => u.id === id)
+    const newValue = !currentValue
+    try {
+      await adminFetch('/api/admin/users', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, is_certified_creator: newValue }),
+      })
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, is_certified_creator: newValue } : u))
+      showToast(
+        newValue
+          ? `${user?.display_name ?? 'Utilizatorul'} este acum Creator Certificat`
+          : `${user?.display_name ?? 'Utilizatorul'} nu mai este Creator Certificat`,
+        'success'
+      )
+      addAudit(
+        newValue ? 'Creator Certificat acordat' : 'Creator Certificat revocat',
+        user?.display_name ?? id,
+        '',
+        newValue ? 'warn' : 'info'
+      )
     } catch { showToast('Eroare la actualizare', 'error') }
   }, [users, showToast, addAudit])
 
@@ -1734,6 +1759,12 @@ export default function AdminClient() {
                                 Moderator
                               </span>
                             )}
+                            {user.is_certified_creator && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                                style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.4)' }}>
+                                Creator Certificat
+                              </span>
+                            )}
                             {user.tier && user.tier !== 'user' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                                 style={{ background: user.tier === 'pro' ? 'rgba(255,77,109,0.2)' : 'rgba(255,255,255,0.1)', color: user.tier === 'pro' ? '#ff4d6d' : '#ccc', border: '1px solid rgba(255,255,255,0.15)' }}>
@@ -1781,6 +1812,16 @@ export default function AdminClient() {
                                  ? { background: 'rgba(59,130,246,0.2)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.4)' }
                                  : { background: 'rgba(255,255,255,0.06)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}>
                                {user.is_moderator ? 'Moderator ON' : 'Moderator OFF'}
+                             </button>
+                           )}
+                           {/* Creator Certificat toggle */}
+                           {!user.is_admin && (
+                             <button onClick={() => toggleCertifiedCreator(user.id, !!user.is_certified_creator)}
+                               className="action-btn"
+                               style={user.is_certified_creator
+                                 ? { background: 'rgba(16,185,129,0.2)', color: '#34d399', borderColor: 'rgba(16,185,129,0.4)' }
+                                 : { background: 'rgba(255,255,255,0.06)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}>
+                               {user.is_certified_creator ? 'Creator ON' : 'Creator OFF'}
                              </button>
                            )}
                            {/* Promote to chef */}
@@ -2408,7 +2449,7 @@ export default function AdminClient() {
                             <span className="text-sm font-semibold">{r.from_display_name}</span>
                             {r.is_admin && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-                                style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500' }}>Admin</span>
+                                style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500' }}>Moderator</span>
                             )}
                             <span className="text-xs" style={{ color: '#555' }}>{formatMsgDate(r.created_at)}</span>
                           </div>
@@ -2421,7 +2462,7 @@ export default function AdminClient() {
                   {/* Admin reply form */}
                   <div className="px-5 py-4" style={{ background: '#161616', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                     <form onSubmit={adminSendReply} className="flex flex-col gap-3">
-                      <label className="text-xs font-semibold" style={{ color: '#888' }}>Răspunde ca Admin</label>
+                      <label className="text-xs font-semibold" style={{ color: '#888' }}>Răspunde ca Moderator</label>
                       <textarea
                         value={adminReplyBody}
                         onChange={e => setAdminReplyBody(e.target.value)}

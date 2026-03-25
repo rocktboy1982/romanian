@@ -7,12 +7,13 @@ import { SubmissionResponse, RecipeSubmission } from '@/types/submission';
 // In production this would be Supabase
 const submissionsStore: RecipeSubmission[] = [];
 
-const MAX_POSTS_PER_DAY = 1;
+const MAX_POSTS_PER_DAY = 3;
 
-/** Check if a submission was made in the last 24 hours (dev in-memory) */
+/** Check if daily submission limit reached (dev in-memory) */
 function hasSubmittedTodayDev(): boolean {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  return submissionsStore.some((s) => s.createdAt > oneDayAgo);
+  const count = submissionsStore.filter((s) => s.createdAt > oneDayAgo).length;
+  return count >= MAX_POSTS_PER_DAY;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse<SubmissionResponse>> {
@@ -39,12 +40,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<SubmissionRes
 
     const body = await req.json();
 
-    // Rate limit: 1 post per day
+    // Rate limit: 3 posts per day
     if (hasSubmittedTodayDev()) {
       return NextResponse.json(
         {
           success: false,
-          message: `You can only submit ${MAX_POSTS_PER_DAY} recipe per day. Try again tomorrow.`,
+          message: `Poți trimite maxim ${MAX_POSTS_PER_DAY} rețete pe zi. Încearcă mâine.`,
         },
         { status: 429 }
       );

@@ -407,7 +407,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                  { label: 'Porții', value: rj.serves || '\u2014' },
                  { label: 'Dificultate', value: DIFFICULTY_LABELS[rj.difficulty ?? ''] || rj.difficulty || '\u2014' },
                  {
-                   label: 'Calitate',
+                   label: 'Evaluare',
                    value: cocktail.quality_score ? `${cocktail.quality_score.toFixed(1)}/5` : '\u2014',
                  },
                ].map(stat => (
@@ -528,7 +528,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                 style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.08)' }}
               >
                   <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#8B1A2B' }}>
-                    Calitate
+                    Evaluare
                   </h3>
                 <StarDisplay score={cocktail.quality_score} />
               </div>

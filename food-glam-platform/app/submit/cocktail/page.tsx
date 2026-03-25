@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
+import RecipeScanButton from '@/components/RecipeScanButton'
 
 /* ── Constants ──────────────────────────────────────────────────────────── */
 
@@ -132,6 +133,24 @@ function SubmitCocktailPageContent() {
 
   const toggleTag = (tag: string) =>
     set('tags', form.tags.includes(tag) ? form.tags.filter(t => t !== tag) : [...form.tags, tag])
+
+  /* ── OCR scan handler ────────────────────────────────────── */
+  const handleScanComplete = useCallback((data: { title?: string; summary?: string; category?: string; spirit?: string; serves?: number; difficulty?: string; ingredients?: { qty: string; unit: string; name: string }[]; steps?: string[]; glassware?: string; garnish?: string }) => {
+    setForm(prev => ({
+      ...prev,
+      title: data.title || prev.title,
+      summary: data.summary || prev.summary,
+      category: (data.category === 'alcoholic' || data.category === 'non-alcoholic') ? data.category : prev.category,
+      spirit: data.spirit || prev.spirit,
+      serves: data.serves ? String(data.serves) : prev.serves,
+      difficulty: (data.difficulty === 'easy' || data.difficulty === 'medium' || data.difficulty === 'hard') ? data.difficulty : prev.difficulty,
+      ingredients: data.ingredients?.length ? data.ingredients : prev.ingredients,
+      steps: data.steps?.length ? data.steps : prev.steps,
+      glassware: data.glassware || prev.glassware,
+      garnish: data.garnish || prev.garnish,
+    }))
+    setErrors({})
+  }, [])
 
   /* Get mock user from localStorage */
   const getMockUser = () => {
@@ -302,6 +321,15 @@ function SubmitCocktailPageContent() {
              </p>
            </div>
          </div>
+
+        {/* ── OCR Scan ────────────────────────────────────── */}
+        <div className="rounded-xl p-4 flex items-center gap-4" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.15)' }}>
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: '#4f46e5' }}>Ai o rețetă de cocktail scrisă sau tipărită?</p>
+            <p className="text-xs mt-0.5" style={{ color: '#6366f1' }}>Fotografiaz-o și formularul se completează automat cu AI</p>
+          </div>
+          <RecipeScanButton type="cocktail" onScanComplete={handleScanComplete} />
+        </div>
 
         <div className="space-y-8">
 

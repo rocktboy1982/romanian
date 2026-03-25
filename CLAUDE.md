@@ -190,3 +190,5 @@ import { ADMIN_EMAILS } from '@/lib/require-admin'
 - **Cocktails** — created by "MareChef Bartender" profile
 - **Recipe import** — uses `seed-google-v3.js` with Ollama translation, target 40/country, Romania excluded
 - **Per-user Gemini key** — stored in `profiles.gemini_api_key` (DB) + `marechef-gemini-key` (localStorage)
+- **Recipe submission limit** — 3 per day per user (enforced server-side in `app/api/submit/route.ts`)
+- **Comments** — client-side only (not persisted to DB), requires `marechef-session` auth
