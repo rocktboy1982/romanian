@@ -7,7 +7,7 @@ export default function ApproachPage() {
   const params = useParams();
   const [approach, setApproach] = useState<string>('');
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all-time'>('all-time');
-  const [tabs, setTabs] = useState(['Top Recipes', 'Top Shorts', 'Top Videos']);
+  const [tabs] = useState(['Top Rețete', 'Top Scurte', 'Top Videouri']);
 
   useEffect(() => {
     const slug = params.slug as string;
@@ -17,24 +17,24 @@ export default function ApproachPage() {
   return (
     <div>
       <div className="flex justify-between mb-4">
-        <h1 className="text-2xl">Approach: {approach}</h1>
+        <h1 className="text-2xl">Bucătărie: {approach}</h1>
         <div className="flex space-x-2">
           <select
             value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value as any)}
+            onChange={(e) => setTimeFilter(e.target.value as 'today' | 'week' | 'all-time')}
             className="p-2 border rounded"
           >
-            <option value="today">Today</option>
-            <option value="week">Week</option>
-            <option value="all-time">All-time</option>
+            <option value="today">Azi</option>
+            <option value="week">Săptămâna</option>
+            <option value="all-time">Tot timpul</option>
           </select>
           <div className="relative">
             <select
               className="p-2 border rounded pl-10"
             >
-              <option>Top Recipes</option>
-              <option>Top Shorts</option>
-              <option>Top Videos</option>
+              <option>Top Rețete</option>
+              <option>Top Scurte</option>
+              <option>Top Videouri</option>
             </select>
             <div className="absolute left-0 top-0 h-full w-10 bg-white">
               <div className="h-full flex items-center">
@@ -51,7 +51,7 @@ export default function ApproachPage() {
         {tabs.map((tab, index) => (
           <div key={index} className="bg-white p-4 rounded shadow">
             <h2 className="text-lg font-semibold mb-2">{tab}</h2>
-            <p className="text-sm text-gray-500">{timeFilter === 'today' ? "Today's top" : timeFilter === 'week' ? 'Weekly top' : 'All-time top'}</p>
+            <p className="text-sm text-gray-500">{timeFilter === 'today' ? 'Top-ul zilei' : timeFilter === 'week' ? 'Top-ul săptămânii' : 'Top-ul general'}</p>
           </div>
         ))}
       </div>
