@@ -37,6 +37,7 @@ export default function ChatBot() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [apiKey, setApiKey] = useState<string | null>(null)
+  const apiKeyRef = useRef<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -91,6 +92,7 @@ export default function ChatBot() {
         const data = await res.json()
         if (data.has_key && data.key) {
           setApiKey(data.key)
+          apiKeyRef.current = data.key
           setState('open')
           if (messages.length === 0) {
             setMessages([{
@@ -109,7 +111,8 @@ export default function ChatBot() {
 
   // Send message to Gemini directly from browser
   const sendMessage = async () => {
-    if (!input.trim() || loading || !apiKey) return
+    const key = apiKeyRef.current || apiKey
+    if (!input.trim() || loading || !key) return
 
     const userMsg: Message = { id: generateId(), role: 'user', content: input.trim() }
     setMessages(prev => [...prev, userMsg])
@@ -118,7 +121,7 @@ export default function ChatBot() {
 
     try {
       const { GoogleGenerativeAI } = await import('@google/generative-ai')
-      const genAI = new GoogleGenerativeAI(apiKey)
+      const genAI = new GoogleGenerativeAI(key)
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
       // Build conversation as a single prompt (simpler, avoids startChat issues)
