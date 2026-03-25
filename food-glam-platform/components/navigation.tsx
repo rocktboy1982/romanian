@@ -32,6 +32,7 @@ const NAV_ITEMS: NavEntry[] = [
   { href: '/me/cookbook',    label: 'Cartea mea',         icon: '🍴' },
   { href: '/me/pantry',     label: 'Cămara mea',         icon: '🥫' },
   { href: '/me/bar',        label: 'Barul meu',          icon: '🍸' },
+  { href: '/me/messages',   label: 'Mesaje',             icon: '✉️' },
 
   // ── Creează ──
   { separator: 'Creează' },
@@ -203,7 +204,8 @@ export function Navigation() {
   const [searchVal, setSearchVal] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
   const { theme, toggleTheme } = useTheme()
-  
+  const [unreadMessages, setUnreadMessages] = useState(0)
+
   // Use real user if available; only show mock user in development before real auth resolves
   const isDev = process.env.NODE_ENV === 'development'
   const user = realUser || (isDev && !realHydrated ? mockUser : null)
@@ -212,6 +214,34 @@ export function Navigation() {
 
   /* close mobile menu on route change */
   useEffect(() => { setMobileOpen(false) }, [pathname])
+
+  /* fetch unread message count when user is present */
+  useEffect(() => {
+    if (!user) { setUnreadMessages(0); return }
+    const fetchUnread = async () => {
+      try {
+        const headers: Record<string, string> = {}
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) headers['Authorization'] = `Bearer ${parsed.access_token}`
+        }
+        if (!headers['Authorization']) {
+          const mockRaw = localStorage.getItem('mock_user')
+          if (mockRaw) headers['x-mock-user-id'] = JSON.parse(mockRaw).id || 'a0000000-0000-0000-0000-000000000001'
+        }
+        const res = await fetch('/api/messages', { headers })
+        if (!res.ok) return
+        const data = await res.json()
+        const unread = (data.messages || []).filter((m: { is_read: boolean }) => !m.is_read).length
+        setUnreadMessages(unread)
+      } catch { /* ignore */ }
+    }
+    fetchUnread()
+    // Refresh every 60 seconds
+    const iv = setInterval(fetchUnread, 60_000)
+    return () => clearInterval(iv)
+  }, [user])
 
   /* translate hint */
   useEffect(() => {
@@ -503,6 +533,10 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
             >
               <span className="text-base">{item.icon}</span>
               {item.label}
+              {item.href === '/me/messages' && unreadMessages > 0 && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold"
+                  style={{ background: '#22c55e', color: '#fff' }}>{unreadMessages}</span>
+              )}
             </Link>
             )
           })}

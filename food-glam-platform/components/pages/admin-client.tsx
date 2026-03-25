@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase-client'
 type ContentStatus = 'active' | 'pending' | 'rejected' | 'removed'
 type ChefStatus    = 'active' | 'suspended' | 'banned'
 type UserStatus    = 'active' | 'warned' | 'blocked' | 'deleted'
-type AdminTab      = 'dashboard' | 'content' | 'chefs' | 'users' | 'reports' | 'settings' | 'analytics' | 'audit' | 'statistici'
+type AdminTab      = 'dashboard' | 'content' | 'chefs' | 'users' | 'reports' | 'settings' | 'analytics' | 'audit' | 'statistici' | 'mesaje'
 type ReportCategory = 'all' | 'spam' | 'hate' | 'harassment' | 'copyright' | 'misinfo' | 'other'
 type UserRoleFilter = 'all' | 'active' | 'warned' | 'blocked' | 'deleted' | 'admins' | 'moderators' | 'banned'
 
@@ -449,6 +449,86 @@ export default function AdminClient() {
   /* audit log */
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([])
   const auditCounter = useRef(0)
+
+  /* messages state */
+  interface AdminMessage {
+    id: string
+    from_user_id: string
+    from_display_name: string
+    from_handle: string
+    subject: string
+    body: string
+    is_read: boolean
+    created_at: string
+    replies: Array<{
+      id: string
+      from_user_id: string
+      from_display_name: string
+      body: string
+      created_at: string
+      is_admin: boolean
+    }>
+  }
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([])
+  const [adminMessagesLoading, setAdminMessagesLoading] = useState(false)
+  const [openAdminMsg, setOpenAdminMsg] = useState<AdminMessage | null>(null)
+  const [adminReplyBody, setAdminReplyBody] = useState('')
+  const [adminReplying, setAdminReplying] = useState(false)
+  const [adminReplyError, setAdminReplyError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (tab !== 'mesaje') return
+    setAdminMessagesLoading(true)
+    adminFetch('/api/messages')
+      .then(r => r.json())
+      .then(data => { setAdminMessages(data.messages || []) })
+      .catch(() => {})
+      .finally(() => setAdminMessagesLoading(false))
+  }, [tab])
+
+  const adminOpenMessage = async (msg: AdminMessage) => {
+    setOpenAdminMsg(msg)
+    setAdminReplyBody('')
+    setAdminReplyError(null)
+    if (!msg.is_read) {
+      adminFetch('/api/messages', {
+        method: 'PATCH',
+        body: JSON.stringify({ id: msg.id, action: 'mark_read' }),
+      }).catch(() => {})
+      setAdminMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_read: true } : m))
+      setOpenAdminMsg({ ...msg, is_read: true })
+    }
+  }
+
+  const adminSendReply = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!openAdminMsg) return
+    setAdminReplying(true)
+    setAdminReplyError(null)
+    try {
+      const res = await adminFetch('/api/messages', {
+        method: 'PATCH',
+        body: JSON.stringify({ id: openAdminMsg.id, action: 'reply', reply_body: adminReplyBody }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Eroare')
+      const newReply = data.reply
+      const updated = { ...openAdminMsg, replies: [...openAdminMsg.replies, newReply] }
+      setOpenAdminMsg(updated)
+      setAdminMessages(prev => prev.map(m => m.id === openAdminMsg.id ? updated : m))
+      setAdminReplyBody('')
+    } catch (e: unknown) {
+      setAdminReplyError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setAdminReplying(false)
+    }
+  }
+
+  const formatMsgDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString('ro-RO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    } catch { return iso }
+  }
 
   /* settings state */
   const [settings, setSettings] = useState({
@@ -898,6 +978,7 @@ export default function AdminClient() {
     { id: 'chefs',      label: 'Bucătari',        icon: '👨‍🍳' },
     { id: 'users',      label: 'Utilizatori',     icon: '👥' },
     { id: 'reports',    label: 'Rapoarte',        icon: '🚩' },
+    { id: 'mesaje',     label: 'Mesaje',          icon: '✉️' },
     { id: 'statistici', label: 'Statistici',      icon: '📉' },
     { id: 'analytics',  label: 'Analiză',         icon: '📈' },
     { id: 'settings',   label: 'Setări',          icon: '⚙️' },
@@ -990,6 +1071,10 @@ export default function AdminClient() {
               {t.id === 'audit' && auditLog.length > 0 ? (
                 <span className="ml-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
                   style={{ background: '#3b82f6', color: '#fff' }}>{auditLog.length}</span>
+              ) : null}
+              {t.id === 'mesaje' && adminMessages.filter(m => !m.is_read).length > 0 ? (
+                <span className="ml-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                  style={{ background: '#22c55e', color: '#fff' }}>{adminMessages.filter(m => !m.is_read).length}</span>
               ) : null}
             </button>
           ))}
@@ -2260,6 +2345,163 @@ export default function AdminClient() {
                <div className="mt-4 p-4 rounded-xl text-xs" style={{ color: '#444', background: '#161616', border: '1px solid rgba(255,255,255,0.05)' }}>
                  ℹ Jurnalul de audit este doar pentru sesiune. Când este conectat la Supabase, toate acțiunile admin sunt salvate în tabelul <code>admin_audit_log</code>.
                </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════
+              MESAJE TAB
+          ════════════════════════════════ */}
+          {tab === 'mesaje' && (
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="ff-display text-2xl font-bold">Mesaje Utilizatori</h2>
+                <div className="flex items-center gap-3">
+                  {openAdminMsg && (
+                    <button onClick={() => { setOpenAdminMsg(null); setAdminReplyBody('') }}
+                      className="action-btn"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: '#aaa', borderColor: 'rgba(255,255,255,0.1)' }}>
+                      ← Înapoi la listă
+                    </button>
+                  )}
+                  <span className="text-xs" style={{ color: '#555' }}>
+                    {adminMessages.filter(m => !m.is_read).length} necitite din {adminMessages.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Thread view */}
+              {openAdminMsg ? (
+                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                  {/* Thread header */}
+                  <div className="flex items-center gap-4 px-5 py-4" style={{ background: '#161616', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
+                      {openAdminMsg.from_display_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold">{openAdminMsg.from_display_name}</p>
+                      <p className="text-xs" style={{ color: '#555' }}>@{openAdminMsg.from_handle} · {formatMsgDate(openAdminMsg.created_at)}</p>
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold">{openAdminMsg.subject}</p>
+                    </div>
+                  </div>
+
+                  {/* Original message */}
+                  <div className="px-5 py-5" style={{ background: '#111' }}>
+                    <p className="text-sm whitespace-pre-wrap" style={{ color: '#ccc' }}>{openAdminMsg.body}</p>
+                  </div>
+
+                  {/* Replies */}
+                  {openAdminMsg.replies.length > 0 && openAdminMsg.replies.map(r => (
+                    <div key={r.id} className="px-5 py-4" style={{
+                      background: r.is_admin ? 'rgba(255,149,0,0.06)' : '#111',
+                      borderTop: '1px solid rgba(255,255,255,0.05)',
+                    }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                          style={{ background: r.is_admin ? 'linear-gradient(135deg,#ff9500,#ff4d6d)' : 'rgba(255,255,255,0.1)', color: '#fff' }}>
+                          {r.from_display_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-semibold">{r.from_display_name}</span>
+                            {r.is_admin && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                                style={{ background: 'rgba(255,149,0,0.2)', color: '#ff9500' }}>Admin</span>
+                            )}
+                            <span className="text-xs" style={{ color: '#555' }}>{formatMsgDate(r.created_at)}</span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap" style={{ color: '#ccc' }}>{r.body}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Admin reply form */}
+                  <div className="px-5 py-4" style={{ background: '#161616', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <form onSubmit={adminSendReply} className="flex flex-col gap-3">
+                      <label className="text-xs font-semibold" style={{ color: '#888' }}>Răspunde ca Admin</label>
+                      <textarea
+                        value={adminReplyBody}
+                        onChange={e => setAdminReplyBody(e.target.value)}
+                        required
+                        rows={3}
+                        placeholder="Scrie un răspuns..."
+                        className="admin-input resize-none"
+                      />
+                      {adminReplyError && <p className="text-xs" style={{ color: '#ff4d6d' }}>{adminReplyError}</p>}
+                      <div>
+                        <button
+                          type="submit"
+                          disabled={adminReplying || !adminReplyBody.trim()}
+                          className="action-btn"
+                          style={{ background: 'rgba(255,149,0,0.15)', color: '#ff9500', borderColor: 'rgba(255,149,0,0.3)' }}>
+                          {adminReplying ? 'Se trimite...' : 'Trimite răspuns'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              ) : (
+                /* Message list */
+                adminMessagesLoading ? (
+                  <div className="flex flex-col gap-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: '#161616' }} />
+                    ))}
+                  </div>
+                ) : adminMessages.length === 0 ? (
+                  <div className="py-16 text-center rounded-2xl" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="text-4xl mb-3">✉️</div>
+                    <div className="text-sm font-semibold" style={{ color: '#555' }}>Niciun mesaj de la utilizatori</div>
+                    <div className="text-xs mt-1" style={{ color: '#444' }}>Mesajele trimise de utilizatori vor apărea aici</div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+                    {/* Table header */}
+                    <div className="grid gap-4 px-4 py-3 text-xs font-bold uppercase tracking-wider"
+                      style={{ background: '#161616', color: '#444', gridTemplateColumns: '8px 200px 1fr 120px 80px' }}>
+                      <span />
+                      <span>Utilizator</span>
+                      <span>Subiect</span>
+                      <span>Data</span>
+                      <span>Răspunsuri</span>
+                    </div>
+                    {adminMessages.map((msg, i) => (
+                      <button
+                        key={msg.id}
+                        onClick={() => adminOpenMessage(msg)}
+                        className="admin-row w-full text-left grid gap-4 px-4 py-3 items-center"
+                        style={{
+                          gridTemplateColumns: '8px 200px 1fr 120px 80px',
+                          borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                          background: msg.is_read ? 'transparent' : 'rgba(34,197,94,0.04)',
+                        }}>
+                        <div className="w-2 h-2 rounded-full" style={{ background: msg.is_read ? 'transparent' : '#22c55e' }} />
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                            style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
+                            {msg.from_display_name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold truncate">{msg.from_display_name}</p>
+                            <p className="text-xs truncate" style={{ color: '#555' }}>@{msg.from_handle}</p>
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: msg.is_read ? '#aaa' : '#f0f0f0' }}>{msg.subject}</p>
+                          <p className="text-xs truncate" style={{ color: '#555' }}>{msg.body.slice(0, 60)}{msg.body.length > 60 ? '...' : ''}</p>
+                        </div>
+                        <span className="text-xs tabular-nums" style={{ color: '#555' }}>{formatMsgDate(msg.created_at)}</span>
+                        <span className="text-xs" style={{ color: '#666' }}>
+                          {msg.replies.length > 0 ? `${msg.replies.length} răsp.` : '—'}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )
+              )}
             </div>
           )}
 
