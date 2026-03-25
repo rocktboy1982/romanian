@@ -149,11 +149,11 @@ function RecipeCard({ recipe }: { recipe: RecipeHit }) {
             fill
             sizes="(max-width: 640px) 200px, (max-width: 1024px) 33vw, 280px"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            fallbackEmoji="\ud83c\udf7d\ufe0f"
+            fallbackEmoji="🍽️"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-3xl opacity-50">
-            {'\ud83c\udf7d\ufe0f'}
+            {'🍽️'}
           </div>
         )}
       </div>

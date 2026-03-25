@@ -311,7 +311,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
             alt={cocktail.title}
             className="w-full object-cover"
             style={{ maxHeight: 480, minHeight: 280 }}
-            fallbackEmoji="\ud83c\udf78"
+            fallbackEmoji="🍸"
             width={1200}
             height={480}
          />
@@ -365,7 +365,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                     }
               }
             >
-               {isAlcoholic ? '\ud83e\udd43 Cu alcool' : '\ud83c\udf3f Fără alcool'}
+               {isAlcoholic ? '🥃 Cu alcool' : '🌿 Fără alcool'}
             </Pill>
             {spiritLabel && (
               <Pill style={{ background: 'rgba(0,0,0,0.06)', color: '#555', border: '1px solid rgba(0,0,0,0.1)' }}>
@@ -434,13 +434,13 @@ export default async function CocktailDetailPage({ params }: PageProps) {
               <div className="flex flex-wrap gap-4 text-sm" style={{ color: '#555' }}>
                 {rj.glassware && (
                   <div className="flex items-center gap-1.5">
-                    <span style={{ color: '#888' }}>\ud83e\udd42 Pahar:</span>
+                    <span style={{ color: '#888' }}>🥂 Pahar:</span>
                     <span>{rj.glassware}</span>
                   </div>
                 )}
                 {rj.garnish && (
                   <div className="flex items-center gap-1.5">
-                    <span style={{ color: '#888' }}>\ud83c\udf3f Garnitură:</span>
+                    <span style={{ color: '#888' }}>🌿 Garnitură:</span>
                     <span>{rj.garnish}</span>
                   </div>
                 )}
@@ -558,7 +558,7 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                            src={c.hero_image_url}
                            alt={c.title}
                            className="w-12 h-12 rounded object-cover flex-shrink-0"
-                           fallbackEmoji="\ud83c\udf78"
+                           fallbackEmoji="🍸"
                            width={48}
                            height={48}
                          />
@@ -585,14 +585,14 @@ export default async function CocktailDetailPage({ params }: PageProps) {
                     border: '1px solid rgba(139,26,43,0.25)',
                   }}
                >
-                 \ud83c\udf79 Adaugă propriul cocktail
+                 🍹 Adaugă propriul cocktail
                </Link>
               <Link
                 href="/cocktails"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{ background: '#f5f5f5', color: '#666', border: '1px solid rgba(0,0,0,0.08)' }}
               >
-                Vezi toate cocktailurile \u2192
+                Vezi toate cocktailurile →
               </Link>
             </div>
           </div>

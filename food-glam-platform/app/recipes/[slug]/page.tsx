@@ -317,7 +317,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
               fill
               className="object-cover hover:scale-105 transition-transform duration-300"
               sizes="200px"
-              fallbackEmoji="\ud83c\udf7d\ufe0f"
+              fallbackEmoji="🍽️"
             />
          </div>
        ))}
@@ -753,7 +753,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         <main className="min-h-screen pb-24 md:pb-8" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}>
           {/* Hero Section */}
          <div className="relative w-full h-[50vh] min-h-[320px] max-h-[480px] overflow-hidden">
-            <FallbackImage src={heroImage} alt={mockRecipe.title} fill className="object-cover" sizes="100vw" fallbackEmoji="\ud83c\udf7d\ufe0f" />
+            <FallbackImage src={heroImage} alt={mockRecipe.title} fill className="object-cover" sizes="100vw" fallbackEmoji="🍽️" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
             <div className="container mx-auto max-w-4xl">
@@ -958,7 +958,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Creat de</p>
                     <div className="flex items-center gap-3">
                        {creator.avatar_url ? (
-                         <FallbackImage src={creator.avatar_url} alt={creator.display_name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" fallbackEmoji="\ud83d\udc68\u200d\ud83c\udf73" />
+                         <FallbackImage src={creator.avatar_url} alt={creator.display_name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" fallbackEmoji="👨‍🍳" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-sm font-bold text-primary">{creator.display_name.charAt(0).toUpperCase()}</span>
@@ -1146,7 +1146,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             fill
             className="object-cover"
             sizes="100vw"
-            fallbackEmoji="\ud83c\udf7d\ufe0f"
+            fallbackEmoji="🍽️"
           />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -1436,7 +1436,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                            width={40}
                            height={40}
                            className="w-10 h-10 rounded-full object-cover"
-                           fallbackEmoji="\ud83d\udc68\u200d\ud83c\udf73"
+                           fallbackEmoji="👨‍🍳"
                          />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
