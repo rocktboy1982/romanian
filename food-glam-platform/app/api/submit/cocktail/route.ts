@@ -47,7 +47,8 @@ export async function POST(req: NextRequest) {
     const authClient = createServerSupabaseClient()
     const supabase = createServiceSupabaseClient()
     const user = await getRequestUser(req, authClient)
-    const createdBy = user?.id || 'anonymous'
+    if (!user) return NextResponse.json({ error: 'Trebuie să fii autentificat' }, { status: 401 })
+    const createdBy = user.id
 
     // Build recipe_json with cocktail-specific fields
     const recipeJson = {

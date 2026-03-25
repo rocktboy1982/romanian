@@ -156,12 +156,21 @@ function SubmitCocktailPageContent() {
     }
     setSaving(true)
     try {
-      const user = getMockUser()
       const selectedSpirit = SPIRITS.find(s => s.value === form.spirit)
+
+      // Build auth headers from marechef-session
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) headers['Authorization'] = `Bearer ${parsed.access_token}`
+        }
+      } catch {}
 
       const res = await fetch('/api/submit/cocktail', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           title: form.title.trim(),
           summary: form.summary.trim(),
@@ -179,9 +188,7 @@ function SubmitCocktailPageContent() {
           steps: form.steps.filter(s => s.trim()),
           glassware: form.glassware,
           garnish: form.garnish,
-          created_by: user ?? {
-            id: 'anonymous', display_name: 'Anonymous', handle: '@anonymous', avatar_url: null,
-          },
+          // created_by is set server-side from auth token
         }),
       })
 
