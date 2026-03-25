@@ -41,39 +41,62 @@ export default function ChatBot() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Check login + API key status
+  // Check login status from multiple sources
   const checkStatus = useCallback(() => {
+    let loggedIn = false
+
+    // Source 1: marechef-session
     try {
       const session = localStorage.getItem('marechef-session')
       if (session) {
         const parsed = JSON.parse(session)
-        setIsLoggedIn(!!parsed?.user?.email)
-      } else {
-        setIsLoggedIn(false)
-      }
-    } catch { setIsLoggedIn(false) }
-
-    // Check for Gemini key in profile (stored by scan setup)
-    try {
-      const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
-      for (const k of keys) {
-        const raw = localStorage.getItem(k)
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          // We can't read the DB key from localStorage, check via API
-          break
-        }
+        if (parsed?.user?.email) loggedIn = true
       }
     } catch {}
+
+    // Source 2: sb-*-auth-token (Supabase native)
+    if (!loggedIn) {
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
+        for (const k of keys) {
+          const raw = localStorage.getItem(k)
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (parsed?.user?.email) { loggedIn = true; break }
+          }
+        }
+      } catch {}
+    }
+
+    setIsLoggedIn(loggedIn)
   }, [])
 
-  useEffect(() => { checkStatus() }, [checkStatus])
+  useEffect(() => {
+    checkStatus()
+    // Re-check periodically (session may appear after navigation sets it)
+    const timer = setInterval(checkStatus, 3000)
+    return () => clearInterval(timer)
+  }, [checkStatus])
 
   // Check if user has Gemini key when opening chat
   const handleOpen = async () => {
-    checkStatus()
+    // Direct check (don't rely on state which may be stale)
+    let loggedIn = false
+    try {
+      const s = localStorage.getItem('marechef-session')
+      if (s && JSON.parse(s)?.user?.email) loggedIn = true
+    } catch {}
+    if (!loggedIn) {
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
+        for (const k of keys) {
+          const raw = localStorage.getItem(k)
+          if (raw && JSON.parse(raw)?.user?.email) { loggedIn = true; break }
+        }
+      } catch {}
+    }
 
-    if (!isLoggedIn) {
+    if (!loggedIn) {
       setState('setup-login')
       return
     }
