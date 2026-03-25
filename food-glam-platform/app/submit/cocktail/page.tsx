@@ -196,7 +196,11 @@ function SubmitCocktailPageContent() {
       if (!res.ok) throw new Error(d.error || 'Trimiterea a eșuat')
 
       toast.push({ message: '🍹 Cocktail publicat!', type: 'success' })
-      router.push(`/cocktails/${d.slug}`)
+      if (d.slug) {
+        router.push(`/cocktails/${d.slug}`)
+      } else {
+        router.push('/cocktails')
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Ceva a mers greșit'
       toast.push({ message: msg, type: 'error' })
