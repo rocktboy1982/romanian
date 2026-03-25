@@ -121,13 +121,22 @@ export default function ChatBot() {
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-      const history = messages.slice(-10).map(m => ({
-        role: m.role === 'user' ? 'user' as const : 'model' as const,
-        parts: [{ text: m.content }],
-      }))
+      // Build history — exclude welcome message, ensure first message is from user
+      const chatHistory = messages
+        .filter(m => m.id !== 'welcome')
+        .slice(-10)
+        .map(m => ({
+          role: m.role === 'user' ? 'user' as const : 'model' as const,
+          parts: [{ text: m.content }],
+        }))
+
+      // Gemini requires history to start with user message or be empty
+      const validHistory = chatHistory.length > 0 && chatHistory[0].role === 'model'
+        ? chatHistory.slice(1)
+        : chatHistory
 
       const chat = model.startChat({
-        history,
+        history: validHistory,
         systemInstruction: SYSTEM_PROMPT,
       })
 
@@ -135,11 +144,19 @@ export default function ChatBot() {
       const reply = result.response.text()
 
       setMessages(prev => [...prev, { id: generateId(), role: 'bot', content: reply }])
-    } catch (err) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err)
+      console.error('ChatBot error:', errMsg)
+      const isQuota = errMsg.includes('429') || errMsg.includes('quota')
+      const isKey = errMsg.includes('API_KEY') || errMsg.includes('invalid') || errMsg.includes('401')
       setMessages(prev => [...prev, {
         id: generateId(),
         role: 'bot',
-        content: 'Scuze, am întâmpinat o eroare. Verifică cheia Gemini API sau încearcă din nou.'
+        content: isQuota
+          ? 'Ai depășit limita gratuită Gemini. Încearcă din nou peste câteva minute.'
+          : isKey
+            ? 'Cheia Gemini API nu e validă. Mergi la Scanează → Configurare pentru a o actualiza.'
+            : `Scuze, am întâmpinat o eroare: ${errMsg.slice(0, 100)}`
       }])
     } finally {
       setLoading(false)
