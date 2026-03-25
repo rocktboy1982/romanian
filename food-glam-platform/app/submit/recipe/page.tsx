@@ -180,7 +180,22 @@ function SubmitRecipePageContent() {
   const [rateLimited, setRateLimited] = useState(false)
   /* auth check */
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ? { id: data.session.user.id } : null); setAuthChecked(true) })
+    ;(async () => {
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.user) {
+            setUser({ id: parsed.user.id })
+            setAuthChecked(true)
+            return
+          }
+        }
+      } catch {}
+      const { data } = await supabase.auth.getSession()
+      setUser(data.session?.user ? { id: data.session.user.id } : null)
+      setAuthChecked(true)
+    })()
   }, [])
 
   /* load existing post for editing */

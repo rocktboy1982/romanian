@@ -14,9 +14,18 @@ export default function ShoppingListClient() {
       <div className="flex gap-2">
         <Button onClick={async () => {
           try {
-            const { data: { session } } = await supabase.auth.getSession()
             const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-            if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+            try {
+              const backup = localStorage.getItem('marechef-session')
+              if (backup) {
+                const parsed = JSON.parse(backup)
+                if (parsed?.access_token) headers['Authorization'] = `Bearer ${parsed.access_token}`
+              }
+            } catch {}
+            if (!headers['Authorization']) {
+              const { data: { session } } = await supabase.auth.getSession()
+              if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+            }
             const res = await fetch('/api/shopping-lists/merge', { method: 'POST', headers });
              if (!res.ok) throw new Error('Combinarea a eșuat');
              push({ message: 'Liste combinate (placeholder)', type: 'success' });

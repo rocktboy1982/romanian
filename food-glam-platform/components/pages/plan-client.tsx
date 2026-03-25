@@ -410,9 +410,19 @@ export default function PlanClient() {
   const [pantryMap, setPantryMap] = useState<Map<string, { qty: number; unit: string }>>(new Map())
   useEffect(() => {
     if (view !== 'shopping') return
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    Promise.resolve().then(async () => {
       const pantryHeaders: Record<string, string> = {}
-      if (session?.access_token) pantryHeaders['Authorization'] = `Bearer ${session.access_token}`
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) pantryHeaders['Authorization'] = `Bearer ${parsed.access_token}`
+        }
+      } catch {}
+      if (!pantryHeaders['Authorization']) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) pantryHeaders['Authorization'] = `Bearer ${session.access_token}`
+      }
       return fetch('/api/pantry?category=pantry', { headers: pantryHeaders })
     })
       .then(r => r.ok ? r.json() : [])
@@ -578,10 +588,17 @@ export default function PlanClient() {
     setShopSaveState('saving')
     setShopSaveError('')
     try {
-      const { data: { session } } = await supabase.auth.getSession()
       const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (session?.access_token) {
-        authHeaders['Authorization'] = `Bearer ${session.access_token}`
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) authHeaders['Authorization'] = `Bearer ${parsed.access_token}`
+        }
+      } catch {}
+      if (!authHeaders['Authorization']) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) authHeaders['Authorization'] = `Bearer ${session.access_token}`
       }
 
        const now = new Date()

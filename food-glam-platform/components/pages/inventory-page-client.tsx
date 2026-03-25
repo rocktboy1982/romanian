@@ -96,8 +96,20 @@ export default function InventoryPageClient({ category }: { category: 'pantry' |
    * API routes that rely on cookie-based auth to fall back to JWT verification.
    */
   const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
-    const { data: { session } } = await supabase.auth.getSession()
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    // Primary: read from our persisted session
+    try {
+      const backup = localStorage.getItem('marechef-session')
+      if (backup) {
+        const parsed = JSON.parse(backup)
+        if (parsed?.access_token) {
+          headers['Authorization'] = `Bearer ${parsed.access_token}`
+          return headers
+        }
+      }
+    } catch {}
+    // Fallback: try Supabase client
+    const { data: { session } } = await supabase.auth.getSession()
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`
     }

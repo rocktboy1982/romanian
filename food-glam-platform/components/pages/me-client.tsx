@@ -43,19 +43,49 @@ export default function MeClientPage() {
 
   useEffect(() => {
     let mounted = true;
+
+    // Helper: build auth headers preferring marechef-session
+    const buildProfileHeaders = async (): Promise<Record<string, string>> => {
+      const h: Record<string, string> = {}
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) {
+            h['Authorization'] = `Bearer ${parsed.access_token}`
+            return h
+          }
+        }
+      } catch {}
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token) h['Authorization'] = `Bearer ${session.access_token}`
+      return h
+    }
+
+    // Helper: get user preferring marechef-session
+    const getUser = async () => {
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.user) return parsed.user
+        }
+      } catch {}
+      const { data: { session: _sess } } = await supabase.auth.getSession()
+      return _sess?.user ?? null
+    }
+
     (async () => {
       try {
-        const { data: { session: _sess } } = await supabase.auth.getSession(); const data = { user: _sess?.user ?? null };
+        const user = await getUser()
         if (!mounted) return;
-        setUser(data.user ?? null);
+        setUser(user ?? null);
 
         // If authenticated, fetch real profile from API
-        if (data.user) {
+        if (user) {
           if (mounted) setProfileLoading(true)
           try {
-            const { data: { session } } = await supabase.auth.getSession()
-            const profileHeaders: Record<string, string> = {}
-            if (session?.access_token) profileHeaders['Authorization'] = `Bearer ${session.access_token}`
+            const profileHeaders = await buildProfileHeaders()
             const res = await fetch('/api/profiles/me', { headers: profileHeaders })
             if (res.ok) {
               const profileData = await res.json()
@@ -78,9 +108,8 @@ export default function MeClientPage() {
       if (session?.user) {
         // Fetch profile when auth state changes
         if (mounted) setProfileLoading(true)
-        const profileHeaders: Record<string, string> = {}
-        if (session?.access_token) profileHeaders['Authorization'] = `Bearer ${session.access_token}`
-        fetch('/api/profiles/me', { headers: profileHeaders })
+        buildProfileHeaders()
+          .then(profileHeaders => fetch('/api/profiles/me', { headers: profileHeaders }))
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (mounted && data?.profile) {

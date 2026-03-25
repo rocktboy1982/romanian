@@ -18,9 +18,18 @@ export function BlockButton({ userId, initialBlocked = false, className }: Block
   const toggle = async () => {
     setLoading(true)
     try {
-      const mockUserId = typeof window !== 'undefined' ? localStorage.getItem('mock_user') : null
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      const { data: { session: _s } } = await supabase.auth.getSession(); if (_s?.access_token) headers['Authorization'] = 'Bearer ' + _s.access_token
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) headers['Authorization'] = 'Bearer ' + parsed.access_token
+        }
+      } catch {}
+      if (!headers['Authorization']) {
+        const { data: { session: _s } } = await supabase.auth.getSession()
+        if (_s?.access_token) headers['Authorization'] = 'Bearer ' + _s.access_token
+      }
 
       if (blocked) {
         // Unblock

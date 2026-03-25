@@ -39,8 +39,19 @@ export default function EditProfilePage() {
 
     const initAuth = async () => {
       try {
-        // Check if user is authenticated
-        const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null
+        // Check if user is authenticated — prefer marechef-session
+        let user = null
+        try {
+          const backup = localStorage.getItem('marechef-session')
+          if (backup) {
+            const parsed = JSON.parse(backup)
+            if (parsed?.user) user = parsed.user
+          }
+        } catch {}
+        if (!user) {
+          const { data: { session } } = await supabase.auth.getSession()
+          user = session?.user ?? null
+        }
 
         if (!user) {
           if (mounted) setHydrated(true)

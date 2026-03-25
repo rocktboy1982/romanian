@@ -58,8 +58,19 @@ export default function MyPostsPage() {
   const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
-      // Try fetching from Supabase first
-      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null
+      // Try fetching from Supabase first — prefer marechef-session
+      let user = null
+      try {
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.user) user = parsed.user
+        }
+      } catch {}
+      if (!user) {
+        const { data: { session } } = await supabase.auth.getSession()
+        user = session?.user ?? null
+      }
       if (user) {
         const { data, error } = await supabase
           .from('posts')
