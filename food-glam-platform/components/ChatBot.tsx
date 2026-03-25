@@ -101,24 +101,59 @@ export default function ChatBot() {
       return
     }
 
-    // Read the Gemini API key from localStorage where scan-client stores it after setup.
-    // We never fetch the key from the API — only its presence is reported server-side.
+    // Check localStorage first
+    let key: string | null = null
     try {
       const storedKey = localStorage.getItem('marechef-gemini-key')
-      if (storedKey && storedKey.trim().length > 0) {
-        setApiKey(storedKey.trim())
-        apiKeyRef.current = storedKey.trim()
-        setState('open')
-        if (messages.length === 0) {
-          setMessages([{
-            id: 'welcome',
-            role: 'bot',
-            content: 'Salut! 👨‍🍳 Sunt asistentul MareChef. Cu ce te pot ajuta? Pot să te ghidez prin rețete, planuri de masă, cămară sau cocktailuri!'
-          }])
-        }
-        return
-      }
+      if (storedKey && storedKey.trim().length > 0) key = storedKey.trim()
     } catch {}
+
+    // If not in localStorage, try fetching from profile API
+    if (!key) {
+      try {
+        const headers: Record<string, string> = {}
+        const backup = localStorage.getItem('marechef-session')
+        if (backup) {
+          const parsed = JSON.parse(backup)
+          if (parsed?.access_token) headers['Authorization'] = `Bearer ${parsed.access_token}`
+        }
+        if (!headers['Authorization']) {
+          // Try sb-* keys
+          const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.includes('auth-token'))
+          for (const k of sbKeys) {
+            try {
+              const parsed = JSON.parse(localStorage.getItem(k) || '{}')
+              if (parsed?.access_token) { headers['Authorization'] = `Bearer ${parsed.access_token}`; break }
+            } catch {}
+          }
+        }
+        if (headers['Authorization']) {
+          const res = await fetch('/api/profiles/me/api-key?include_key=true', { headers })
+          if (res.ok) {
+            const data = await res.json()
+            if (data.has_key && data.key) {
+              key = data.key
+              // Cache in localStorage for next time
+              try { localStorage.setItem('marechef-gemini-key', key!) } catch {}
+            }
+          }
+        }
+      } catch {}
+    }
+
+    if (key) {
+      setApiKey(key)
+      apiKeyRef.current = key
+      setState('open')
+      if (messages.length === 0) {
+        setMessages([{
+          id: 'welcome',
+          role: 'bot',
+          content: 'Salut! 👨‍🍳 Sunt asistentul MareChef. Cu ce te pot ajuta? Pot să te ghidez prin rețete, planuri de masă, cămară sau cocktailuri!'
+        }])
+      }
+      return
+    }
 
     setState('setup-key')
   }

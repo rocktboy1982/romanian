@@ -27,8 +27,13 @@ export async function GET(req: Request) {
     }
 
     const hasKey = !!(data?.gemini_api_key && data.gemini_api_key.trim().length > 0)
-    // Never return the actual key value — only report its presence.
-    return NextResponse.json({ has_key: hasKey })
+    // Return key only to the authenticated owner (safe — it's their own key)
+    const url = new URL(req.url)
+    const includeKey = url.searchParams.get('include_key') === 'true'
+    return NextResponse.json({
+      has_key: hasKey,
+      ...(includeKey && hasKey ? { key: data.gemini_api_key } : {}),
+    })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('API key GET error:', message)
