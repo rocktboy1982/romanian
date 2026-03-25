@@ -320,16 +320,22 @@ export default function AdminClient() {
         }
       } catch { /* ignore */ }
 
-      // Fallback: try Supabase client
+      // Fallback: create a FRESH client (module singleton may be stale)
       if (!email) {
-        supabase.auth.getSession().then(({ data }) => {
-          if (!mounted) return
-          const sess = data.session
-          const e = sess?.user?.email ?? null
-          setAuthEmail(e)
-          setIsAdminUser(!!e && ADMIN_EMAILS.includes(e))
-          _cachedToken = sess?.access_token ?? null
-          setAuthChecked(true)
+        import('@supabase/supabase-js').then(({ createClient }) => {
+          const freshClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+          )
+          freshClient.auth.getSession().then(({ data }) => {
+            if (!mounted) return
+            const sess = data.session
+            const e = sess?.user?.email ?? null
+            setAuthEmail(e)
+            setIsAdminUser(!!e && ADMIN_EMAILS.includes(e))
+            _cachedToken = sess?.access_token ?? null
+            setAuthChecked(true)
+          })
         })
         return
       }
