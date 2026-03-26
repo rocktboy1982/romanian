@@ -302,7 +302,7 @@ export default function RegionCookbookClient({ region }: { region: string }) {
                  <span className="text-muted-foreground">Se încarcă rețete...</span>
                ) : (
                  <>
-                   {filteredRecipes.length} Rețetă{filteredRecipes.length !== 1 ? 'e' : ''}
+                   {filteredRecipes.length} {filteredRecipes.length !== 1 ? 'Rețete' : 'Rețetă'}
                    {total > filteredRecipes.length && (
                      <span className="text-sm font-normal text-muted-foreground ml-1">
                        (din {total} total)
@@ -363,7 +363,7 @@ export default function RegionCookbookClient({ region }: { region: string }) {
               <p className="text-4xl mb-4">🍽️</p>
                <p className="font-medium mb-2">Nicio rețetă nu se potrivește cu aceste filtre</p>
                <p className="text-sm mb-4">
-                 Sunt {allRecipes.length} rețetă{allRecipes.length !== 1 ? 'e' : ''} {meta.label} — încearcă să elimini un filtru.
+                 Sunt {allRecipes.length} {allRecipes.length !== 1 ? 'rețete' : 'rețetă'} {meta.label} — încearcă să elimini un filtru.
                </p>
                <button onClick={clearAll} className="text-sm text-amber-600 hover:underline">
                  Șterge toate filtrele
