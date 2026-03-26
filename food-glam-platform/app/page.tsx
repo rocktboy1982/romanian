@@ -404,7 +404,7 @@ export default function Home() {
               if (!r) return null
               return (
                 <Link key={id} href={`/cookbooks/region/${id}`}
-                  className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-gray-100 border border-gray-200 text-gray-700 dark:bg-white/[0.07] dark:border-white/10 dark:text-gray-400">
+                  className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gradient-to-r hover:from-[#ff4d6d] hover:to-[#ff9500] hover:text-white hover:border-transparent hover:scale-105 dark:bg-white/[0.07] dark:border-white/10 dark:text-gray-400 dark:hover:bg-gradient-to-r dark:hover:from-[#ff4d6d] dark:hover:to-[#ff9500] dark:hover:text-white dark:hover:border-transparent">
                   <span>{r.emoji}</span>
                   <span>{r.label}</span>
                 </Link>
