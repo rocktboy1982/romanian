@@ -194,18 +194,9 @@ export default function Home() {
           to   { transform: scaleX(1); }
         }
 
-        /* feed card hover */
+        /* feed card hover lift */
         .feed-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .feed-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
-        /* image zoom on hover */
-        .feed-card .feed-img { transition: transform 0.4s ease; }
-        .feed-card:hover .feed-img { transform: scale(1.06); }
-        /* gradient intensifies on hover */
-        .feed-card .feed-gradient { transition: opacity 0.3s ease; opacity: 1; }
-        .feed-card:hover .feed-gradient { opacity: 1; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%) !important; }
-        /* title slides up on hover */
-        .feed-card .feed-title-wrap { transition: transform 0.3s ease; }
-        .feed-card:hover .feed-title-wrap { transform: translateY(-4px); }
 
         /* double tap overlay */
         .dtap-overlay { pointer-events: none; }
@@ -227,7 +218,7 @@ export default function Home() {
         .toast-exit { animation: toastSlideOut 0.3s ease; }
       `}</style>
 
-      <main className="ff-body min-h-screen bg-[#f8f8f8] text-[#1a1a1a] dark:bg-[#0d0d0d] dark:text-[#f0f0f0] page-enter">
+      <main className="ff-body min-h-screen bg-[#f8f8f8] text-[#1a1a1a] dark:bg-[#0d0d0d] dark:text-[#f0f0f0]">
 
 
 
@@ -463,8 +454,8 @@ export default function Home() {
                         onDoubleClick={() => toggleLike(recipe.id)}
                         onClick={() => router.push(`/recipes/${recipe.slug}`)}
                       >
-                          <FallbackImage src={recipe.hero_image_url} alt={recipe.title} fill className="object-cover feed-img" fallbackEmoji="🍽️" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-                        <div className="absolute inset-0 feed-gradient" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }} />
+                          <FallbackImage src={recipe.hero_image_url} alt={recipe.title} fill className="object-cover" fallbackEmoji="🍽️" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }} />
                         {/* tag badge */}
                         <div className="absolute top-2 left-2">
                           <span className="px-2.5 py-1 rounded-full text-xs font-bold"
@@ -485,7 +476,7 @@ export default function Home() {
                           </div>
                         )}
                         {/* title + chef overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-3.5 feed-title-wrap">
+                        <div className="absolute bottom-0 left-0 right-0 p-3.5">
                           <h3 className="ff-display font-bold text-sm leading-snug mb-1.5 line-clamp-2 text-white">{recipe.title}</h3>
                           <div className="flex items-center justify-between">
                              <div className="flex items-center gap-1.5">

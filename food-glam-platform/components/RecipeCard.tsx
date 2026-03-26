@@ -138,7 +138,7 @@ export default function RecipeCard({
   }
 
   return (
-    <div className="border rounded-xl overflow-hidden flex flex-col bg-card shadow-sm h-full card-hover">
+    <div className="border rounded-xl overflow-hidden flex flex-col bg-card shadow-sm hover:shadow-md transition-shadow h-full">
        {/* Image */}
        <div className="relative">
          <FallbackImage

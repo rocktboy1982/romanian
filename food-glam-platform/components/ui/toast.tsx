@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <div aria-live="polite" className="fixed bottom-4 left-4 z-50 space-y-2">
         {toasts.map(t => (
-          <div key={t.id} className={`px-3 py-2 rounded shadow text-sm toast-enter ${t.type === 'error' ? 'bg-red-600 text-white' : t.type === 'success' ? 'bg-green-600 text-white' : 'bg-gray-800 text-white'}`}>
+          <div key={t.id} className={`px-3 py-2 rounded shadow text-sm ${t.type === 'error' ? 'bg-red-600 text-white' : t.type === 'success' ? 'bg-green-600 text-white' : 'bg-gray-800 text-white'}`}>
             {t.message}
           </div>
         ))}

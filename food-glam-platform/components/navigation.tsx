@@ -365,7 +365,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             ) : (
                <Link
                    href="/auth/signin"
-                   className="text-sm font-semibold px-4 py-2 rounded-full transition-all btn-animate"
+                   className="text-sm font-semibold px-4 py-2 rounded-full transition-all"
                    style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}
                  >
                    Autentificare
@@ -387,7 +387,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           ].map(item => {
             const active = isActive(item.href)
             return (
-              <Link key={item.href} href={item.href} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${active ? '' : ' nav-link-animated'}`}
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
                 style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
               >{item.label}</Link>
             )
@@ -403,7 +403,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           ].map(item => {
             const active = isActive(item.href)
             return (
-              <Link key={item.href} href={item.href} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${active ? '' : ' nav-link-animated'}`}
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
                 style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
               >{item.label}</Link>
             )
@@ -419,7 +419,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           ].map(item => {
             const active = isActive(item.href)
             return (
-              <Link key={item.href} href={item.href} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${active ? '' : ' nav-link-animated'}`}
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
                 style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
               >{item.label}</Link>
             )
@@ -434,7 +434,7 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           ].map(item => {
             const active = isActive(item.href)
             return (
-              <Link key={item.href} href={item.href} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${active ? '' : ' nav-link-animated'}`}
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
                 style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
               >{item.label}</Link>
             )
@@ -550,7 +550,7 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
               <span className="text-base">{item.icon}</span>
               {item.label}
               {item.href === '/me/messages' && unreadMessages > 0 && (
-                <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold pulse-glow"
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold"
                   style={{ background: '#22c55e', color: '#fff' }}>{unreadMessages}</span>
               )}
             </Link>
