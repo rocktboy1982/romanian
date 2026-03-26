@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useTheme } from '@/components/theme-provider'
 import { supabase } from '@/lib/supabase-client'
 import { createClient } from '@supabase/supabase-js'
+import { useFeatureFlags } from '@/components/feature-flags-provider'
 
 /* ─── nav items ──────────────────────────────────────────────────────────── */
 
@@ -131,19 +132,28 @@ function useRealUser() {
   }, [])
 
   const signOut = async () => {
-    // Revoke session on Supabase server
-    await supabase.auth.signOut({ scope: 'global' })
-    // Clear ALL Supabase + session data from localStorage
+    // Clear state first so UI updates immediately
+    setUser(null)
+    // Clear ALL auth data from localStorage
+    localStorage.removeItem('marechef-session')
+    localStorage.removeItem('mock_user')
+    localStorage.removeItem('marechef-gemini-key')
+    localStorage.removeItem('marechef-fasting')
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('sb-') || key.includes('supabase')) {
         localStorage.removeItem(key)
       }
     })
-    localStorage.removeItem('marechef-session')
-    localStorage.removeItem('mock_user')
-    // Clear the user's Gemini API key from localStorage on sign-out
-    localStorage.removeItem('marechef-gemini-key')
-    setUser(null)
+    // Clear Supabase cookies
+    document.cookie.split(';').forEach(c => {
+      const name = c.split('=')[0].trim()
+      if (name.startsWith('sb-') || name.includes('supabase')) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+      }
+    })
+    // Revoke session on server (don't block on failure)
+    try { await supabase.auth.signOut() } catch { /* ignore */ }
+    // Hard reload to clear all React state
     window.location.href = '/'
   }
 
@@ -158,29 +168,15 @@ function useMockUser() {
   const [user, setUser] = useState<MockUser | null>(null)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => {
+    // Only use mock user in development — never auto-create on production
+    if (process.env.NODE_ENV !== 'development') {
+      setHydrated(true)
+      return
+    }
     try {
-      let raw = localStorage.getItem('mock_user')
-      // Auto-seed a demo user so the site works without Google sign-in
-      if (!raw) {
-        const demo: MockUser = {
-          id: 'a0000000-0000-0000-0000-000000000001',
-          display_name: 'Chef Anna',
-          handle: 'chef_anna',
-          avatar_url: null,
-        }
-        localStorage.setItem('mock_user', JSON.stringify(demo))
-        raw = JSON.stringify(demo)
-      }
+      const raw = localStorage.getItem('mock_user')
       if (raw) {
         const parsed = JSON.parse(raw)
-        // Migrate stale non-UUID mock user ids to Chef Anna
-        if (parsed.id === 'mock-user-demo' || (parsed.id && !/^[0-9a-f]{8}-/.test(parsed.id))) {
-          parsed.id = 'a0000000-0000-0000-0000-000000000001'
-          parsed.display_name = 'Chef Anna'
-          parsed.handle = 'chef_anna'
-          localStorage.setItem('mock_user', JSON.stringify(parsed))
-        }
-        // normalize: some code sets 'name' instead of 'display_name'
         if (!parsed.display_name && parsed.name) parsed.display_name = parsed.name
         if (!parsed.display_name) parsed.display_name = 'User'
         if (!parsed.handle) parsed.handle = 'user'
@@ -207,6 +203,8 @@ export function Navigation() {
   const searchRef = useRef<HTMLInputElement>(null)
   const { theme, toggleTheme } = useTheme()
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const { flags } = useFeatureFlags()
+  const healthMode = !!flags.healthMode
 
   // Use real user if available; only show mock user in development before real auth resolves
   const isDev = process.env.NODE_ENV === 'development'
@@ -442,6 +440,22 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             )
           })}
 
+          {/* Health link — only when healthMode is active */}
+          {healthMode && (
+            <>
+              <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
+              <Link
+                href="/health"
+                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={isActive('/health')
+                  ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
+                  : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >
+                🏥 Sănătate
+              </Link>
+            </>
+          )}
+
           {/* spacer */}
           <div className="flex-1" />
 
@@ -542,6 +556,22 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
             </Link>
             )
           })}
+          {/* Health link in mobile menu — shown only when healthMode is active */}
+          {healthMode && (
+            <Link
+              href="/health"
+              className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
+              style={isActive('/health')
+                ? (theme === 'dark'
+                    ? { color: '#ff9500', background: 'rgba(255,149,0,0.06)' }
+                    : { color: '#fff', background: 'rgba(255,255,255,0.15)' })
+                : { color: theme === 'dark' ? '#ccc' : 'rgba(255,255,255,0.8)' }
+              }
+            >
+              <span className="text-base">🏥</span>
+              Sănătate
+            </Link>
+          )}
           <div className="px-5 pt-3 mt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm" style={{ color: '#888' }}>Temă</span>

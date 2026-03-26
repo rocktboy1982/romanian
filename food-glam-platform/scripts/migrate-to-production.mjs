@@ -4,9 +4,8 @@
  * Usage: node scripts/migrate-to-production.mjs
  */
 
-const PROD_URL = 'https://zfnxpoocddqiaiyizsri.supabase.co';
-// RLS is disabled on all tables, so anon key works for inserts
-const PROD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmbnhwb29jZGRxaWFpeWl6c3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MzY4NzUsImV4cCI6MjA4ODQxMjg3NX0.QcrdOk1tdkKRMawVxShWWWdnsuTJsbaTtX1rnfxEh7w';
+const PROD_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || (() => { console.error('Set NEXT_PUBLIC_SUPABASE_URL'); process.exit(1); })();
+const PROD_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || (() => { console.error('Set SUPABASE_SERVICE_ROLE_KEY'); process.exit(1); })();
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
