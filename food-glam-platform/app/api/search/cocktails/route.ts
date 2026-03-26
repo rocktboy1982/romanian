@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     // Build query: start with base filter for cocktails
     let query = supabase
       .from('posts')
-      .select('*')
+      .select('*, profiles!created_by(id, display_name, handle, avatar_url)')
       .eq('type', 'cocktail')
       .eq('status', 'active')
 
@@ -115,12 +115,15 @@ export async function GET(req: NextRequest) {
           steps: recipeJson.steps || [],
         },
         is_tested: post.is_tested || false,
-        created_by: {
-          id: post.created_by || 'unknown',
-          display_name: post.created_by || 'Unknown',
-          handle: '@unknown',
-          avatar_url: null,
-        },
+        created_by: (() => {
+          const p = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles
+          return {
+            id: p?.id || post.created_by || 'unknown',
+            display_name: p?.display_name || 'MareChef Bartender',
+            handle: p?.handle || 'marechef_bartender',
+            avatar_url: p?.avatar_url || null,
+          }
+        })(),
       }
     })
 

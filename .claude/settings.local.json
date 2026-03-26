@@ -12,7 +12,8 @@
       "mcp__gcloud__*",
       "mcp__playwright__*",
       "mcp__chrome-devtools__evaluate_script",
-      "mcp__chrome-devtools__navigate_page"
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot"
     ]
   }
 }
