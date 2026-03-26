@@ -94,23 +94,11 @@
 
 /* ── 7. Nav link underline slide ─────────────────── */
 .nav-link-animated {
-  position: relative;
+  transition: background 0.25s ease, color 0.25s ease;
 }
-.nav-link-animated::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(135deg, #ff4d6d, #ff9500);
-  transition: width 0.3s ease, left 0.3s ease;
-  border-radius: 1px;
-}
-.nav-link-animated:hover::after,
-.nav-link-animated.active::after {
-  width: 100%;
-  left: 0;
+.nav-link-animated:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 
 /* ── 8. Heart/save bounce ────────────────────────── */
