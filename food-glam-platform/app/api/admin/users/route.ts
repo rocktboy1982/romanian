@@ -48,14 +48,22 @@ export async function GET(req: Request) {
   // Build auth user map keyed by id
   const authMap = new Map(authUsers.map(u => [u.id, u]))
 
-  // Build query for profiles
+  // Build set of real auth user IDs (users who actually signed in)
+  const realUserIds = new Set(authUsers.map(u => u.id))
+
+  // Build query for profiles — exclude generic chef profiles (chef_country) that have no real auth user
   let query = supabase
     .from('profiles')
     .select('*', { count: 'exact' })
+    .not('handle', 'like', 'chef_%')
 
   // Search by display_name, handle, or email
   if (q) {
-    query = query.or(`display_name.ilike.%${q}%,handle.ilike.%${q}%,email.ilike.%${q}%`)
+    // When searching, include chef profiles too (in case admin specifically searches for one)
+    query = supabase
+      .from('profiles')
+      .select('*', { count: 'exact' })
+      .or(`display_name.ilike.%${q}%,handle.ilike.%${q}%,email.ilike.%${q}%`)
   }
 
   // Pagination
