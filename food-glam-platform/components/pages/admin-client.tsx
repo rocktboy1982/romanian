@@ -964,18 +964,7 @@ export default function AdminClient() {
     )
   }
 
-  // Access denied — show debug info to help diagnose
   if (!isAdminUser) {
-    // Collect debug info
-    let debugInfo = '';
-    try {
-      const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
-      const hasToken = sbKeys.some(k => {
-        try { return !!JSON.parse(localStorage.getItem(k) || '{}')?.access_token } catch { return false }
-      });
-      debugInfo = `Keys: ${sbKeys.join(', ') || 'none'} | Token: ${hasToken ? 'yes' : 'no'} | Email: ${authEmail || 'null'}`;
-    } catch { debugInfo = 'localStorage error'; }
-
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d0d' }}>
         <div className="text-center max-w-sm mx-auto px-6">
@@ -985,8 +974,6 @@ export default function AdminClient() {
             {authEmail
               ? `Contul ${authEmail} nu are acces la panoul de administrare.`
               : 'Trebuie să fii autentificat cu un cont de administrator.'}
-          </p>
-          <p className="text-xs mb-4" style={{ color: '#333', fontFamily: 'monospace', wordBreak: 'break-all' }}>{debugInfo}
           </p>
           <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
             style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' }}>
