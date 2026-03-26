@@ -1,0 +1,211 @@
+/* ── Respect reduced motion ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-slide-up, .animate-scale-in,
+  .animate-fade-in-delay-1, .animate-fade-in-delay-2, .animate-fade-in-delay-3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── 1. Fade-in on scroll (recipe cards) ───────────── */
+/* Applied via IntersectionObserver */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered delays for card grids */
+.animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+.animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+.animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+
+/* ── 2. Image skeleton shimmer + reveal ────────────── */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.image-reveal {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.image-reveal.loaded {
+  opacity: 1;
+}
+
+/* ── 3. Button hover effects ──────────────────────── */
+.btn-animate {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-animate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 77, 109, 0.3);
+}
+.btn-animate:active {
+  transform: translateY(0);
+}
+
+/* ── 4. Page fade-in ──────────────────────────────── */
+.page-enter {
+  animation: pageEnter 0.3s ease forwards;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 5. Chart bar grow animation ──────────────────── */
+.chart-bar {
+  transform-origin: bottom;
+  animation: barGrow 0.6s ease forwards;
+}
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Staggered bar delays */
+.chart-bar.bar-1 { animation-delay: 0.05s; }
+.chart-bar.bar-2 { animation-delay: 0.1s; }
+.chart-bar.bar-3 { animation-delay: 0.15s; }
+.chart-bar.bar-4 { animation-delay: 0.2s; }
+.chart-bar.bar-5 { animation-delay: 0.25s; }
+.chart-bar.bar-6 { animation-delay: 0.3s; }
+.chart-bar.bar-7 { animation-delay: 0.35s; }
+
+/* ── 6. Progress ring animation ──────────────────── */
+.progress-ring-animate {
+  animation: ringFill 1s ease forwards;
+}
+@keyframes ringFill {
+  from { stroke-dashoffset: 283; }
+}
+
+/* ── 7. Nav link underline slide ─────────────────── */
+.nav-link-animated {
+  position: relative;
+}
+.nav-link-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #ff4d6d, #ff9500);
+  transition: width 0.3s ease, left 0.3s ease;
+  border-radius: 1px;
+}
+.nav-link-animated:hover::after,
+.nav-link-animated.active::after {
+  width: 100%;
+  left: 0;
+}
+
+/* ── 8. Heart/save bounce ────────────────────────── */
+.heart-bounce {
+  animation: heartBeat 0.4s ease;
+}
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* ── 9. Toast slide-in ───────────────────────────── */
+.toast-enter {
+  animation: toastIn 0.3s ease forwards;
+}
+.toast-exit {
+  animation: toastOut 0.3s ease forwards;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ── 10. Accordion smooth height ─────────────────── */
+.accordion-content {
+  overflow: hidden;
+  animation: accordionOpen 0.3s ease forwards;
+}
+@keyframes accordionOpen {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 2000px; opacity: 1; }
+}
+
+/* ── 11. Card hover lift ─────────────────────────── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* ── 12. Gradient text shimmer (for hero titles) ─── */
+.text-shimmer {
+  background: linear-gradient(90deg, #ff4d6d, #ff9500, #ff4d6d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShimmer 3s linear infinite;
+}
+@keyframes textShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── 13. Pulse glow (notifications, badges) ──────── */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 77, 109, 0); }
+}
+
+/* ── 14. Number count-up (for stats) ─────────────── */
+.count-up {
+  animation: countFade 0.6s ease forwards;
+}
+@keyframes countFade {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── 15. Staggered fade-in (for lists) ───────────── */
+.stagger-in > * {
+  opacity: 0;
+  animation: staggerFade 0.4s ease forwards;
+}
+.stagger-in > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-in > *:nth-child(8) { animation-delay: 0.4s; }
+@keyframes staggerFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
