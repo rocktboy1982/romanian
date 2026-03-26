@@ -573,6 +573,31 @@ export const REGION_META: Record<string, RegionEntry> = {
     },
   ]),
 
+  /* ── CENTRAL AMERICA & CARIBBEAN (alias for cookbooks page) ──────────── */
+  'central-america-caribbean': region('America Centrală și Caraibe', '🌮', 'Cuba, Jamaica, Panama, Guatemala și insulele Caraibilor', [
+    {
+      id: 'central-america',
+      label: 'America Centrală și Caraibe',
+      countries: [
+        c('guatemalan',  'Guatemalan',  '🇬🇹', ['guatemalan']),
+        c('salvadoran',  'Salvadoran',  '🇸🇻', ['salvadoran']),
+        c('honduran',    'Honduran',    '🇭🇳', ['honduran']),
+        c('nicaraguan',  'Nicaraguan',  '🇳🇮', ['nicaraguan']),
+        c('costarican',  'Costa Rican', '🇨🇷', ['costarican']),
+        c('panamanian',  'Panamanian',  '🇵🇦', ['panamanian']),
+        c('cuban',       'Cuban',       '🇨🇺', ['cuban']),
+        c('jamaican',    'Jamaican',    '🇯🇲', ['jamaican'], [
+          { id: 'jerk', label: 'Jerk' },
+        ]),
+        c('trinidadian', 'Trinidadian', '🇹🇹', ['trinidadian']),
+        c('haitian',     'Haitian',     '🇭🇹', ['haitian']),
+        c('dominican',   'Dominican',   '🇩🇴', ['dominican']),
+        c('puerto-rican','Puerto Rican','🇵🇷', ['puerto-rican']),
+        c('barbadian',   'Barbadian',   '🇧🇧', []),
+      ],
+    },
+  ]),
+
   /* ── SOUTH AMERICA ────────────────────────────────────────────────────── */
   'south-america': region('America de Sud', '🌮', 'Ceviche peruan, churrasco brazilian și asado argentinian', [
     {
