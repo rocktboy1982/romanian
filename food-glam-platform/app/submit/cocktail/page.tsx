@@ -664,7 +664,7 @@ function SubmitCocktailPageContent() {
 
           {/* ── Actions ── */}
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t">
-             <Button onClick={handleSubmit} disabled={saving}>
+             <Button className="btn-animate" onClick={handleSubmit} disabled={saving}>
                {saving ? 'Se publică...' : '🍹 Publică cocktailul'}
              </Button>
              <Button variant="outline" onClick={() => setShowPreview(true)}>

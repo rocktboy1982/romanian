@@ -218,7 +218,7 @@ export default function Home() {
         .toast-exit { animation: toastSlideOut 0.3s ease; }
       `}</style>
 
-      <main className="ff-body min-h-screen bg-[#f8f8f8] text-[#1a1a1a] dark:bg-[#0d0d0d] dark:text-[#f0f0f0]">
+      <main className="ff-body min-h-screen bg-[#f8f8f8] text-[#1a1a1a] dark:bg-[#0d0d0d] dark:text-[#f0f0f0] page-enter">
 
 
 

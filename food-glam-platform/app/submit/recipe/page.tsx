@@ -1117,7 +1117,7 @@ function SubmitRecipePageContent() {
 
         {/* ── Action buttons ────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 pt-4 border-t">
-          <Button onClick={() => handleSubmit('active')} disabled={saving || rateLimited}>
+          <Button className="btn-animate" onClick={() => handleSubmit('active')} disabled={saving || rateLimited}>
             {saving ? 'Se salvează...' : rateLimited ? 'Limită atinsă' : editId ? 'Actualizează și publică' : 'Publică'}
           </Button>
           <Button variant="outline" onClick={() => handleSubmit('draft')} disabled={saving || rateLimited}>

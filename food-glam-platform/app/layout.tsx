@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import Script from 'next/script'
 // dynamic import removed — ChatBot uses 'use client' directly
 import '@/styles/globals.css'
+import '@/app/globals-animations.css'
 import { Navigation } from '@/components/navigation'
 import { FeatureFlagsProvider } from '@/components/feature-flags-provider'
 import { ThemeProvider } from '@/components/theme-provider'
