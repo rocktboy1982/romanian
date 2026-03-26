@@ -206,6 +206,39 @@ export async function PUT(req: Request) {
           reason: 'Admin ban',
           created_by: admin.id,
         })
+    } else if (body.status === 'deleted') {
+      // Permanently delete user and ALL their data
+      const uid = body.id
+      // Delete in order (foreign key dependencies)
+      await supabase.from('user_weight_logs').delete().eq('user_id', uid)
+      await supabase.from('user_fasting_logs').delete().eq('user_id', uid)
+      await supabase.from('user_meal_logs').delete().eq('user_id', uid)
+      await supabase.from('user_hydration_logs').delete().eq('user_id', uid)
+      await supabase.from('user_health_profiles').delete().eq('user_id', uid)
+      await supabase.from('user_substitution_prefs').delete().eq('user_id', uid)
+      await supabase.from('user_vendor_configs').delete().eq('user_id', uid)
+      await supabase.from('user_grocery_prefs').delete().eq('user_id', uid)
+      await supabase.from('grocery_orders').delete().eq('user_id', uid)
+      await supabase.from('shopping_list_items').delete().in('shopping_list_id',
+        (await supabase.from('shopping_lists').select('id').eq('user_id', uid)).data?.map(s => s.id) || [])
+      await supabase.from('shopping_list_shares').delete().in('shopping_list_id',
+        (await supabase.from('shopping_lists').select('id').eq('user_id', uid)).data?.map(s => s.id) || [])
+      await supabase.from('shopping_list_presence').delete().in('shopping_list_id',
+        (await supabase.from('shopping_lists').select('id').eq('user_id', uid)).data?.map(s => s.id) || [])
+      await supabase.from('shopping_lists').delete().eq('user_id', uid)
+      await supabase.from('meal_plans').delete().eq('user_id', uid)
+      await supabase.from('votes').delete().eq('user_id', uid)
+      await supabase.from('collections').delete().eq('user_id', uid)
+      await supabase.from('follows').delete().eq('follower_id', uid)
+      await supabase.from('follows').delete().eq('following_id', uid)
+      await supabase.from('pantry').delete().eq('user_id', uid)
+      await supabase.from('replies').delete().eq('author_id', uid)
+      await supabase.from('threads').delete().eq('author_id', uid)
+      await supabase.from('user_sanctions').delete().eq('user_id', uid)
+      await supabase.from('posts').delete().eq('created_by', uid)
+      await supabase.from('profiles').delete().eq('id', uid)
+      // Try to delete auth user too (may fail if not admin-capable)
+      try { await supabase.auth.admin.deleteUser(uid) } catch { /* ignore */ }
     }
   }
 
