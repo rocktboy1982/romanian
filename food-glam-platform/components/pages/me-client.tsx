@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import FallbackImage from '@/components/FallbackImage'
 import { useFeatureFlags } from "@/components/feature-flags-provider";
 import { useTheme } from "@/components/theme-provider";
-import { supabase } from "@/lib/supabase-client";
+import { supabase, supabaseSsr } from "@/lib/supabase-client";
 import SignInButton from "@/components/auth/signin-button";
 import Link from "next/link";
 
@@ -215,8 +215,9 @@ export default function MeClientPage() {
       return h
     }
 
-    const getUser = async () => {
-      // 1. Try marechef-session (primary)
+    // Try ALL auth sources — same strategy as navigation.tsx
+    const tryGetUser = async () => {
+      // 1. marechef-session (fastest)
       try {
         const backup = localStorage.getItem('marechef-session')
         if (backup) {
@@ -224,81 +225,92 @@ export default function MeClientPage() {
           if (parsed?.user?.id) return parsed.user
         }
       } catch {}
-      // 2. Try Supabase session
+      // 2. SSR client (reads cookies)
       try {
-        const { data: { session: _sess } } = await supabase.auth.getSession()
-        if (_sess?.user) return _sess.user
-      } catch {}
-      // 3. Try sb-*-auth-token (Supabase cookie format in localStorage)
-      try {
-        for (const key of Object.keys(localStorage)) {
-          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-            const raw = localStorage.getItem(key)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (parsed?.user?.id) return parsed.user
-            }
-          }
+        const { data: { session: sess } } = await supabaseSsr.auth.getSession()
+        if (sess?.user) {
+          // Persist to marechef-session for next time
+          try {
+            localStorage.setItem('marechef-session', JSON.stringify({
+              access_token: sess.access_token,
+              refresh_token: sess.refresh_token,
+              user: { id: sess.user.id, email: sess.user.email, user_metadata: sess.user.user_metadata }
+            }))
+          } catch {}
+          return sess.user
         }
+      } catch {}
+      // 3. localStorage client
+      try {
+        const { data: { session: sess2 } } = await supabase.auth.getSession()
+        if (sess2?.user) return sess2.user
       } catch {}
       return null
     }
 
-    (async () => {
+    const fetchProfile = async (u: { id: string }) => {
+      if (mounted) setProfileLoading(true)
       try {
-        const u = await getUser()
-        if (!mounted) return;
-        setUser(u ?? null);
-
-        if (!u) {
-          if (mounted) setProfileLoading(false)
-          return
+        const headers = await buildProfileHeaders()
+        const res = await fetch('/api/profiles/me', { headers })
+        if (res.ok) {
+          const data = await res.json()
+          if (mounted && data?.profile) setProfile(data.profile)
         }
+      } catch {}
+      if (mounted) setProfileLoading(false)
+    };
 
-        if (u) {
-          try {
-            const profileHeaders = await buildProfileHeaders()
-            const res = await fetch('/api/profiles/me', { headers: profileHeaders })
-            if (res.ok) {
-              const profileData = await res.json()
-              if (mounted && profileData.profile) {
-                setProfile(profileData.profile)
-              }
-            }
-          } catch (err) {
-            console.error('Failed to fetch profile:', err)
-          } finally {
-            if (mounted) setProfileLoading(false)
-          }
-        }
-      } catch (e) {
-        console.error(e);
+    (async () => {
+      const u = await tryGetUser()
+      if (!mounted) return
+      if (u) {
+        setUser(u)
+        await fetchProfile(u)
+      } else {
+        setUser(null)
+        setProfileLoading(false)
       }
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    // Listen for auth changes (login/logout while on page)
+    const { data: sub1 } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
       if (session?.user) {
-        if (mounted) setProfileLoading(true)
-        buildProfileHeaders()
-          .then(profileHeaders => fetch('/api/profiles/me', { headers: profileHeaders }))
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (mounted && data?.profile) {
-              setProfile(data.profile)
-            }
-          })
-          .catch(err => console.error('Failed to fetch profile:', err))
-          .finally(() => { if (mounted) setProfileLoading(false) })
+        setUser(session.user)
+        fetchProfile(session.user)
+        try {
+          localStorage.setItem('marechef-session', JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            user: { id: session.user.id, email: session.user.email, user_metadata: session.user.user_metadata }
+          }))
+        } catch {}
       } else {
+        setUser(null)
         setProfile(null)
-        if (mounted) setProfileLoading(false)
+        setProfileLoading(false)
+      }
+    });
+    const { data: sub2 } = supabaseSsr.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      if (session?.user) {
+        setUser(session.user)
+        fetchProfile(session.user)
+        try {
+          localStorage.setItem('marechef-session', JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            user: { id: session.user.id, email: session.user.email, user_metadata: session.user.user_metadata }
+          }))
+        } catch {}
       }
     });
 
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
+      sub1.subscription.unsubscribe();
+      sub2.subscription.unsubscribe();
     };
   }, []);
 
