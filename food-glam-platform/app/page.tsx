@@ -196,7 +196,11 @@ export default function Home() {
 
         /* feed card hover lift */
         .feed-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .feed-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+        .feed-card:hover { transform: translateY(-4px); }
+        /* dark mode: lighter glow shadow */
+        .dark .feed-card:hover { box-shadow: 0 12px 40px rgba(255,255,255,0.08); }
+        /* light mode: darker shadow */
+        .feed-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
 
         /* double tap overlay */
         .dtap-overlay { pointer-events: none; }
