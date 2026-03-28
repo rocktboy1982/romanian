@@ -83,7 +83,7 @@ export default function MeClientPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [healthOpen, setHealthOpen] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(true);
 
   // Health profile state
   const [healthProfile, setHealthProfile] = useState<HealthProfile | null>(null);
@@ -476,8 +476,8 @@ export default function MeClientPage() {
                   </button>
                 </div>
 
-                {/* Health Profile Form — shown when healthMode is ON */}
-                {healthMode && (
+                {/* Health Profile Form — always shown when accordion is open */}
+                {(
                   <div className="border-t px-4 py-4 flex flex-col gap-4" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,77,109,0.04)' }}>
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-semibold" style={{ color: '#ff4d6d' }}>🏥 Profil de sănătate</div>
