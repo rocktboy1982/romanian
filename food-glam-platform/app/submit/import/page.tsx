@@ -285,7 +285,7 @@ export default function ImportRecipePage() {
           <div className="text-5xl mb-4">🔐</div>
           <h1 className="text-2xl font-bold mb-2">Autentificare necesară</h1>
           <p className="mb-6" style={{ color: '#888' }}>Trebuie să fii autentificat pentru a importa rețete.</p>
-          <Link href="/auth/sign-in"
+          <Link href="/auth/signin"
             className="inline-block px-6 py-3 rounded-xl font-semibold text-white"
             style={{ background: 'linear-gradient(135deg,#ff9500,#ff6b00)' }}>
             Autentifică-te

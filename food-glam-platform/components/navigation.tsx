@@ -647,17 +647,25 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
               href={href}
               className="flex flex-col items-center gap-0.5 px-3 py-1"
             >
-               {isProfileTab && user?.avatar_url ? (
-                 <FallbackImage src={user.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" fallbackEmoji="👤" style={{ opacity: active ? 1 : 0.5 }} />
+               {item.href === '/me/scan' ? (
+                 /* Scan button — prominent orange */
+                 <>
+                   <div className="w-10 h-10 -mt-5 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)', boxShadow: '0 2px 12px rgba(255,77,109,0.5)' }}>
+                     <span className="text-xl">📷</span>
+                   </div>
+                   <span className="text-[9px] tracking-wide font-bold" style={{ color: '#ff9500' }}>Scanează</span>
+                 </>
+               ) : isProfileTab && user?.avatar_url ? (
+                 <>
+                   <FallbackImage src={user.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" fallbackEmoji="👤" style={{ opacity: active ? 1 : 0.5 }} />
+                   <span className="text-[9px] tracking-wide" style={{ color: active ? (theme === 'dark' ? '#ff9500' : '#fff') : (theme === 'dark' ? '#666' : 'rgba(255,255,255,0.6)') }}>{!user ? 'Intră' : item.label}</span>
+                 </>
                ) : (
-                 <span className="text-lg" style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                 <>
+                   <span className="text-lg" style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                   <span className="text-[9px] tracking-wide" style={{ color: active ? (theme === 'dark' ? '#ff9500' : '#fff') : (theme === 'dark' ? '#666' : 'rgba(255,255,255,0.6)') }}>{isProfileTab && !user ? 'Intră' : item.label}</span>
+                 </>
                )}
-               <span
-                 className="text-[9px] tracking-wide"
-                 style={{ color: active ? (theme === 'dark' ? '#ff9500' : '#fff') : (theme === 'dark' ? '#666' : 'rgba(255,255,255,0.6)') }}
-               >
-                 {isProfileTab && !user ? 'Intră' : item.label}
-               </span>
             </Link>
           )
         })}

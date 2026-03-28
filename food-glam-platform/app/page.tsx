@@ -230,8 +230,8 @@ export default function Home() {
             STORIES STRIP  (Instagram-style)
         ════════════════════════════════════════════════════════ */}
         <section className="px-4 pt-10 pb-4 relative">
-          {/* Scanează — top right, prominent */}
-          <div className="absolute top-10 right-4 flex items-center gap-2 z-10 pt-2">
+          {/* Scanează — top right, hidden on mobile (mobile has tab bar button) */}
+          <div className="absolute top-10 right-4 flex items-center gap-2 z-10 pt-2 hidden sm:flex">
             <Link href="/me/scan" className="flex flex-col items-center gap-1">
               <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)', boxShadow: '0 2px 12px rgba(255,77,109,0.4)' }}>
                 <span className="text-2xl">📷</span>
