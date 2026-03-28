@@ -222,7 +222,7 @@ export default function ChatBot() {
     return (
       <button
         onClick={handleOpen}
-        className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+        className="fixed bottom-8 right-8 max-sm:bottom-auto max-sm:top-3 max-sm:right-16 max-sm:w-10 max-sm:h-10 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
         style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}
         aria-label="Deschide asistentul"
       >
@@ -237,10 +237,10 @@ export default function ChatBot() {
   if (state === 'setup-login') {
     return (
       <>
-        <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
+        <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 max-sm:bottom-auto max-sm:top-3 max-sm:right-16 max-sm:w-10 max-sm:h-10 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
-        <div className="fixed bottom-24 right-4 sm:right-8 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden" style={{ background: panelBg, color: textColor }}>
+        <div className="fixed bottom-24 right-4 sm:right-8 max-sm:bottom-auto max-sm:top-14 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden" style={{ background: panelBg, color: textColor }}>
           <div className="p-1.5" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
             <div className="text-center text-white font-semibold text-sm py-2">🤖 Asistent MareChef</div>
           </div>
@@ -268,10 +268,10 @@ export default function ChatBot() {
   if (state === 'setup-key') {
     return (
       <>
-        <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
+        <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 max-sm:bottom-auto max-sm:top-3 max-sm:right-16 max-sm:w-10 max-sm:h-10 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
-        <div className="fixed bottom-24 right-4 sm:right-8 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden" style={{ background: panelBg, color: textColor }}>
+        <div className="fixed bottom-24 right-4 sm:right-8 max-sm:bottom-auto max-sm:top-14 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden" style={{ background: panelBg, color: textColor }}>
           <div className="p-1.5" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
             <div className="text-center text-white font-semibold text-sm py-2">🤖 Asistent MareChef</div>
           </div>
@@ -313,10 +313,10 @@ export default function ChatBot() {
   // ── Chat panel ──
   return (
     <>
-      <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
+      <button onClick={() => setState('closed')} className="fixed bottom-8 right-8 max-sm:bottom-auto max-sm:top-3 max-sm:right-16 max-sm:w-10 max-sm:h-10 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
-      <div className="fixed bottom-24 right-4 sm:right-8 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: panelBg, color: textColor, height: 500 }}>
+      <div className="fixed bottom-24 right-4 sm:right-8 max-sm:bottom-auto max-sm:top-14 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: panelBg, color: textColor, height: 500 }}>
         {/* Header */}
         <div className="p-1.5 flex-shrink-0" style={{ background: 'linear-gradient(135deg, #ff4d6d, #ff9500)' }}>
           <div className="text-center text-white font-semibold text-sm py-2">🤖 Asistent MareChef</div>
