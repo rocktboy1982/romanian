@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 // ── Types for JSONB meals column ──
 interface MealEntry {
@@ -40,9 +41,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'meal_plan_id is required' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+  const supabase = createServiceSupabaseClient()
 
   const { data: plan, error } = await supabase
     .from('meal_plans')
@@ -93,9 +95,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `meal_slot must be one of: ${validSlots.join(', ')}` }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+  const supabase = createServiceSupabaseClient()
 
   const { data: plan, error: fetchErr } = await supabase
     .from('meal_plans')
@@ -152,9 +155,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'meal_plan_id, entry_id, servings are required' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+  const supabase = createServiceSupabaseClient()
 
   const { data: plan, error: fetchErr } = await supabase
     .from('meal_plans')
@@ -202,9 +206,10 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'meal_plan_id and entry_id are required' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+  const supabase = createServiceSupabaseClient()
 
   const { data: plan, error: fetchErr } = await supabase
     .from('meal_plans')

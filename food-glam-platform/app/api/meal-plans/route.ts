@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
-export async function GET() {
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+export async function GET(req: NextRequest) {
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
 
+  const supabase = createServiceSupabaseClient()
   const { data, error } = await supabase
     .from('meal_plans')
     .select('*')
@@ -25,12 +27,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (!title) {
-    return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    return NextResponse.json({ error: 'Titlul este obligatoriu' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+
+  const supabase = createServiceSupabaseClient()
 
   // Store start_date/end_date and entries inside meals JSONB
   const mealsInit = {
@@ -58,12 +62,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (!id) {
-    return NextResponse.json({ error: 'Plan id is required' }, { status: 400 })
+    return NextResponse.json({ error: 'ID obligatoriu' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
+
+  const supabase = createServiceSupabaseClient()
 
   // Fetch current plan to merge meta
   const { data: existing, error: fetchErr } = await supabase
