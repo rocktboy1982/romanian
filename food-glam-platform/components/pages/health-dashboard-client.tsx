@@ -36,11 +36,18 @@ interface MealPlanMeal {
   notes: string
 }
 
+interface HydrationReminder {
+  time: string
+  amount_ml: number
+  note: string
+}
+
 interface MealPlanDay {
   day: string
   date: string
   meals: MealPlanMeal[]
   total_calories: number
+  hydration?: HydrationReminder[]
 }
 
 interface MealPlan {
@@ -325,6 +332,7 @@ export default function HealthDashboardClient() {
   const [generatingPlan, setGeneratingPlan] = useState(false)
   const [planError, setPlanError] = useState<string | null>(null)
   const [planWeek, setPlanWeek] = useState<'current' | 'next'>('current')
+  const [includeHydration, setIncludeHydration] = useState(false)
 
   // Quick-add states
   const [addingWater, setAddingWater] = useState(false)
@@ -498,7 +506,7 @@ export default function HealthDashboardClient() {
       const res = await fetch('/api/health/meal-plan', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ week }),
+        body: JSON.stringify({ week, include_hydration: includeHydration }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -511,6 +519,61 @@ export default function HealthDashboardClient() {
     } finally {
       setGeneratingPlan(false)
     }
+  }
+
+  // ─── ICS Calendar Export ────────────────────────────────────────────────────
+
+  function downloadICS(plan: MealPlan) {
+    const mealTimes: Record<string, { h: number; m: number }> = {
+      breakfast: { h: 8, m: 0 },
+      lunch: { h: 13, m: 0 },
+      dinner: { h: 19, m: 0 },
+      snack: { h: 16, m: 0 },
+    }
+    const mealEmoji: Record<string, string> = {
+      breakfast: '🥐', lunch: '🍽️', dinner: '🍛', snack: '🍎',
+    }
+
+    function pad(n: number) { return n.toString().padStart(2, '0') }
+    function icsDate(dateStr: string, h: number, m: number) {
+      return dateStr.replace(/-/g, '') + 'T' + pad(h) + pad(m) + '00'
+    }
+    function icsEndDate(dateStr: string, h: number, m: number) {
+      const endM = m + 30
+      const endH = endM >= 60 ? h + 1 : h
+      return dateStr.replace(/-/g, '') + 'T' + pad(endH) + pad(endM % 60) + '00'
+    }
+    function escICS(s: string) { return s.replace(/[\\;,]/g, c => '\\' + c).replace(/\n/g, '\\n') }
+    function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}@marechef.ro` }
+
+    let events = ''
+
+    for (const day of plan.days) {
+      // Meal events
+      for (const meal of day.meals) {
+        const t = mealTimes[meal.type] || { h: 12, m: 0 }
+        const emoji = mealEmoji[meal.type] || '🍴'
+        events += `BEGIN:VEVENT\r\nUID:${uid()}\r\nDTSTART;TZID=Europe/Bucharest:${icsDate(day.date, t.h, t.m)}\r\nDTEND;TZID=Europe/Bucharest:${icsEndDate(day.date, t.h, t.m)}\r\nSUMMARY:${escICS(`${emoji} ${meal.label}: ${meal.recipe_title}`)}\r\nDESCRIPTION:${escICS(`${meal.calories} kcal${meal.notes ? '\\n' + meal.notes : ''}`)}\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nDESCRIPTION:${escICS(`${meal.label}: ${meal.recipe_title}`)}\r\nEND:VALARM\r\nEND:VEVENT\r\n`
+      }
+
+      // Hydration events
+      if (day.hydration && Array.isArray(day.hydration)) {
+        for (const h of day.hydration) {
+          const [hh, mm] = h.time.split(':').map(Number)
+          events += `BEGIN:VEVENT\r\nUID:${uid()}\r\nDTSTART;TZID=Europe/Bucharest:${icsDate(day.date, hh, mm)}\r\nDTEND;TZID=Europe/Bucharest:${icsDate(day.date, hh, mm + 5 < 60 ? mm + 5 : mm)}\r\nSUMMARY:${escICS(`💧 Apă: ${h.amount_ml}ml`)}\r\nDESCRIPTION:${escICS(h.note || '')}\r\nBEGIN:VALARM\r\nTRIGGER:PT0M\r\nACTION:DISPLAY\r\nDESCRIPTION:${escICS(`Bea ${h.amount_ml}ml apă`)}\r\nEND:VALARM\r\nEND:VEVENT\r\n`
+        }
+      }
+    }
+
+    const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MareChef.ro//Plan Alimentar//RO\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Plan Alimentar MareChef\r\nX-WR-TIMEZONE:Europe/Bucharest\r\n${events}END:VCALENDAR`
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `marechef-plan-${plan.week_start}.ics`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   // ─── Derived values ─────────────────────────────────────────────────────────
@@ -1107,6 +1170,26 @@ export default function HealthDashboardClient() {
             Generează un plan de masă pentru săptămâna curentă sau viitoare bazat pe profilul tău de sănătate, preferințe și rețetele tale favorite.
           </p>
 
+          {/* Hydration checkbox */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <div
+              onClick={() => setIncludeHydration(v => !v)}
+              className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all"
+              style={{
+                background: includeHydration ? 'linear-gradient(135deg,#3b82f6,#06b6d4)' : 'rgba(255,255,255,0.06)',
+                border: includeHydration ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer',
+              }}
+            >
+              {includeHydration && (
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <span className="text-sm" style={{ color: 'hsl(var(--foreground))', opacity: 0.7 }}>💧 Include program de hidratare</span>
+          </label>
+
           {/* Generate buttons */}
           <div className="flex gap-3 flex-wrap">
             <button
@@ -1235,9 +1318,32 @@ export default function HealthDashboardClient() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Hydration schedule (if included) */}
+                    {day.hydration && Array.isArray(day.hydration) && (
+                      <div className="px-4 py-2 flex flex-col gap-1.5" style={{ borderTop: '1px solid rgba(59,130,246,0.15)', background: 'rgba(59,130,246,0.03)' }}>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#3b82f6', opacity: 0.6 }}>💧 Hidratare</span>
+                        <div className="flex flex-wrap gap-2">
+                          {day.hydration!.map((h, hi) => (
+                            <span key={hi} className="text-[10px] px-2 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.1)', color: '#60a5fa' }}>
+                              {h.time} — {h.amount_ml}ml
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
+
+              {/* Export button */}
+              <button
+                onClick={() => downloadICS(mealPlan)}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', color: '#3b82f6' }}
+              >
+                📅 Exportă în Calendar (.ics)
+              </button>
 
               {/* Disclaimer */}
               <div className="flex items-start gap-2 rounded-xl px-4 py-3"

@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const week: 'current' | 'next' = body.week === 'next' ? 'next' : 'current'
+    const includeHydration: boolean = !!body.include_hydration
 
     // ── 1. Fetch health profile ──────────────────────────────────────────────
     const { data: profile, error: profileErr } = await supabase
@@ -184,7 +185,11 @@ REGULI STRICTE:
 8. Respectă preferințele personale: ${profile.personal_preferences || 'niciuna'}
 9. Asigură varietate și echilibru nutrițional pe parcursul săptămânii
 10. Regim caloric ${caloricRegimeLabel(profile.caloric_regime ?? 'maintenance')}: ajustează porțiile corespunzător
-11. Toate textele în limba română
+11. Toate textele în limba română${includeHydration ? `
+12. HIDRATARE: Obiectivul zilnic de apă al utilizatorului este ${profile.daily_water_goal_ml ?? 2500}ml.
+    Pentru fiecare zi, generează un program de hidratare cu 6-8 momente de băut apă distribuite uniform pe parcursul zilei.
+    Fiecare moment: { "time": "HH:MM", "amount_ml": 300, "note": "Descriere scurtă" }
+    Adaugă câmpul "hydration" în fiecare obiect zi.` : ''}
 
 Returnează DOAR JSON valid (fără text înainte sau după), cu această structură exactă:
 {
@@ -211,7 +216,16 @@ Returnează DOAR JSON valid (fără text înainte sau după), cu această struct
         { "type": "dinner", "label": "Cină", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 550, "notes": "" },
         { "type": "snack", "label": "Gustare", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 200, "notes": "" }
       ],
-      "total_calories": 1750
+      "total_calories": 1750${includeHydration ? `,
+      "hydration": [
+        { "time": "08:00", "amount_ml": 300, "note": "Un pahar de apă la trezire" },
+        { "time": "10:30", "amount_ml": 250, "note": "Hidratare de dimineață" },
+        { "time": "13:00", "amount_ml": 300, "note": "Apă înainte de prânz" },
+        { "time": "15:30", "amount_ml": 250, "note": "Hidratare după-amiază" },
+        { "time": "17:00", "amount_ml": 300, "note": "Apă înainte de antrenament" },
+        { "time": "19:00", "amount_ml": 250, "note": "Apă la cină" },
+        { "time": "21:00", "amount_ml": 200, "note": "Ultimul pahar înainte de somn" }
+      ]` : ''}
     }
   ],
   "weekly_summary": {
