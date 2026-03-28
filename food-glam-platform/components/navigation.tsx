@@ -440,8 +440,8 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             )
           })}
 
-          {/* Health link — only when healthMode is active */}
-          {healthMode && (
+          {/* Health links — always visible (health features available to all logged-in users) */}
+          {user && (
             <>
               <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
               <Link
@@ -565,8 +565,8 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
             </Link>
             )
           })}
-          {/* Health link in mobile menu — shown only when healthMode is active */}
-          {healthMode && (
+          {/* Health link in mobile menu */}
+          {user && (
             <Link
               href="/health"
               className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
@@ -581,7 +581,7 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
               Sănătate
             </Link>
           )}
-          {healthMode && (
+          {user && (
             <Link
               href="/me/health-recipes"
               className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
