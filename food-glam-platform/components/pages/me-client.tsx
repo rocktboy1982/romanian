@@ -38,6 +38,7 @@ interface HealthProfile {
   caloric_regime: string | null
   diet_type: string | null
   personal_preferences: string | null
+  excluded_foods: string[] | null
   target_date: string | null
 }
 
@@ -105,6 +106,7 @@ export default function MeClientPage() {
     caloric_regime: 'maintenance',
     diet_type: 'none',
     personal_preferences: '',
+    excluded_foods: [] as string[],
     target_date: '',
   });
   const [healthSaving, setHealthSaving] = useState(false);
@@ -153,6 +155,7 @@ export default function MeClientPage() {
               caloric_regime: data.profile.caloric_regime ?? 'maintenance',
               diet_type: data.profile.diet_type ?? 'none',
               personal_preferences: data.profile.personal_preferences ?? '',
+              excluded_foods: data.profile.excluded_foods ?? [],
               target_date: data.profile.target_date ?? '',
             })
           }
@@ -187,6 +190,7 @@ export default function MeClientPage() {
         caloric_regime: healthForm.caloric_regime,
         diet_type: healthForm.diet_type,
         personal_preferences: healthForm.personal_preferences,
+        excluded_foods: healthForm.excluded_foods,
         target_date: healthForm.target_date || null,
       }
       const res = await fetch('/api/health/profile', { method: 'POST', headers, body: JSON.stringify(body) })
@@ -201,7 +205,7 @@ export default function MeClientPage() {
     }
   }
 
-  function toggleMultiSelect(field: 'medical_conditions' | 'allergens', value: string) {
+  function toggleMultiSelect(field: 'medical_conditions' | 'allergens' | 'excluded_foods', value: string) {
     setHealthForm(f => {
       const current = f[field]
       const next = current.includes(value)
@@ -634,6 +638,67 @@ export default function MeClientPage() {
                         </div>
                       </div>
 
+                      {/* ---- Alimente excluse explicit ---- */}
+                      <div className="text-xs font-semibold uppercase tracking-wider opacity-40 pt-2">Alimente excluse (nu mănânc)</div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs opacity-60">Carne și proteine excluse</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { value: 'porc', label: '🐷 Porc' },
+                            { value: 'vita', label: '🐄 Vită' },
+                            { value: 'pui', label: '🐔 Pui / Pasăre' },
+                            { value: 'miel', label: '🐑 Miel' },
+                            { value: 'peste', label: '🐟 Pește' },
+                            { value: 'fructe_mare', label: '🦐 Fructe de mare' },
+                            { value: 'organe', label: '🫀 Organe (ficat, rinichi)' },
+                            { value: 'vanat', label: '🦌 Vânat' },
+                          ].map(item => {
+                            const selected = healthForm.excluded_foods.includes(item.value)
+                            return (
+                              <button key={item.value} type="button"
+                                onClick={() => toggleMultiSelect('excluded_foods', item.value)}
+                                className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
+                                style={{
+                                  background: selected ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)',
+                                  border: selected ? '1px solid rgba(239,68,68,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                  color: selected ? '#fca5a5' : 'hsl(var(--foreground))',
+                                }}
+                              >{item.label}</button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs opacity-60">Alte alimente excluse</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { value: 'lactate', label: '🥛 Lactate' },
+                            { value: 'oua', label: '🥚 Ouă' },
+                            { value: 'gluten', label: '🌾 Gluten' },
+                            { value: 'soia', label: '🫘 Soia' },
+                            { value: 'ciuperci', label: '🍄 Ciuperci' },
+                            { value: 'alcool', label: '🍷 Alcool' },
+                            { value: 'zahar', label: '🍬 Zahăr rafinat' },
+                            { value: 'cafea', label: '☕ Cafea' },
+                          ].map(item => {
+                            const selected = healthForm.excluded_foods.includes(item.value)
+                            return (
+                              <button key={item.value} type="button"
+                                onClick={() => toggleMultiSelect('excluded_foods', item.value)}
+                                className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
+                                style={{
+                                  background: selected ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)',
+                                  border: selected ? '1px solid rgba(239,68,68,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                  color: selected ? '#fca5a5' : 'hsl(var(--foreground))',
+                                }}
+                              >{item.label}</button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
                       {/* ---- Subsecțiunea 3: Informații suplimentare ---- */}
                       <div className="text-xs font-semibold uppercase tracking-wider opacity-40 pt-2">Informații suplimentare</div>
 
@@ -751,6 +816,14 @@ export default function MeClientPage() {
                           <option value="detox">Dieta de detoxifiere</option>
                           <option value="low_fat">Dieta Low Fat</option>
                           <option value="low_carb">Dieta Low Carb</option>
+                          <option value="rina">Dieta Rina (disociată 90 zile)</option>
+                          <option value="dukan">Dieta Dukan</option>
+                          <option value="paleo">Dieta Paleo</option>
+                          <option value="dash">Dieta DASH (hipertensiune)</option>
+                          <option value="whole30">Whole30</option>
+                          <option value="fodmap">Dieta Low FODMAP (IBS)</option>
+                          <option value="carnivore">Dieta Carnivor</option>
+                          <option value="flexitarian">Flexitarianism</option>
                         </select>
                         {healthForm.diet_type !== 'none' && (
                           <p className="text-[10px] leading-relaxed rounded-lg px-2.5 py-2" style={{ background: 'rgba(99,102,241,0.08)', color: 'rgba(165,165,255,0.8)', border: '1px solid rgba(99,102,241,0.15)' }}>
@@ -768,6 +841,14 @@ export default function MeClientPage() {
                               detox: '🧃 Program scurt (3-14 zile) de eliminare a toxinelor prin sucuri, smoothie-uri și alimente integrale. NU este recomandată pe termen lung. Consultă un medic.',
                               low_fat: '🫙 Limitează grăsimile la <30% din calorii zilnice. Accent pe proteine slabe, cereale integrale și legume. Eficientă pentru scăderea colesterolului.',
                               low_carb: '🍗 Reduce carbohidrații la 50-150g/zi (mai puțin strict decât keto). Permite mai multe fructe și legume decât keto. Bună pentru pierdere treptată în greutate.',
+                              rina: '🔄 Dieta disociată pe 90 de zile — ciclu de 4 zile: Ziua 1 proteine, Ziua 2 amidon, Ziua 3 carbohidrați, Ziua 4 vitamine. La fiecare 29 de zile, o zi de apă. Nu combini grupele alimentare. Populară în România, rezultate de 15-25kg în 90 zile.',
+                              dukan: '🥩 4 faze: Atac (doar proteine pure, 2-7 zile), Croazieră (proteine + legume alternativ), Consolidare (reintroducere treptată), Stabilizare (pe viață cu o zi de proteine/săptămână). Tărâțe de ovăz obligatorii zilnic.',
+                              paleo: '🦴 Mănâncă precum strămoșii: carne, pește, legume, fructe, nuci, semințe. Exclude: cereale, lactate, leguminoase, zahăr rafinat, uleiuri procesate. Bazată pe alimentația din Paleolitic.',
+                              dash: '💚 Dietary Approaches to Stop Hypertension — reduce sodiul (<2300mg/zi), crește potasiul, calciul, magneziul. Accent pe fructe, legume, cereale integrale, proteine slabe. Recomandată medical pentru hipertensiune.',
+                              whole30: '🚫 30 de zile fără: zahăr, alcool, cereale, leguminoase, soia, lactate. Reset complet al metabolismului. După 30 zile, reintroduci grupele alimentare una câte una pentru a identifica intoleranțe.',
+                              fodmap: '🫘 Elimină carbohidrații fermentabili (fructoză, lactoză, fructani, galactani, polioli) timp de 2-6 săptămâni, apoi reintroduci treptat. Recomandată medical pentru Sindromul Intestinului Iritabil (IBS).',
+                              carnivore: '🥩 Doar produse de origine animală: carne, pește, ouă, grăsimi animale. Zero carbohidrați, zero fibre vegetale. Controversată medical — consultă un specialist înainte.',
+                              flexitarian: '🥗 Predominant vegetarian dar cu carne ocazional (1-3 ori/săptămână). Echilibru între beneficiile vegetarianismului și flexibilitatea de a mânca carne. Cel mai ușor de adoptat pe termen lung.',
                             }[healthForm.diet_type]}
                           </p>
                         )}

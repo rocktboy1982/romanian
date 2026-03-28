@@ -991,7 +991,7 @@ export default function HealthDashboardClient() {
                   <div key={type} className="rounded-lg px-3 py-2" style={{ background: hasLogged ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${hasLogged ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}` }}>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold w-20 flex-shrink-0" style={{ color: hasLogged ? '#22c55e' : 'hsl(var(--muted-foreground))' }}>
-                        {hasLogged ? '✓' : '○'} {mealTypeLabel(type)}
+                        {hasLogged ? '✅' : '⬜'} {mealTypeLabel(type)}
                       </span>
                       <div className="flex-1 min-w-0">
                         {hasLogged ? (
@@ -1014,7 +1014,7 @@ export default function HealthDashboardClient() {
                             }}
                             className="text-xs opacity-50 hover:opacity-100 transition-opacity truncate block text-left"
                           >
-                            📋 {plannedMeal.recipe_title} — <span className="underline">loghează</span>
+                            📋 {plannedMeal.recipe_title} — <span className="underline">marchează ca efectuat</span>
                           </button>
                         ) : (
                           <span className="text-xs opacity-20">—</span>

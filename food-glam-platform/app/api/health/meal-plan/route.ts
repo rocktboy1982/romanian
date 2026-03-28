@@ -53,6 +53,14 @@ function dietTypeLabel(d: string): string {
     detox: 'Dieta de detoxifiere',
     low_fat: 'Dieta Low Fat',
     low_carb: 'Dieta Low Carb',
+    rina: 'Dieta Rina (disociată 90 zile)',
+    dukan: 'Dieta Dukan',
+    paleo: 'Dieta Paleo',
+    dash: 'Dieta DASH',
+    whole30: 'Whole30',
+    fodmap: 'Dieta Low FODMAP',
+    carnivore: 'Dieta Carnivor',
+    flexitarian: 'Flexitarianism',
   }
   return m[d] ?? d
 }
@@ -158,6 +166,7 @@ PROFILUL UTILIZATORULUI:
 - Tip dietă: ${dietTypeLabel(profile.diet_type ?? 'none')}
 - Condiții medicale: ${medCondList}
 - ALERGENI (STRICT - NU INCLUDE NICIODATĂ aceste alimente): ${allergenList}
+- ALIMENTE EXCLUSE EXPLICIT (utilizatorul NU mănâncă acestea NICIODATĂ): ${(profile.excluded_foods ?? []).join(', ') || 'niciunul'}
 - Fumător: ${profile.is_smoker ? 'Da' : 'Nu'}
 - Sarcină/Alăptare: ${profile.pregnancy_status ?? 'none'}
 - Grupă sanguină: ${profile.blood_type ?? 'necunoscută'}
@@ -189,7 +198,15 @@ REGULI STRICTE:
    REGULI KETO: Max 20-50g carbohidrați/zi. Macro: ~70% grăsimi, ~25% proteine, ~5% carbohidrați.
    Elimină: zahăr, cereale, pâine, paste, orez, cartofi, fructe dulci, leguminoase.
    Permite: carne, pește, ouă, brânzeturi, avocado, nuci, ulei de măsline, legume cu frunze verzi.
-   Pentru cetoză corectă: prima masă bogată în grăsimi, nu sări peste mese, hidratare crescută.` : ''}
+   Pentru cetoză corectă: prima masă bogată în grăsimi, nu sări peste mese, hidratare crescută.` : ''}${profile.diet_type === 'rina' ? `
+   REGULI DIETA RINA (disociată 90 zile): Ciclu de 4 zile care se repetă:
+   - Ziua 1 (PROTEINE): doar carne, pește, ouă, lactate. Niciun carbohidrat sau amidon.
+   - Ziua 2 (AMIDON/LEGUME): doar legume cu amidon, cereale integrale, leguminoase. Fără carne.
+   - Ziua 3 (CARBOHIDRAȚI): paste, pâine, pizza, dulciuri, ciocolată. Ziua de recompensă.
+   - Ziua 4 (VITAMINE/FRUCTE): doar fructe proaspete, smoothie-uri, salate crude. Fără gătit.
+   La fiecare 29 de zile: o zi de DETOX cu doar apă și ceaiuri.
+   IMPORTANT: Calculează ce zi din ciclul de 4 este fiecare zi din săptămână și respectă strict grupa alimentară!
+   Ziua 1 a ciclului = ${weekDays[0].date} (Luni). Deci: Luni=Proteine, Marți=Amidon, Miercuri=Carbohidrați, Joi=Vitamine, Vineri=Proteine, Sâmbătă=Amidon, Duminică=Carbohidrați.` : ''}
 5. Țintă calorii zilnice: ${profile.daily_calorie_target ?? 2000} kcal
 6. Folosește rețetele din listele de mai sus când sunt potrivite (completează câmpurile recipe_id și recipe_slug)
 7. Dacă nu există rețetă potrivită, propune o masă personalizată cu titlu și calorii estimate (recipe_id: null, recipe_slug: null)

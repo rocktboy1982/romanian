@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
       diet_type,
       personal_preferences,
       target_date,
+      excluded_foods,
     } = body as {
       age?: number
       gender?: string
@@ -110,6 +111,7 @@ export async function POST(req: NextRequest) {
       blood_type?: string
       is_smoker?: boolean
       pregnancy_status?: string
+      excluded_foods?: string[]
       caloric_regime?: string
       diet_type?: string
       personal_preferences?: string
@@ -137,6 +139,7 @@ export async function POST(req: NextRequest) {
     if (diet_type !== undefined) payload.diet_type = diet_type || 'none'
     if (personal_preferences !== undefined) payload.personal_preferences = personal_preferences ?? ''
     if (target_date !== undefined) payload.target_date = target_date || null
+    if (excluded_foods !== undefined) payload.excluded_foods = excluded_foods ?? []
 
     // Calculate targets if we have enough data
     if (weight_kg != null && height_cm != null && age != null && gender && activity_level) {
