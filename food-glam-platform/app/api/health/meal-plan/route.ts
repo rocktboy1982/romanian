@@ -162,7 +162,12 @@ PROFILUL UTILIZATORULUI:
 - Sarcină/Alăptare: ${profile.pregnancy_status ?? 'none'}
 - Grupă sanguină: ${profile.blood_type ?? 'necunoscută'}
 - Preferințe personale (TREBUIE RESPECTATE CU STRICTEȚE): ${profile.personal_preferences || 'niciuna'}
-- Protocol fasting: ${profile.fasting_protocol ?? 'niciunul'}
+- Protocol fasting: ${profile.fasting_protocol ?? 'niciunul'}${profile.fasting_protocol && profile.fasting_protocol !== 'none' && profile.fasting_eating_start && profile.fasting_eating_end ? `
+- FEREASTRĂ DE ALIMENTARE (OBLIGATORIU): ${profile.fasting_eating_start.slice(0,5)} – ${profile.fasting_eating_end.slice(0,5)}
+  TOATE mesele TREBUIE programate DOAR în acest interval. NICIO masă în afara ferestrei.
+  Orele meselor trebuie distribuite uniform în fereastra de alimentare.
+  Exemplu pentru fereastră 12:00-20:00: prima masă la 12:00, a doua la 15:30, a treia la 19:30.
+  Exemplu pentru fereastră 14:00-20:00 (18:6): prima masă la 14:00, a doua la 17:00, a treia la 19:30.` : ''}
 
 REȚETE DISPONIBILE (folosește-le cu prioritate):
 1. Rețetele proprii ale utilizatorului (prioritate maximă):
@@ -176,9 +181,15 @@ ${randomList}
 
 REGULI STRICTE:
 1. Creează un plan de 7 zile (${weekDays.map(w => `${w.day} ${w.date}`).join(', ')})
-2. Fiecare zi are: mic dejun, prânz, cină și o gustare opțională
+2. Fiecare zi are mesele programate CU ORA EXACTĂ (câmpul "time" obligatoriu, format "HH:MM")${profile.fasting_protocol && profile.fasting_protocol !== 'none' ? `
+   IMPORTANT: Toate mesele TREBUIE să fie ÎNTRE ${profile.fasting_eating_start?.slice(0,5)} și ${profile.fasting_eating_end?.slice(0,5)}. Nicio masă în afara ferestrei!` : `
+   Ore implicite: mic dejun 08:00, prânz 13:00, gustare 16:00, cină 19:00`}
 3. INTERZIS ABSOLUT să incluzi alimente care conțin: ${allergenList} — verifică fiecare rețetă
-4. Respectă strict dieta: ${dietTypeLabel(profile.diet_type ?? 'none')}
+4. Respectă strict dieta: ${dietTypeLabel(profile.diet_type ?? 'none')}${profile.diet_type === 'keto' ? `
+   REGULI KETO: Max 20-50g carbohidrați/zi. Macro: ~70% grăsimi, ~25% proteine, ~5% carbohidrați.
+   Elimină: zahăr, cereale, pâine, paste, orez, cartofi, fructe dulci, leguminoase.
+   Permite: carne, pește, ouă, brânzeturi, avocado, nuci, ulei de măsline, legume cu frunze verzi.
+   Pentru cetoză corectă: prima masă bogată în grăsimi, nu sări peste mese, hidratare crescută.` : ''}
 5. Țintă calorii zilnice: ${profile.daily_calorie_target ?? 2000} kcal
 6. Folosește rețetele din listele de mai sus când sunt potrivite (completează câmpurile recipe_id și recipe_slug)
 7. Dacă nu există rețetă potrivită, propune o masă personalizată cu titlu și calorii estimate (recipe_id: null, recipe_slug: null)
@@ -187,7 +198,7 @@ REGULI STRICTE:
 10. Regim caloric ${caloricRegimeLabel(profile.caloric_regime ?? 'maintenance')}: ajustează porțiile corespunzător
 11. Toate textele în limba română${includeHydration ? `
 12. HIDRATARE: Obiectivul zilnic de apă al utilizatorului este ${profile.daily_water_goal_ml ?? 2500}ml.
-    Pentru fiecare zi, generează un program de hidratare cu 6-8 momente de băut apă distribuite uniform pe parcursul zilei.
+    Pentru fiecare zi, generează un program de hidratare cu 6-8 momente de băut apă distribuite uniform pe parcursul zilei (inclusiv în afara ferestrei de alimentare — apa e permisă oricând).
     Fiecare moment: { "time": "HH:MM", "amount_ml": 300, "note": "Descriere scurtă" }
     Adaugă câmpul "hydration" în fiecare obiect zi.` : ''}
 
@@ -206,15 +217,16 @@ Returnează DOAR JSON valid (fără text înainte sau după), cu această struct
         {
           "type": "breakfast",
           "label": "Mic dejun",
+          "time": "08:00",
           "recipe_id": "uuid-sau-null",
           "recipe_title": "Titlul mesei",
           "recipe_slug": "slug-sau-null",
           "calories": 350,
           "notes": "Note opționale despre porție sau preparare"
         },
-        { "type": "lunch", "label": "Prânz", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 650, "notes": "" },
-        { "type": "dinner", "label": "Cină", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 550, "notes": "" },
-        { "type": "snack", "label": "Gustare", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 200, "notes": "" }
+        { "type": "lunch", "label": "Prânz", "time": "13:00", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 650, "notes": "" },
+        { "type": "dinner", "label": "Cină", "time": "19:00", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 550, "notes": "" },
+        { "type": "snack", "label": "Gustare", "time": "16:00", "recipe_id": null, "recipe_title": "...", "recipe_slug": null, "calories": 200, "notes": "" }
       ],
       "total_calories": 1750${includeHydration ? `,
       "hydration": [

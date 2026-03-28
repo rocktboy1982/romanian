@@ -29,6 +29,7 @@ interface HealthProfile {
 interface MealPlanMeal {
   type: string
   label: string
+  time?: string
   recipe_id: string | null
   recipe_title: string
   recipe_slug: string | null
@@ -553,7 +554,8 @@ export default function HealthDashboardClient() {
     for (const day of plan.days) {
       // Meal events
       for (const meal of day.meals) {
-        const t = mealTimes[meal.type] || { h: 12, m: 0 }
+        const fromTime = meal.time ? { h: parseInt(meal.time.split(':')[0]), m: parseInt(meal.time.split(':')[1]) } : null
+        const t = fromTime || mealTimes[meal.type] || { h: 12, m: 0 }
         const emoji = mealEmoji[meal.type] || '🍴'
         events += `BEGIN:VEVENT\r\nUID:${uid()}\r\nDTSTART;TZID=Europe/Bucharest:${icsDate(day.date, t.h, t.m)}\r\nDTEND;TZID=Europe/Bucharest:${icsEndDate(day.date, t.h, t.m)}\r\nSUMMARY:${escICS(`${emoji} ${meal.label}: ${meal.recipe_title}`)}\r\nDESCRIPTION:${escICS(`${meal.calories} kcal${meal.notes ? '\\n' + meal.notes : ''}`)}\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nDESCRIPTION:${escICS(`${meal.label}: ${meal.recipe_title}`)}\r\nEND:VALARM\r\nEND:VEVENT\r\n`
       }
@@ -890,7 +892,7 @@ export default function HealthDashboardClient() {
           {/* Fasting window info */}
           {profile.fasting_protocol && profile.fasting_protocol !== 'none' && profile.fasting_eating_start && profile.fasting_eating_end && (
             <div className="text-xs opacity-60 text-center">
-              Fereastră de alimentare: {profile.fasting_eating_start} – {profile.fasting_eating_end}
+              Fereastră de alimentare: {profile.fasting_eating_start?.slice(0,5)} – {profile.fasting_eating_end?.slice(0,5)}
             </div>
           )}
 
@@ -977,26 +979,48 @@ export default function HealthDashboardClient() {
           </Card>
 
           {/* ── Section C: Jurnal Alimentar ─────────────────────────────── */}
-          <Card title="Jurnal Alimentar" icon="🍽️">
-            {/* Today's meals */}
-            <div className="flex flex-col gap-1.5">
+          <Card title="Jurnal Alimentar — Azi" icon="🍽️">
+            {/* Today's meals: planned vs logged */}
+            <div className="flex flex-col gap-2">
               {['breakfast', 'lunch', 'dinner', 'snack'].map(type => {
-                const meals = todayMeals.filter(m => m.meal_type === type)
+                const logged = todayMeals.filter(m => m.meal_type === type)
+                // Find planned meal from AI plan (if generated for today)
+                const plannedMeal = mealPlan?.days.find(d => d.date === today)?.meals.find(m => m.type === type)
+                const hasLogged = logged.length > 0
                 return (
-                  <div key={type} className="flex items-center gap-2">
-                    <span className="text-xs w-24 opacity-50 flex-shrink-0">{mealTypeLabel(type)}</span>
-                    {meals.length > 0 ? (
-                      <div className="flex-1 text-xs truncate">
-                        {meals.map(m => m.recipe_title).join(', ')}
-                        {meals.some(m => m.calories_estimated) && (
-                          <span className="opacity-40 ml-1">
-                            ({meals.reduce((s, m) => s + (m.calories_estimated ?? 0), 0)} kcal)
+                  <div key={type} className="rounded-lg px-3 py-2" style={{ background: hasLogged ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${hasLogged ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}` }}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold w-20 flex-shrink-0" style={{ color: hasLogged ? '#22c55e' : 'hsl(var(--muted-foreground))' }}>
+                        {hasLogged ? '✓' : '○'} {mealTypeLabel(type)}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        {hasLogged ? (
+                          <span className="text-xs truncate block">
+                            {logged.map(m => m.recipe_title).join(', ')}
+                            {logged.some(m => m.calories_estimated) && (
+                              <span className="opacity-40 ml-1">({logged.reduce((s, m) => s + (m.calories_estimated ?? 0), 0)} kcal)</span>
+                            )}
                           </span>
+                        ) : plannedMeal ? (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const headers = await getAuthHeaders()
+                              await fetch('/api/health/logs', {
+                                method: 'POST', headers,
+                                body: JSON.stringify({ type: 'meal', meal_type: type, recipe_title: plannedMeal.recipe_title, calories_estimated: plannedMeal.calories }),
+                              })
+                              fetchData()
+                            }}
+                            className="text-xs opacity-50 hover:opacity-100 transition-opacity truncate block text-left"
+                          >
+                            📋 {plannedMeal.recipe_title} — <span className="underline">loghează</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs opacity-20">—</span>
                         )}
                       </div>
-                    ) : (
-                      <div className="flex-1 text-xs opacity-20">—</div>
-                    )}
+                    </div>
                   </div>
                 )
               })}
@@ -1110,7 +1134,7 @@ export default function HealthDashboardClient() {
                       </div>
                       {profile.fasting_eating_start && profile.fasting_eating_end && (
                         <div className="text-xs opacity-50">
-                          Fereastră: {profile.fasting_eating_start}–{profile.fasting_eating_end}
+                          Fereastră: {profile.fasting_eating_start?.slice(0,5)}–{profile.fasting_eating_end?.slice(0,5)}
                         </div>
                       )}
                     </div>
@@ -1352,7 +1376,7 @@ export default function HealthDashboardClient() {
                           <span className="text-base flex-shrink-0 mt-0.5">{mealIcons[meal.type] ?? '🍴'}</span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs opacity-40 flex-shrink-0">{meal.label}</span>
+                              <span className="text-xs opacity-40 flex-shrink-0">{meal.time && <span className="font-mono mr-1">{meal.time}</span>}{meal.label}</span>
                               {meal.recipe_id && meal.recipe_slug ? (
                                 <Link
                                   href={`/recipes/${meal.recipe_slug}`}
