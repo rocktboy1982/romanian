@@ -608,7 +608,7 @@ export default function HealthDashboardClient() {
           meal_plan_id: planData.id,
           date: day.date,
           meal_slot: meal.type as 'breakfast' | 'lunch' | 'dinner' | 'snack',
-          post_id: meal.recipe_id || undefined,
+          post_id: meal.recipe_id || null,
           recipe_title: meal.recipe_title,
           servings: 1,
         }))
@@ -624,8 +624,8 @@ export default function HealthDashboardClient() {
       }
 
       setPlanApplied(true)
-    } catch {
-      setPlanApplied(false)
+    } catch (err) {
+      setPlanError(`Nu s-a putut seta planul: ${err instanceof Error ? err.message : 'Eroare necunoscută'}`)
     } finally {
       setApplyingPlan(false)
     }

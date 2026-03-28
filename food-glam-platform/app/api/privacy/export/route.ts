@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
       mealLogsRes,
       fastingLogsRes,
       weightLogsRes,
+      healthRecipesRes,
     ] = await Promise.all([
       // profiles
       supabase
@@ -139,6 +140,13 @@ export async function GET(req: NextRequest) {
         .select('*')
         .eq('user_id', uid)
         .order('logged_at', { ascending: false }),
+
+      // health recipes
+      supabase
+        .from('health_recipes')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false }),
     ])
 
     const exportDate = new Date().toISOString()
@@ -166,6 +174,7 @@ export async function GET(req: NextRequest) {
       jurnal_mese: mealLogsRes.data ?? [],
       jurnal_post: fastingLogsRes.data ?? [],
       jurnal_greutate: weightLogsRes.data ?? [],
+      retete_sanatate: healthRecipesRes.data ?? [],
     }
 
     const fileName = `marechef-export-${exportDate.split('T')[0]}.json`

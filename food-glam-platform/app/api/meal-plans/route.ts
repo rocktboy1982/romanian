@@ -116,13 +116,14 @@ export async function DELETE(req: NextRequest) {
   const { id } = body as { id: string }
 
   if (!id) {
-    return NextResponse.json({ error: 'Plan id is required' }, { status: 400 })
+    return NextResponse.json({ error: 'ID obligatoriu' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const authClient = createServerSupabaseClient()
+  const user = await getRequestUser(req, authClient)
+  if (!user) return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
 
+  const supabase = createServiceSupabaseClient()
   const { error } = await supabase
     .from('meal_plans')
     .delete()

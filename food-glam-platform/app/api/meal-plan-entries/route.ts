@@ -86,8 +86,8 @@ export async function POST(req: NextRequest) {
     recipe_image?: string
   }
 
-  if (!meal_plan_id || !date || !meal_slot || !post_id) {
-    return NextResponse.json({ error: 'meal_plan_id, date, meal_slot, post_id are required' }, { status: 400 })
+  if (!meal_plan_id || !date || !meal_slot) {
+    return NextResponse.json({ error: 'meal_plan_id, date, meal_slot sunt obligatorii' }, { status: 400 })
   }
 
   const validSlots = ['breakfast', 'lunch', 'dinner', 'snack']
