@@ -17,12 +17,16 @@ A Romanian-language food platform where users can:
 - Plan meals for a week with a visual calendar
 - Manage pantry ("Cămara") and bar inventory
 - Generate and print shopping lists
-- Health module: hydration, fasting, meal logging, weight tracking, nutrition goals
+- **AI Meal Plan Generator**: personalized weekly plans based on health profile, diet type, allergens
+- **14 diet protocols**: Mediterranean, Keto, Atkins, Zone, Vegetarian, Vegan, Weight Watchers, South Beach, Raw Food, Glycemic Index, Detox, Low Fat, Low Carb + regime hipo/hipercaloric
+- **Calendar export (.ics)**: meal plans + hydration reminders → Google Calendar, Apple Calendar
+- Health module: hydration, fasting, meal logging, weight tracking, BMR/TDEE calculator
+- Health profile: medical conditions (11), allergens (8), blood type, personal preferences
 - Chat with an AI assistant (Gemini 2.5 Flash, client-side)
 - Submit recipes and cocktails (3/day limit)
 - Import recipes from URLs (certified creators only)
 - Send messages to admin (replies shown as "Moderator")
-- GDPR: export all data, deactivate account (30-day grace period)
+- GDPR: export all data, deactivate account (30-day grace period + permanent deletion)
 
 ## Key Development Commands
 
@@ -201,14 +205,31 @@ import { ADMIN_EMAILS } from '@/lib/require-admin'
 ## Key Features
 
 ### Health Module (`/health`)
-- Activated via "Modul Sănătate" toggle in profile settings
+- "Modul Sănătate" toggle controls nav link visibility; health form always visible in profile
 - Profile: age, sex, height, weight, goal weight, activity level, medical conditions (11), allergens (8), blood type, smoker, pregnancy status
+- **Caloric regime**: hypocaloric (weight loss), hypercaloric (muscle gain), maintenance
+- **14 diet protocols**: Mediterranean, Keto, Atkins, Zone, Vegetarian, Vegan, Weight Watchers, South Beach, Raw Food, Glycemic Index, Detox, Low Fat, Low Carb — each with informative description on selection
+- **Personal preferences**: free text field respected strictly by AI
+- **Target date**: for weight goals with caloric regime
 - Auto-calculates BMR (Mifflin-St Jeor) → TDEE → daily calorie target + water goal
 - Dashboard sections: daily summary, hydration tracker, meal journal, fasting timer, weight chart, habits grid
 - Fasting protocols: 16:8, 18:6, 20:4, OMAD, 5:2
 - All charts are pure SVG/CSS (no external chart library)
-- DB tables: user_health_profiles, user_hydration_logs, user_meal_logs, user_fasting_logs, user_weight_logs
-- Medical disclaimer: "Informațiile nutriționale sunt orientative și nu înlocuiesc sfatul medicului"
+- DB tables: user_health_profiles (with caloric_regime, diet_type, personal_preferences, target_date), user_hydration_logs, user_meal_logs, user_fasting_logs, user_weight_logs
+- Medical disclaimer with ⚠️ next to health settings
+
+### AI Meal Plan Generator (`/api/health/meal-plan`)
+- Generates personalized 7-day meal plans using Gemini 2.5 Flash
+- Recipe priority: 33% user's own recipes, 33% favorites, 33% database recipes
+- Strict allergen checking (NEVER includes allergens)
+- Follows selected diet protocol (keto macros, vegan restrictions, etc.)
+- Respects personal preferences, medical conditions, fasting schedule
+- Optional hydration plan: 6-8 water reminders per day
+- **Calendar export (.ics)**: downloadable file with meal events + water reminders
+  - Compatible with Google Calendar, Apple Calendar, Outlook
+  - VALARM reminders: 10 min before meals, instant for water
+  - Timezone: Europe/Bucharest
+- UI: day-by-day cards with calorie progress bars, recipe links, hydration pills
 
 ### OCR Recipe Scan
 - Available on `/submit/recipe` and `/submit/cocktail` pages
