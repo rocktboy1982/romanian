@@ -193,7 +193,11 @@ REGULI STRICTE:
 2. Fiecare zi are mesele programate CU ORA EXACTĂ (câmpul "time" obligatoriu, format "HH:MM")${profile.fasting_protocol && profile.fasting_protocol !== 'none' ? `
    IMPORTANT: Toate mesele TREBUIE să fie ÎNTRE ${profile.fasting_eating_start?.slice(0,5)} și ${profile.fasting_eating_end?.slice(0,5)}. Nicio masă în afara ferestrei!` : `
    Ore implicite: mic dejun 08:00, prânz 13:00, gustare 16:00, cină 19:00`}
-3. INTERZIS ABSOLUT să incluzi alimente care conțin: ${allergenList} — verifică fiecare rețetă
+3. INTERZIS ABSOLUT să incluzi:
+   - ALERGENI: ${allergenList} — verifică FIECARE ingredient din FIECARE rețetă
+   - ALIMENTE EXCLUSE: ${(profile.excluded_foods ?? []).join(', ') || 'niciunul'} — utilizatorul a declarat EXPLICIT că NU mănâncă aceste alimente
+   Dacă o rețetă conține ORICARE din aceste ingrediente, NU o include. Alege altă rețetă.
+   Exemplu: dacă "porc" e exclus, NU include jambon, șuncă, bacon, cârnați de porc, cotlet, ciolan.
 4. Respectă strict dieta: ${dietTypeLabel(profile.diet_type ?? 'none')}${profile.diet_type === 'keto' ? `
    REGULI KETO: Max 20-50g carbohidrați/zi. Macro: ~70% grăsimi, ~25% proteine, ~5% carbohidrați.
    Elimină: zahăr, cereale, pâine, paste, orez, cartofi, fructe dulci, leguminoase.
