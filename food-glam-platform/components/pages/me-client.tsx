@@ -453,6 +453,16 @@ export default function MeClientPage() {
                   <span className="text-lg">🥗</span>
                   <span className="text-sm font-medium">Rețete Sănătate</span>
                 </Link>
+              <Link
+                  href="/health"
+                  className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                  style={{
+                    color: 'hsl(var(--foreground))',
+                  }}
+                >
+                  <span className="text-lg">🏥</span>
+                  <span className="text-sm font-medium">Dashboard Sănătate</span>
+                </Link>
             </nav>
           </section>
         )}

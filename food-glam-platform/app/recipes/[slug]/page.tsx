@@ -282,9 +282,6 @@ export async function generateStaticParams() {
   }))
 }
 
-// Revalidate every hour for ISR (Incremental Static Regeneration)
-export const revalidate = 3600
-
 function VideoEmbed({ url }: { url: string }) {
   const embedUrl = normalizeToEmbed(url)
   if (!embedUrl) return null

@@ -398,6 +398,127 @@ export default function PlanClient() {
   const healthMode = !!flags.healthMode
   const healthGoals = useHealthGoals()
 
+  // DB sync state
+  const [dbSyncState, setDbSyncState] = useState<'idle' | 'saving' | 'saved' | 'loading' | 'error'>('idle')
+
+  const getAuthHeadersForPlan = async (): Promise<Record<string, string>> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    try {
+      const backup = localStorage.getItem('marechef-session')
+      if (backup) {
+        const parsed = JSON.parse(backup)
+        if (parsed?.access_token) {
+          headers['Authorization'] = `Bearer ${parsed.access_token}`
+          return headers
+        }
+      }
+    } catch {}
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+    return headers
+  }
+
+  const saveToAccount = async () => {
+    setDbSyncState('saving')
+    try {
+      const headers = await getAuthHeadersForPlan()
+      if (!headers['Authorization']) {
+        setDbSyncState('error')
+        setTimeout(() => setDbSyncState('idle'), 3000)
+        return
+      }
+      // Build flat entries list from all non-empty weeks
+      const entries: Array<{ day: string; meal: string; recipe_title: string; recipe_slug: string; recipe_image: string; servings: number }> = []
+      for (const [weekIdxStr, weekPlan] of Object.entries(planner)) {
+        const weekIdx = Number(weekIdxStr)
+        DAYS.forEach((day, di) => {
+          MEALS.forEach((meal) => {
+            const slot = (weekPlan as WeekPlan)[day as DayKey][meal as MealKey]
+            slot.dishes.forEach((dish) => {
+              const date = dateForDay(weekIdx, di)
+              entries.push({
+                day: date.toISOString().split('T')[0],
+                meal,
+                recipe_title: dish.recipe.title,
+                recipe_slug: dish.recipe.slug,
+                recipe_image: dish.recipe.hero_image_url || '',
+                servings: dish.servings,
+              })
+            })
+          })
+        })
+      }
+      const title = `Plan ${new Date().toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}`
+      const res = await fetch('/api/meal-plans', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ title, meals: { entries } }),
+      })
+      if (!res.ok) throw new Error('Eroare la salvare')
+      setDbSyncState('saved')
+      setTimeout(() => setDbSyncState('idle'), 3000)
+    } catch {
+      setDbSyncState('error')
+      setTimeout(() => setDbSyncState('idle'), 3000)
+    }
+  }
+
+  const loadFromAccount = async () => {
+    setDbSyncState('loading')
+    try {
+      const headers = await getAuthHeadersForPlan()
+      if (!headers['Authorization']) {
+        setDbSyncState('error')
+        setTimeout(() => setDbSyncState('idle'), 3000)
+        return
+      }
+      const res = await fetch('/api/meal-plans', { headers: { Authorization: headers['Authorization'] } })
+      if (!res.ok) throw new Error('Eroare la încărcare')
+      const plans = await res.json()
+      if (!Array.isArray(plans) || plans.length === 0) {
+        setDbSyncState('idle')
+        return
+      }
+      // Load most recent plan's entries back into local planner as best-effort
+      const latest = plans[0]
+      const meals = latest.meals as { entries?: Array<{ day: string; meal: string; recipe_title: string; recipe_slug: string; recipe_image: string; servings: number }> }
+      if (meals?.entries && meals.entries.length > 0) {
+        const newPlanner = emptyPlanner()
+        for (const entry of meals.entries) {
+          const entryDate = new Date(entry.day)
+          const weekIdx = YEAR_WEEKS.findIndex(w => entryDate >= w.monday && entryDate <= w.sunday)
+          if (weekIdx < 0) continue
+          const dayIdx = ((entryDate.getDay() + 6) % 7) as number
+          const dayKey = DAYS[dayIdx] as DayKey
+          const mealKey = entry.meal as MealKey
+          if (!dayKey || !mealKey || !newPlanner[weekIdx]?.[dayKey]?.[mealKey]) continue
+          newPlanner[weekIdx][dayKey][mealKey].dishes.push({
+            id: `db-${Date.now()}-${Math.random()}`,
+            recipe: {
+              id: entry.recipe_slug,
+              title: entry.recipe_title,
+              slug: entry.recipe_slug,
+              hero_image_url: entry.recipe_image,
+              servings: entry.servings,
+              cook_time_minutes: null,
+              prep_time_minutes: null,
+              ingredients: [],
+              nutrition_per_serving: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+              dietTags: [],
+              foodTags: [],
+            },
+            servings: entry.servings,
+          })
+        }
+        setPlanner(newPlanner)
+      }
+      setDbSyncState('idle')
+    } catch {
+      setDbSyncState('error')
+      setTimeout(() => setDbSyncState('idle'), 3000)
+    }
+  }
+
   // Shopping list state
   const [shopScope, setShopScope] = useState<ShoppingScope>({ type: "week", weekIndex: 0 })
   const [shopGrouping, setShopGrouping] = useState<"category" | "recipe" | "day">("category")
@@ -726,6 +847,22 @@ export default function PlanClient() {
            >
              📋 Liste salvate
            </Link>
+           <button
+             onClick={saveToAccount}
+             disabled={dbSyncState === 'saving' || dbSyncState === 'loading'}
+             className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors disabled:opacity-50"
+             title="Salvează planul curent în contul tău"
+           >
+             {dbSyncState === 'saving' ? '⏳ Se salvează...' : dbSyncState === 'saved' ? '✓ Salvat' : dbSyncState === 'error' ? '✕ Eroare' : '☁️ Salvează în cont'}
+           </button>
+           <button
+             onClick={loadFromAccount}
+             disabled={dbSyncState === 'saving' || dbSyncState === 'loading'}
+             className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors disabled:opacity-50"
+             title="Încarcă ultimul plan salvat din contul tău"
+           >
+             {dbSyncState === 'loading' ? '⏳ Se încarcă...' : '📥 Încarcă din cont'}
+           </button>
         </div>
       </div>
 

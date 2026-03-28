@@ -177,7 +177,7 @@ export default function TonightCard() {
            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
          >
            <button
-             onClick={() => router.push('/tonight-recommendations')}
+             onClick={() => router.push('/search')}
              className="w-full text-center text-xs font-semibold py-1.5 rounded-xl transition-all"
              style={{
                background: isTonight ? 'rgba(255,149,0,0.08)' : 'rgba(96,165,250,0.08)',

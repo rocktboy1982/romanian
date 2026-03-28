@@ -1,39 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import FallbackImage from '@/components/FallbackImage'
 import Link from 'next/link'
 import TierStar from '@/components/TierStar'
-import { MOCK_RECIPES, MOCK_APPROACHES } from '@/lib/mock-data'
-import { MOCK_CHEF_PROFILES } from '@/lib/mock-chef-data'
 import CommunitySection from '@/components/CommunitySection'
 
 /* ─── types ──────────────────────────────────────────────────────────────── */
 
-type Tab = 'recipes' | 'chefs' | 'rising' | 'cuisine' | 'community'
+type Tab = 'recipes' | 'chefs' | 'cocktails' | 'community'
 
-/* ─── derived data ───────────────────────────────────────────────────────── */
+interface TrendingRecipe {
+  id: string
+  title: string
+  slug: string
+  hero_image_url: string | null
+  votes: number
+  tag?: string
+  created_by?: {
+    id: string
+    display_name: string
+    handle: string
+    avatar_url: string | null
+  } | null
+}
 
-const TOP_RECIPES = [...MOCK_RECIPES].sort((a, b) => b.votes - a.votes)
+interface TopChef {
+  id: string
+  display_name: string
+  handle: string
+  avatar_url: string | null
+  bio: string | null
+  recipe_count: number
+}
 
-const TOP_CHEFS = [...MOCK_CHEF_PROFILES].sort(
-  (a, b) => b.follower_count - a.follower_count
-)
-
-const RISING_RECIPES = [...MOCK_RECIPES]
-  .sort((a, b) => b.quality_score - a.quality_score)
-
-// For each region that has recipes, find the #1 by votes
-const CUISINE_LEADERS = MOCK_APPROACHES
-  .map(approach => {
-    const regionRecipes = MOCK_RECIPES
-      .filter(r => r.region === approach.id)
-      .sort((a, b) => b.votes - a.votes)
-    if (regionRecipes.length === 0) return null
-    return { approach, top: regionRecipes[0], total: regionRecipes.length }
-  })
-  .filter(Boolean) as { approach: typeof MOCK_APPROACHES[0]; top: typeof MOCK_RECIPES[0]; total: number }[]
+interface TrendingCocktail {
+  id: string
+  title: string
+  slug: string
+  hero_image_url: string | null
+  votes: number
+}
 
 /* ─── helper components ──────────────────────────────────────────────────── */
 
@@ -51,16 +59,21 @@ function RankBadge({ rank }: { rank: number }) {
   )
 }
 
-function formatFollowers(n: number) {
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`
-  return String(n)
-}
-
-const DIET_COLORS: Record<string, string> = {
-  vegan: '#4ade80',
-  vegetarian: '#86efac',
-  pescatarian: '#60a5fa',
-  'gluten-free': '#fbbf24',
+function LoadingSkeleton() {
+  return (
+    <div className="divide-y divide-black/[0.07]">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-5 px-5 py-5">
+          <div className="flex-shrink-0 w-10 h-8 rounded animate-pulse" style={{ background: '#e8e8e8' }} />
+          <div className="flex-shrink-0 rounded-2xl animate-pulse" style={{ width: 96, height: 96, background: '#e8e8e8' }} />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 rounded animate-pulse" style={{ background: '#e8e8e8', width: '70%' }} />
+            <div className="h-3 rounded animate-pulse" style={{ background: '#e8e8e8', width: '40%' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -68,15 +81,35 @@ const DIET_COLORS: Record<string, string> = {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function TopRecipesTab() {
+  const [recipes, setRecipes] = useState<TrendingRecipe[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/trending')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => { setRecipes(d.recipes || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) return <LoadingSkeleton />
+
+  if (recipes.length === 0) {
+    return (
+      <div className="py-16 text-center text-sm" style={{ color: '#999' }}>
+        Nu există rețete de afișat momentan.
+      </div>
+    )
+  }
+
   return (
     <div>
-      {TOP_RECIPES.map((recipe, i) => (
+      {recipes.map((recipe, i) => (
         <Link
           key={recipe.id}
           href={`/recipes/${recipe.slug}`}
           className="group flex items-center gap-5 px-5 py-5 transition-colors hover:bg-black/[0.02]"
           style={{
-            borderBottom: i < TOP_RECIPES.length - 1
+            borderBottom: i < recipes.length - 1
               ? '1px solid rgba(0,0,0,0.07)'
               : 'none',
           }}
@@ -86,29 +119,29 @@ function TopRecipesTab() {
             <RankBadge rank={i + 1} />
           </div>
 
-            {/* Thumbnail */}
-            <div
-              className="flex-shrink-0 rounded-2xl overflow-hidden relative"
-              style={{ width: 96, height: 96 }}
-            >
-              {recipe.hero_image_url ? (
-                <FallbackImage
-                  src={recipe.hero_image_url}
-                  alt=""
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="96px"
-                  fallbackEmoji="🍽️"
-                />
-             ) : (
-               <div
-                 className="w-full h-full flex items-center justify-center text-2xl"
-                 style={{ background: '#e8e8e8' }}
-               >
-                 🍽️
-               </div>
-             )}
-           </div>
+          {/* Thumbnail */}
+          <div
+            className="flex-shrink-0 rounded-2xl overflow-hidden relative"
+            style={{ width: 96, height: 96 }}
+          >
+            {recipe.hero_image_url ? (
+              <FallbackImage
+                src={recipe.hero_image_url}
+                alt=""
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="96px"
+                fallbackEmoji="🍽️"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-2xl"
+                style={{ background: '#e8e8e8' }}
+              >
+                🍽️
+              </div>
+            )}
+          </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -118,36 +151,20 @@ function TopRecipesTab() {
             >
               {recipe.title}
             </p>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              {recipe.created_by && (
-                <span className="flex items-center gap-1 text-sm" style={{ color: '#888' }}>
-                  {recipe.created_by.display_name}
-                  <TierStar tier={recipe.created_by.tier} size={11} />
-                </span>
-              )}
-              {recipe.dietTags.slice(0, 2).map(tag => (
-                <span
-                  key={tag}
-                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  style={{
-                    background: `${DIET_COLORS[tag] ?? '#888'}18`,
-                    color: DIET_COLORS[tag] ?? '#888',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 mt-1">
-               {recipe.is_tested && (
-                 <span className="text-xs font-semibold" style={{ color: '#4ade80' }}>
-                   ✓ Testat
-                 </span>
-               )}
-               <span className="text-xs" style={{ color: '#999' }}>
-                 {recipe.comments} comentarii
-               </span>
-            </div>
+            {recipe.created_by && (
+              <div className="flex items-center gap-1 mt-0.5 text-sm" style={{ color: '#888' }}>
+                <span>{recipe.created_by.display_name}</span>
+                <TierStar tier="user" size={11} />
+              </div>
+            )}
+            {recipe.tag && (
+              <span
+                className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1"
+                style={{ background: 'rgba(255,77,109,0.1)', color: '#ff4d6d' }}
+              >
+                {recipe.tag}
+              </span>
+            )}
           </div>
 
           {/* Score */}
@@ -156,9 +173,9 @@ function TopRecipesTab() {
               className="text-2xl font-extrabold tabular-nums"
               style={{ color: '#ff4d6d' }}
             >
-              {recipe.votes.toLocaleString()}
+              {recipe.votes.toLocaleString('ro-RO')}
             </span>
-               <span className="text-xs" style={{ color: '#999' }}>voturi</span>
+            <span className="text-xs" style={{ color: '#999' }}>voturi</span>
           </div>
         </Link>
       ))}
@@ -167,267 +184,187 @@ function TopRecipesTab() {
 }
 
 function TopChefsTab() {
-  const [following, setFollowing] = useState<Set<string>>(new Set())
+  const [chefs, setChefs] = useState<TopChef[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const toggle = (id: string) =>
-    setFollowing(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+  useEffect(() => {
+    fetch('/api/admin/chefs?limit=20&sort=recipes')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const list = (d.chefs || d || []) as TopChef[]
+        const sorted = [...list].sort((a, b) => (b.recipe_count || 0) - (a.recipe_count || 0)).slice(0, 15)
+        setChefs(sorted)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) return <LoadingSkeleton />
+
+  if (chefs.length === 0) {
+    return (
+      <div className="py-16 text-center text-sm" style={{ color: '#999' }}>
+        Nu există bucătari de afișat momentan.
+      </div>
+    )
+  }
 
   return (
     <div>
-      {TOP_CHEFS.map((chef, i) => {
-        const isFollowing = following.has(chef.id)
-        return (
-          <div
-            key={chef.id}
-            className="flex items-center gap-5 px-5 py-5"
-            style={{
-              borderBottom: i < TOP_CHEFS.length - 1
-                ? '1px solid rgba(0,0,0,0.07)'
-                : 'none',
-            }}
-          >
-            {/* Rank */}
-            <div className="flex-shrink-0 w-10 flex items-center justify-center">
-              <RankBadge rank={i + 1} />
+      {chefs.map((chef, i) => (
+        <div
+          key={chef.id}
+          className="flex items-center gap-5 px-5 py-5"
+          style={{
+            borderBottom: i < chefs.length - 1
+              ? '1px solid rgba(0,0,0,0.07)'
+              : 'none',
+          }}
+        >
+          {/* Rank */}
+          <div className="flex-shrink-0 w-10 flex items-center justify-center">
+            <RankBadge rank={i + 1} />
+          </div>
+
+          {/* Avatar */}
+          <Link href={`/chefs/${chef.handle}`} className="flex-shrink-0 group">
+            <div
+              className="rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-orange-500 transition-all relative"
+              style={{ width: 72, height: 72 }}
+            >
+              <FallbackImage
+                src={chef.avatar_url || ''}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="72px"
+                fallbackEmoji="👨‍🍳"
+              />
             </div>
+          </Link>
 
-             {/* Avatar */}
-             <Link href={`/chefs/${chef.handle}`} className="flex-shrink-0 group">
-                <div
-                  className="rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-orange-500 transition-all relative"
-                  style={{ width: 72, height: 72 }}
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <Link href={`/chefs/${chef.handle}`} className="group/name">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="text-base font-bold group-hover/name:text-black transition-colors truncate"
+                  style={{ color: '#ff9500' }}
                 >
-                  <FallbackImage
-                    src={chef.avatar_url}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="72px"
-                    fallbackEmoji="👨‍🍳"
-                  />
-               </div>
-             </Link>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <Link href={`/chefs/${chef.handle}`} className="group/name">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="text-base font-bold group-hover/name:text-black transition-colors truncate"
-                    style={{ color: '#ff9500' }}
-                  >
-                    {chef.display_name}
-                  </span>
-                  <TierStar tier={chef.tier} size={13} />
-                </div>
-              </Link>
+                  {chef.display_name}
+                </span>
+                <TierStar tier="user" size={13} />
+              </div>
+            </Link>
+            {chef.bio && (
               <p className="text-sm mt-1 line-clamp-2" style={{ color: '#555' }}>
                 {chef.bio}
               </p>
-              <div className="flex items-center gap-3 mt-1">
-               <span className="text-xs font-semibold" style={{ color: '#ff9500' }}>
-                   {formatFollowers(chef.follower_count)} urmăritori
-                 </span>
-                 <span className="text-xs" style={{ color: '#aaa' }}>
-                   {chef.post_count} postări
-                 </span>
-              </div>
+            )}
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs font-semibold" style={{ color: '#ff9500' }}>
+                {chef.recipe_count} rețete
+              </span>
             </div>
-
-            {/* Follow button */}
-            <button
-              onClick={() => toggle(chef.id)}
-              className="flex-shrink-0 text-sm font-semibold px-4 py-2 rounded-full transition-all"
-              style={
-                isFollowing
-                  ? {
-                      background: 'rgba(0,0,0,0.07)',
-                      color: '#888',
-                      border: '1px solid rgba(0,0,0,0.12)',
-                    }
-                  : {
-                      background: 'linear-gradient(135deg,#ff4d6d,#ff9500)',
-                      color: '#fff',
-                    }
-              }
-            >
-               {isFollowing ? 'Urmăresc' : 'Urmărește'}
-            </button>
           </div>
-        )
-      })}
+        </div>
+      ))}
     </div>
   )
 }
 
-function RisingTab() {
+function TopCocktailsTab() {
+  const [cocktails, setCocktails] = useState<TrendingCocktail[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/search/cocktails?per_page=10')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const list = (d.cocktails || d.results || d || []) as TrendingCocktail[]
+        setCocktails(list.slice(0, 10))
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) return <LoadingSkeleton />
+
+  if (cocktails.length === 0) {
+    return (
+      <div className="py-16 text-center text-sm" style={{ color: '#999' }}>
+        Nu există cocktailuri de afișat momentan.
+      </div>
+    )
+  }
+
   return (
     <div>
-       <div className="px-4 py-2.5" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-         <p className="text-[11px]" style={{ color: '#999' }}>
-           Clasificate după scor de calitate — rețete cu evaluări înalte care pot avea mai puține voturi deocamdată.
-         </p>
-       </div>
-      {RISING_RECIPES.map((recipe, i) => {
-        const stars = Math.round(recipe.quality_score)
-        return (
-          <Link
-            key={recipe.id}
-            href={`/recipes/${recipe.slug}`}
-            className="group flex items-center gap-5 px-5 py-5 transition-colors hover:bg-black/[0.02]"
-            style={{
-              borderBottom: i < RISING_RECIPES.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
-            }}
-          >
-            {/* Rank */}
-            <div className="flex-shrink-0 w-10 flex items-center justify-center">
-              <RankBadge rank={i + 1} />
-            </div>
-
-              {/* Thumbnail */}
-              <div
-                className="flex-shrink-0 rounded-2xl overflow-hidden relative"
-                style={{ width: 96, height: 96 }}
-              >
-                {recipe.hero_image_url ? (
-                  <FallbackImage
-                    src={recipe.hero_image_url}
-                    alt=""
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="96px"
-                    fallbackEmoji="🍽️"
-                  />
-               ) : (
-                 <div
-                   className="w-full h-full flex items-center justify-center text-2xl"
-                 style={{ background: '#e8e8e8' }}
-                 >
-                   🍽️
-                 </div>
-               )}
-             </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-base font-bold leading-snug line-clamp-1 group-hover:text-black transition-colors"
-                style={{ color: '#111' }}
-              >
-                {recipe.title}
-              </p>
-              {/* Star rating */}
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-sm" style={{ letterSpacing: '-1px' }}>
-                  {'★'.repeat(stars)}{'☆'.repeat(5 - stars)}
-                </span>
-                <span className="text-sm font-bold" style={{ color: '#ff9500' }}>
-                  {recipe.quality_score.toFixed(1)}
-                </span>
-              </div>
-              {recipe.created_by && (
-                <span className="flex items-center gap-1 text-sm mt-0.5" style={{ color: '#888' }}>
-                  {recipe.created_by.display_name}
-                  <TierStar tier={recipe.created_by.tier} size={11} />
-                </span>
-              )}
-            </div>
-
-            {/* Votes (secondary) */}
-            <div className="flex-shrink-0 flex flex-col items-center gap-0.5">
-              <span
-                className="text-xl font-bold tabular-nums"
-                style={{ color: '#888' }}
-              >
-                {recipe.votes}
-              </span>
-              <span className="text-xs" style={{ color: '#999' }}>voturi</span>
-            </div>
-          </Link>
-        )
-      })}
-    </div>
-  )
-}
-
-function ByCuisineTab() {
-  return (
-    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {CUISINE_LEADERS.map(({ approach, top, total }) => (
+      {cocktails.map((cocktail, i) => (
         <Link
-          key={approach.id}
-          href={`/cookbooks/region/${approach.id}`}
-          className="group relative rounded-2xl overflow-hidden"
-          style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }}
+          key={cocktail.id}
+          href={`/cocktails/${cocktail.slug}`}
+          className="group flex items-center gap-5 px-5 py-5 transition-colors hover:bg-black/[0.02]"
+          style={{
+            borderBottom: i < cocktails.length - 1
+              ? '1px solid rgba(0,0,0,0.07)'
+              : 'none',
+          }}
         >
-            {/* Hero image */}
-            <div className="relative h-44 overflow-hidden">
-              {top.hero_image_url ? (
-                <FallbackImage
-                  src={top.hero_image_url}
-                  alt=""
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  fallbackEmoji="🍽️"
-                />
-             ) : (
-               <div
-                 className="w-full h-full flex items-center justify-center text-3xl"
-                 style={{ background: '#222' }}
-               >
-                 🌍
-               </div>
-             )}
-            {/* Dark overlay */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%)' }}
-            />
-            {/* Region label */}
-            <div className="absolute bottom-2 left-3 right-3">
-              <p
-                className="text-sm font-extrabold tracking-wide uppercase truncate"
-                style={{ color: '#ff9500', fontFamily: "'Syne', sans-serif" }}
-              >
-                {approach.name}
-              </p>
-            </div>
-            {/* Count badge */}
-            <div
-              className="absolute top-2 right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(0,0,0,0.6)', color: '#888' }}
-            >
-              {total} recipe{total !== 1 ? 's' : ''}
-            </div>
+          {/* Rank */}
+          <div className="flex-shrink-0 w-10 flex items-center justify-center">
+            <RankBadge rank={i + 1} />
           </div>
 
-          {/* Card body */}
-          <div className="px-4 py-3">
+          {/* Thumbnail */}
+          <div
+            className="flex-shrink-0 rounded-2xl overflow-hidden relative"
+            style={{ width: 96, height: 96 }}
+          >
+            {cocktail.hero_image_url ? (
+              <FallbackImage
+                src={cocktail.hero_image_url}
+                alt=""
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="96px"
+                fallbackEmoji="🍹"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-2xl"
+                style={{ background: '#e8e8e8' }}
+              >
+                🍹
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
             <p
-              className="text-sm font-semibold leading-snug line-clamp-1 group-hover:text-white transition-colors"
+              className="text-base font-bold leading-snug line-clamp-1 group-hover:text-black transition-colors"
               style={{ color: '#111' }}
             >
-              🥇 {top.title}
+              {cocktail.title}
             </p>
-            <div className="flex items-center justify-between mt-1">
-              {top.created_by && (
-                <span className="text-xs flex items-center gap-1 truncate" style={{ color: '#888' }}>
-                  {top.created_by.display_name}
-                  <TierStar tier={top.created_by.tier} size={10} />
-                </span>
-              )}
-              <span
-                className="text-xs font-semibold flex-shrink-0"
-                style={{ color: '#ff4d6d' }}
-              >
-                ♥ {top.votes}
-              </span>
-            </div>
+            <span
+              className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1"
+              style={{ background: 'rgba(96,165,250,0.1)', color: '#3b82f6' }}
+            >
+              Cocktail
+            </span>
+          </div>
+
+          {/* Score */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-0.5">
+            <span
+              className="text-2xl font-extrabold tabular-nums"
+              style={{ color: '#60a5fa' }}
+            >
+              {(cocktail.votes || 0).toLocaleString('ro-RO')}
+            </span>
+            <span className="text-xs" style={{ color: '#999' }}>voturi</span>
           </div>
         </Link>
       ))}
@@ -440,11 +377,10 @@ function ByCuisineTab() {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const TABS: { id: Tab; label: string; icon: string; description: string }[] = [
-  { id: 'recipes', label: 'Rețete de top',  icon: '🏆', description: 'Cele mai votate' },
-  { id: 'chefs',   label: 'Chefii de top',    icon: '👨‍🍳', description: 'Cei mai urmăriți' },
-  { id: 'rising',  label: 'În creștere',       icon: '⭐', description: 'Cel mai bine evaluate' },
-  { id: 'cuisine',   label: 'După bucătărie', icon: '🌍', description: 'Pe regiune' },
-  { id: 'community', label: 'Comunitate',  icon: '💬', description: 'Discuții recente' },
+  { id: 'recipes',   label: 'Rețete de top',  icon: '🏆', description: 'Cele mai populare' },
+  { id: 'chefs',     label: 'Bucătari de top', icon: '👨‍🍳', description: 'Cei mai activi' },
+  { id: 'cocktails', label: 'Cocktailuri',     icon: '🍹', description: 'Cele mai populare' },
+  { id: 'community', label: 'Comunitate',      icon: '💬', description: 'Discuții recente' },
 ]
 
 export default function RankingsPage() {
@@ -462,20 +398,20 @@ export default function RankingsPage() {
         className="px-4 py-8 text-center"
         style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
       >
-         <h1
-           className="text-3xl font-extrabold tracking-tight mb-1"
-           style={{
-             fontFamily: "'Syne', sans-serif",
-             background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
-             WebkitBackgroundClip: 'text',
-             WebkitTextFillColor: 'transparent',
-           }}
-         >
-           🏆 Clasament
-         </h1>
-         <p className="text-sm" style={{ color: '#888' }}>
-           Rețetele cu cele mai multe voturi ale comunității, chefii de top și gemele ascunse
-         </p>
+        <h1
+          className="text-3xl font-extrabold tracking-tight mb-1"
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            background: 'linear-gradient(90deg,#ff4d6d,#ff9500)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          🏆 Clasament
+        </h1>
+        <p className="text-sm" style={{ color: '#888' }}>
+          Rețetele cu cele mai multe voturi ale comunității, bucătarii de top și cocktailurile preferate
+        </p>
       </div>
 
       {/* ── Tab bar ── */}
@@ -549,17 +485,16 @@ export default function RankingsPage() {
           </div>
 
           {/* Tab content */}
-          {tab === 'recipes' && <TopRecipesTab />}
-          {tab === 'chefs'   && <TopChefsTab />}
-          {tab === 'rising'  && <RisingTab />}
-          {tab === 'cuisine'    && <ByCuisineTab />}
+          {tab === 'recipes'   && <TopRecipesTab />}
+          {tab === 'chefs'     && <TopChefsTab />}
+          {tab === 'cocktails' && <TopCocktailsTab />}
           {tab === 'community' && <div className="p-5"><CommunitySection /></div>}
         </div>
 
         {/* Footer note */}
-         <p className="text-center text-[11px] mt-4" style={{ color: '#bbb' }}>
-           Clasamentele se actualizează în timp real pe măsură ce comunitatea votează · Datele afișate sunt în direct
-         </p>
+        <p className="text-center text-[11px] mt-4" style={{ color: '#bbb' }}>
+          Clasamentele se actualizează în timp real pe măsură ce comunitatea votează · Datele afișate sunt în direct
+        </p>
       </div>
     </main>
   )

@@ -27,8 +27,6 @@ const DRINK_TAGS = ['ceai', 'smoothie', 'suc', 'infuzie', 'matcha', 'detox', 'en
 
 // ─── Seed suggestions ─────────────────────────────────────────────────────────
 
-const FOOD_SUGGESTIONS: Omit<HealthRecipe, 'id' | 'user_id' | 'created_at'> = {} as never
-
 const FOOD_SEED: Omit<HealthRecipe, 'id' | 'user_id' | 'created_at'>[] = [
   {
     category: 'food',
@@ -134,9 +132,6 @@ const DRINK_SEED: Omit<HealthRecipe, 'id' | 'user_id' | 'created_at'>[] = [
     is_public: false,
   },
 ]
-
-// Silence unused variable
-void (FOOD_SUGGESTIONS as unknown)
 
 // ─── Auth helper ──────────────────────────────────────────────────────────────
 

@@ -22,11 +22,11 @@ type MyPost = {
 }
 
 const STATUS_LABELS: Record<PostStatus, string> = {
-  draft: 'Draft',
-  pending_review: 'In Review',
-  active: 'Published',
-  rejected: 'Rejected',
-  archived: 'Archived',
+  draft: 'Ciornă',
+  pending_review: 'În revizuire',
+  active: 'Publicat',
+  rejected: 'Respins',
+  archived: 'Arhivat',
 }
 
 const STATUS_COLORS: Record<PostStatus, string> = {
@@ -105,7 +105,7 @@ export default function MyPostsPage() {
         const d = await res.json().catch(() => ({}))
         throw new Error(d.error || 'Failed to resubmit')
       }
-      toast.push({ message: 'Post moved back to Draft for editing', type: 'success' })
+      toast.push({ message: 'Postarea a fost mutată înapoi în Ciornă pentru editare', type: 'success' })
       await fetchPosts()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
@@ -118,12 +118,12 @@ export default function MyPostsPage() {
   return (
     <main className="container mx-auto px-4 py-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">My Posts</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Postările mele</h1>
         <Link
           href="/submit/recipe"
           className="text-sm font-medium px-4 py-2 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
         >
-          + New Post
+          + Postare nouă
         </Link>
       </div>
 
@@ -135,7 +135,7 @@ export default function MyPostsPage() {
             filter === 'all' ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:bg-muted/80'
           }`}
         >
-          All ({posts.length})
+          Toate ({posts.length})
         </button>
         {ALL_STATUSES.map(s => {
           const count = posts.filter(p => p.status === s).length
@@ -181,14 +181,14 @@ export default function MyPostsPage() {
             </svg>
           </div>
           <p className="text-muted-foreground text-sm">
-            {filter === 'all' ? 'No posts yet.' : `No ${STATUS_LABELS[filter as PostStatus].toLowerCase()} posts.`}
+            {filter === 'all' ? 'Nu ai postări încă.' : `Nicio postare cu statusul „${STATUS_LABELS[filter as PostStatus].toLowerCase()}".`}
           </p>
           {filter === 'all' && (
             <Link
               href="/submit/recipe"
               className="mt-4 text-sm font-medium underline underline-offset-4 hover:text-foreground/70 transition-colors"
             >
-              Create your first post
+              Creează prima ta postare
             </Link>
           )}
         </div>
@@ -200,7 +200,7 @@ export default function MyPostsPage() {
             const status = (post.status || 'draft') as PostStatus
             const label = STATUS_LABELS[status] ?? status
             const colorClass = STATUS_COLORS[status] ?? 'bg-stone-100 text-stone-600'
-            const formattedDate = new Date(post.created_at).toLocaleDateString(undefined, {
+            const formattedDate = new Date(post.created_at).toLocaleDateString('ro-RO', {
               year: 'numeric',
               month: 'short',
               day: 'numeric',
@@ -211,7 +211,7 @@ export default function MyPostsPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm truncate">{post.title || 'Untitled'}</span>
+                      <span className="font-medium text-sm truncate">{post.title || 'Fără titlu'}</span>
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}`}
                       >
@@ -219,13 +219,13 @@ export default function MyPostsPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {post.type} · {formattedDate}
+                      {post.type === 'recipe' ? 'rețetă' : post.type} · {formattedDate}
                     </p>
 
                     {/* Rejection reason */}
                     {status === 'rejected' && post.rejection_reason && (
                       <p className="text-xs text-red-600 mt-1.5 bg-red-50 rounded-md px-2.5 py-1.5">
-                        <span className="font-medium">Reason:</span> {post.rejection_reason}
+                        <span className="font-medium">Motiv:</span> {post.rejection_reason}
                       </p>
                     )}
                   </div>
@@ -237,14 +237,14 @@ export default function MyPostsPage() {
                         href={`/submit/recipe?edit=${post.id}`}
                         className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border hover:bg-muted transition-colors"
                       >
-                        Edit
+                        Editează
                       </Link>
                     )}
 
                     {/* Resubmit button for rejected posts */}
                     {status === 'rejected' && (
                       <Button size="sm" variant="outline" onClick={() => resubmit(post.id)}>
-                        Move to Draft
+                        Trece în Ciornă
                       </Button>
                     )}
 
@@ -254,7 +254,7 @@ export default function MyPostsPage() {
                         href={`/recipes/${post.slug}`}
                         className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border hover:bg-muted transition-colors"
                       >
-                        View
+                        Vezi
                       </Link>
                     )}
 
