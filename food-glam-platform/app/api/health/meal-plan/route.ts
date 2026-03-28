@@ -134,6 +134,13 @@ export async function POST(req: NextRequest) {
       .eq('type', 'recipe')
       .limit(30)
 
+    // ── 5b. Fetch user's health recipes (own + public) ────────────────────────
+    const { data: healthRecipes } = await supabase
+      .from('health_recipes')
+      .select('id, title, category, tags, calories_estimated')
+      .or(`user_id.eq.${user.id},is_public.eq.true`)
+      .limit(30)
+
     // ── 6. Build week dates ────────────────────────────────────────────────────
     const { start, end } = getWeekRange(week)
     const weekDays: { day: string; date: string }[] = []
@@ -150,6 +157,12 @@ export async function POST(req: NextRequest) {
     const ownList = (ownRecipes ?? []).map(r => `"${r.title}" (ID: ${r.id}, slug: ${r.slug})`).join('\n') || 'niciuna'
     const favList = favRecipes.map(r => `"${r.title}" (ID: ${r.id}, slug: ${r.slug})`).join('\n') || 'niciuna'
     const randomList = (randomRecipes ?? []).map(r => `"${r.title}" (ID: ${r.id}, slug: ${r.slug})`).join('\n') || 'niciuna'
+    const healthRecipeList = (healthRecipes ?? []).map(r => {
+      const tags = r.tags?.length ? ` [${r.tags.join(', ')}]` : ''
+      const kcal = r.calories_estimated ? ` — ${r.calories_estimated} kcal` : ''
+      const cat = r.category === 'food' ? 'Aliment' : 'Băutură'
+      return `"${r.title}" (${cat}${tags}${kcal})`
+    }).join('\n') || 'niciuna'
 
     const prompt = `Ești un nutriționist certificat care creează un plan alimentar săptămânal personalizat pentru un utilizator de pe platforma MareChef.ro.
 
@@ -187,6 +200,10 @@ ${favList}
 
 3. Rețete din baza de date (completare):
 ${randomList}
+
+4. Rețete de sănătate ale utilizatorului (pentru alimente disociate, ceaiuri, smoothie-uri):
+${healthRecipeList}
+   Folosește aceste rețete de sănătate pentru: zilele din dieta disociată (proteine/amidon/vitamine), alternative de hidratare (ceaiuri în loc de apă simplă), gustări ușoare între mese.
 
 REGULI STRICTE:
 1. Creează un plan de 7 zile (${weekDays.map(w => `${w.day} ${w.date}`).join(', ')})

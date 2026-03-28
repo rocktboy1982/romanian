@@ -453,6 +453,15 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
               >
                 🏥 Sănătate
               </Link>
+              <Link
+                href="/me/health-recipes"
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${isActive('/me/health-recipes') ? '' : ' nav-link-animated'}`}
+                style={isActive('/me/health-recipes')
+                  ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
+                  : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >
+                🥗 Rețete Sănătate
+              </Link>
             </>
           )}
 
@@ -570,6 +579,21 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
             >
               <span className="text-base">🏥</span>
               Sănătate
+            </Link>
+          )}
+          {healthMode && (
+            <Link
+              href="/me/health-recipes"
+              className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
+              style={isActive('/me/health-recipes')
+                ? (theme === 'dark'
+                    ? { color: '#ff9500', background: 'rgba(255,149,0,0.06)' }
+                    : { color: '#fff', background: 'rgba(255,255,255,0.15)' })
+                : { color: theme === 'dark' ? '#ccc' : 'rgba(255,255,255,0.8)' }
+              }
+            >
+              <span className="text-base">🥗</span>
+              Rețete Sănătate
             </Link>
           )}
           <div className="px-5 pt-3 mt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>

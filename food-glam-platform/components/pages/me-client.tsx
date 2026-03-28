@@ -127,9 +127,9 @@ export default function MeClientPage() {
     return h
   }, []);
 
-  // Load health profile when healthMode is active and user is available
+  // Load health profile when user is available (always, not just when healthMode is on)
   useEffect(() => {
-    if (!healthMode || !user) return;
+    if (!user) return;
     buildAuthHeaders().then(async (headers) => {
       try {
         const res = await fetch('/api/health/profile', { headers })
@@ -163,7 +163,7 @@ export default function MeClientPage() {
         }
       } catch { /* ignore */ }
     })
-  }, [healthMode, user, buildAuthHeaders]);
+  }, [user, buildAuthHeaders]);
 
   async function saveHealthProfile(e: React.FormEvent) {
     e.preventDefault()
@@ -443,6 +443,18 @@ export default function MeClientPage() {
                 <span className="text-lg">✉️</span>
                 <span className="text-sm font-medium">Mesaje</span>
               </Link>
+              {healthMode && (
+                <Link
+                  href="/me/health-recipes"
+                  className="h-12 px-4 rounded-lg flex items-center gap-3 transition-colors"
+                  style={{
+                    color: 'hsl(var(--foreground))',
+                  }}
+                >
+                  <span className="text-lg">🥗</span>
+                  <span className="text-sm font-medium">Rețete Sănătate</span>
+                </Link>
+              )}
             </nav>
           </section>
         )}
