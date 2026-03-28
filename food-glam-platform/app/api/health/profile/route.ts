@@ -91,6 +91,10 @@ export async function POST(req: NextRequest) {
       blood_type,
       is_smoker,
       pregnancy_status,
+      caloric_regime,
+      diet_type,
+      personal_preferences,
+      target_date,
     } = body as {
       age?: number
       gender?: string
@@ -106,6 +110,10 @@ export async function POST(req: NextRequest) {
       blood_type?: string
       is_smoker?: boolean
       pregnancy_status?: string
+      caloric_regime?: string
+      diet_type?: string
+      personal_preferences?: string
+      target_date?: string | null
     }
 
     // Build the upsert payload
@@ -125,6 +133,10 @@ export async function POST(req: NextRequest) {
     if (blood_type !== undefined) payload.blood_type = blood_type || 'unknown'
     if (is_smoker !== undefined) payload.is_smoker = Boolean(is_smoker)
     if (pregnancy_status !== undefined) payload.pregnancy_status = pregnancy_status || 'none'
+    if (caloric_regime !== undefined) payload.caloric_regime = caloric_regime || 'maintenance'
+    if (diet_type !== undefined) payload.diet_type = diet_type || 'none'
+    if (personal_preferences !== undefined) payload.personal_preferences = personal_preferences ?? ''
+    if (target_date !== undefined) payload.target_date = target_date || null
 
     // Calculate targets if we have enough data
     if (weight_kg != null && height_cm != null && age != null && gender && activity_level) {

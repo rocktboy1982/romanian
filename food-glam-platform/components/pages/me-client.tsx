@@ -35,6 +35,10 @@ interface HealthProfile {
   blood_type: string | null
   is_smoker: boolean | null
   pregnancy_status: string | null
+  caloric_regime: string | null
+  diet_type: string | null
+  personal_preferences: string | null
+  target_date: string | null
 }
 
 const MEDICAL_CONDITIONS = [
@@ -98,6 +102,10 @@ export default function MeClientPage() {
     blood_type: 'unknown',
     is_smoker: false,
     pregnancy_status: 'none',
+    caloric_regime: 'maintenance',
+    diet_type: 'none',
+    personal_preferences: '',
+    target_date: '',
   });
   const [healthSaving, setHealthSaving] = useState(false);
   const [healthSaved, setHealthSaved] = useState(false);
@@ -142,6 +150,10 @@ export default function MeClientPage() {
               blood_type: data.profile.blood_type ?? 'unknown',
               is_smoker: data.profile.is_smoker ?? false,
               pregnancy_status: data.profile.pregnancy_status ?? 'none',
+              caloric_regime: data.profile.caloric_regime ?? 'maintenance',
+              diet_type: data.profile.diet_type ?? 'none',
+              personal_preferences: data.profile.personal_preferences ?? '',
+              target_date: data.profile.target_date ?? '',
             })
           }
           setHealthOpen(true)
@@ -172,6 +184,10 @@ export default function MeClientPage() {
         blood_type: healthForm.blood_type,
         is_smoker: healthForm.is_smoker,
         pregnancy_status: healthForm.pregnancy_status,
+        caloric_regime: healthForm.caloric_regime,
+        diet_type: healthForm.diet_type,
+        personal_preferences: healthForm.personal_preferences,
+        target_date: healthForm.target_date || null,
       }
       const res = await fetch('/api/health/profile', { method: 'POST', headers, body: JSON.stringify(body) })
       if (res.ok) {
@@ -676,7 +692,116 @@ export default function MeClientPage() {
                         </div>
                       )}
 
-                      {/* ---- Subsecțiunea 4: Fasting ---- */}
+                      {/* ---- Subsecțiunea 4: Plan alimentar AI ---- */}
+                      <div className="text-xs font-semibold uppercase tracking-wider opacity-40 pt-2">Plan alimentar AI</div>
+
+                      {/* Caloric Regime */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs opacity-60">Regim caloric</label>
+                        <div className="flex gap-2 flex-wrap">
+                          {[
+                            { value: 'maintenance', label: 'Menținere' },
+                            { value: 'hypocaloric', label: 'Hipocaloric (slăbire)' },
+                            { value: 'hypercaloric', label: 'Hipercaloric (masă)' },
+                          ].map(opt => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setHealthForm(f => ({ ...f, caloric_regime: opt.value }))}
+                              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                              style={{
+                                background: healthForm.caloric_regime === opt.value ? 'rgba(255,77,109,0.25)' : 'rgba(255,255,255,0.06)',
+                                border: healthForm.caloric_regime === opt.value ? '1px solid #ff4d6d' : '1px solid rgba(255,255,255,0.1)',
+                                color: 'hsl(var(--foreground))',
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          {healthForm.caloric_regime === 'hypocaloric'
+                            ? '🔻 Deficit caloric de ~500 kcal/zi sub TDEE. Recomandat pentru pierdere în greutate controlată (0.5 kg/săptămână). Asigură-te că nu cobori sub 1200 kcal/zi (femei) sau 1500 kcal/zi (bărbați).'
+                            : healthForm.caloric_regime === 'hypercaloric'
+                            ? '🔺 Surplus caloric de ~300 kcal/zi peste TDEE. Recomandat pentru creștere musculară controlată combinată cu antrenament de forță. Accentul pe proteine de calitate.'
+                            : '⚖️ Calorii egale cu TDEE. Recomandat pentru menținerea greutății actuale și un stil de viață echilibrat.'}
+                        </p>
+                      </div>
+
+                      {/* Diet Type */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs opacity-60">Tip dietă</label>
+                        <select
+                          value={healthForm.diet_type}
+                          onChange={e => setHealthForm(f => ({ ...f, diet_type: e.target.value }))}
+                          className="px-3 py-2 rounded-lg text-sm"
+                          style={inputStyle}
+                        >
+                          <option value="none">Fără dietă specifică</option>
+                          <option value="mediterranean">Dieta Mediteraneană</option>
+                          <option value="keto">Dieta Keto (Ketogenică)</option>
+                          <option value="atkins">Dieta Atkins</option>
+                          <option value="zone">Dieta Zone</option>
+                          <option value="vegetarian">Vegetarianism</option>
+                          <option value="vegan">Veganism</option>
+                          <option value="weight_watchers">Weight Watchers</option>
+                          <option value="south_beach">Dieta South Beach</option>
+                          <option value="raw_food">Dieta Raw Food</option>
+                          <option value="glycemic_index">Dieta bazată pe indicele glicemic</option>
+                          <option value="detox">Dieta de detoxifiere</option>
+                          <option value="low_fat">Dieta Low Fat</option>
+                          <option value="low_carb">Dieta Low Carb</option>
+                        </select>
+                        {healthForm.diet_type !== 'none' && (
+                          <p className="text-[10px] leading-relaxed rounded-lg px-2.5 py-2" style={{ background: 'rgba(99,102,241,0.08)', color: 'rgba(165,165,255,0.8)', border: '1px solid rgba(99,102,241,0.15)' }}>
+                            {{
+                              mediterranean: '🫒 Bazată pe legume, fructe, pește, ulei de măsline și cereale integrale. Recomandată de OMS și asociată cu reducerea bolilor cardiovasculare. Permite vin roșu moderat.',
+                              keto: '🥑 Extrem de scăzută în carbohidrați (<20-50g/zi), bogată în grăsimi sănătoase. Corpul intră în cetoză, arderea grăsimilor ca sursă primară de energie. Evită zahăr, cereale, fructe dulci.',
+                              atkins: '🥩 Restricție severă de carbohidrați în 4 faze progresive: Inducție (<20g carbs), Echilibrare, Pre-menținere, Menținere. Focus pe proteine și grăsimi.',
+                              zone: '⚖️ Proporție strictă 40% carbohidrați, 30% proteine, 30% grăsimi la fiecare masă. Controlează inflamația și nivelul insulinei prin echilibrul macronutrienților.',
+                              vegetarian: '🥬 Exclude carnea și peștele, dar permite lactate și ouă. Accent pe legume, fructe, leguminoase, cereale, nuci. Necesită atenție la fier, B12 și proteine complete.',
+                              vegan: '🌱 Exclude TOATE produsele de origine animală (carne, lactate, ouă, miere). Necesită suplimentare B12, atenție la fier, zinc, omega-3 și proteine complete din combinații vegetale.',
+                              weight_watchers: '📊 Sistem de puncte (SmartPoints) pentru alimente bazat pe calorii, grăsimi saturate, zahăr și proteine. Flexibil — niciun aliment nu e interzis, dar porțiile contează.',
+                              south_beach: '🏖️ Trei faze: eliminare carbohidrați rafinați (2 săpt.), reintroducere treptată, menținere pe viață. Accent pe indice glicemic scăzut și grăsimi sănătoase.',
+                              raw_food: '🥗 75-100% din alimente consumate crude sau încălzite sub 48°C. Bazată pe fructe, legume, nuci, semințe crude. Păstrează enzimele și nutrienții intacți.',
+                              glycemic_index: '📉 Alege alimente cu indice glicemic scăzut (<55) care eliberează glucoza lent. Stabilizează glicemia, reduce poftele și este ideală pentru diabet sau pre-diabet.',
+                              detox: '🧃 Program scurt (3-14 zile) de eliminare a toxinelor prin sucuri, smoothie-uri și alimente integrale. NU este recomandată pe termen lung. Consultă un medic.',
+                              low_fat: '🫙 Limitează grăsimile la <30% din calorii zilnice. Accent pe proteine slabe, cereale integrale și legume. Eficientă pentru scăderea colesterolului.',
+                              low_carb: '🍗 Reduce carbohidrații la 50-150g/zi (mai puțin strict decât keto). Permite mai multe fructe și legume decât keto. Bună pentru pierdere treptată în greutate.',
+                            }[healthForm.diet_type]}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Target Date — only when not maintenance and goal_weight_kg is set */}
+                      {healthForm.caloric_regime !== 'maintenance' && healthForm.goal_weight_kg && (
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs opacity-60">Dată țintă pentru greutatea dorită</label>
+                          <input
+                            type="date"
+                            value={healthForm.target_date}
+                            onChange={e => setHealthForm(f => ({ ...f, target_date: e.target.value }))}
+                            className="px-3 py-2 rounded-lg text-sm"
+                            style={inputStyle}
+                          />
+                        </div>
+                      )}
+
+                      {/* Personal Preferences */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs opacity-60">Preferințe alimentare personale</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Ex: Nu mănânc ciuperci, prefer mâncare caldă la prânz, nu-mi place peștele crud..."
+                          value={healthForm.personal_preferences}
+                          onChange={e => setHealthForm(f => ({ ...f, personal_preferences: e.target.value }))}
+                          className="px-3 py-2 rounded-lg text-sm resize-none"
+                          style={inputStyle}
+                        />
+                        <p className="text-xs opacity-40 mt-0.5">AI-ul va respecta aceste preferințe cu strictețe la generarea planului</p>
+                      </div>
+
+                      {/* ---- Subsecțiunea 5: Fasting ---- */}
                       <div className="text-xs font-semibold uppercase tracking-wider opacity-40 pt-2">Fasting</div>
 
                       {/* Fasting Protocol */}

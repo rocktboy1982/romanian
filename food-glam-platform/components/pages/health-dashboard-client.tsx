@@ -19,6 +19,43 @@ interface HealthProfile {
   fasting_eating_start: string | null
   fasting_eating_end: string | null
   daily_water_goal_ml: number | null
+  caloric_regime: string | null
+  diet_type: string | null
+  personal_preferences: string | null
+}
+
+// ─── Meal Plan Types ──────────────────────────────────────────────────────────
+
+interface MealPlanMeal {
+  type: string
+  label: string
+  recipe_id: string | null
+  recipe_title: string
+  recipe_slug: string | null
+  calories: number
+  notes: string
+}
+
+interface MealPlanDay {
+  day: string
+  date: string
+  meals: MealPlanMeal[]
+  total_calories: number
+}
+
+interface MealPlan {
+  week_start: string
+  week_end: string
+  daily_calorie_target: number
+  diet_type: string
+  caloric_regime: string
+  days: MealPlanDay[]
+  weekly_summary: {
+    avg_calories: number
+    protein_focus: string
+    notes: string
+  }
+  disclaimer: string
 }
 
 interface HydrationLog {
@@ -283,6 +320,12 @@ export default function HealthDashboardClient() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Meal Plan AI state
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null)
+  const [generatingPlan, setGeneratingPlan] = useState(false)
+  const [planError, setPlanError] = useState<string | null>(null)
+  const [planWeek, setPlanWeek] = useState<'current' | 'next'>('current')
+
   // Quick-add states
   const [addingWater, setAddingWater] = useState(false)
   const [mealForm, setMealForm] = useState({ meal_type: 'lunch', recipe_title: '', calories_estimated: '' })
@@ -442,6 +485,31 @@ export default function HealthDashboardClient() {
       setFastingStart(null)
       setFastingActive(false)
       try { localStorage.removeItem('marechef-fasting') } catch { /* ignore */ }
+    }
+  }
+
+  async function generateMealPlan(week: 'current' | 'next') {
+    if (generatingPlan) return
+    setGeneratingPlan(true)
+    setPlanError(null)
+    setPlanWeek(week)
+    try {
+      const headers = await getAuthHeaders()
+      const res = await fetch('/api/health/meal-plan', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ week }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPlanError(data.error || 'Eroare la generarea planului')
+      } else {
+        setMealPlan(data.plan)
+      }
+    } catch {
+      setPlanError('Eroare de rețea')
+    } finally {
+      setGeneratingPlan(false)
     }
   }
 
@@ -1024,7 +1092,164 @@ export default function HealthDashboardClient() {
           </Card>
         </div>
 
-        {/* ── Section F: Obiceiuri ─────────────────────────────────────── */}
+        {/* ── Section F: Plan Alimentar AI ──────────────────────────────── */}
+        <div className="rounded-2xl p-5 flex flex-col gap-4"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🤖</span>
+            <h2 className="font-semibold text-base" style={{ color: 'hsl(var(--foreground))' }}>Plan Alimentar Personalizat</h2>
+          </div>
+          <p className="text-sm opacity-60">
+            Generează un plan de masă pentru săptămâna curentă sau viitoare bazat pe profilul tău de sănătate, preferințe și rețetele tale favorite.
+          </p>
+
+          {/* Generate buttons */}
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={() => generateMealPlan('current')}
+              disabled={generatingPlan}
+              className="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg,#ff4d6d,#ff9500)' }}
+            >
+              {generatingPlan && planWeek === 'current' ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Se generează...
+                </span>
+              ) : 'Săptămâna curentă'}
+            </button>
+            <button
+              onClick={() => generateMealPlan('next')}
+              disabled={generatingPlan}
+              className="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+              style={{
+                background: 'rgba(255,77,109,0.1)',
+                border: '1px solid rgba(255,77,109,0.3)',
+                color: '#ff4d6d',
+              }}
+            >
+              {generatingPlan && planWeek === 'next' ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Se generează...
+                </span>
+              ) : 'Săptămâna viitoare'}
+            </button>
+          </div>
+
+          {/* Error state */}
+          {planError && (
+            <div className="rounded-xl px-4 py-3 text-sm"
+              style={{ background: 'rgba(255,77,109,0.1)', border: '1px solid rgba(255,77,109,0.3)', color: '#ff4d6d' }}>
+              {planError}
+            </div>
+          )}
+
+          {/* Meal plan result */}
+          {mealPlan && (
+            <div className="flex flex-col gap-4">
+              {/* Summary header */}
+              <div className="rounded-xl px-4 py-3 flex flex-col gap-1"
+                style={{ background: 'rgba(255,149,0,0.08)', border: '1px solid rgba(255,149,0,0.2)' }}>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-xs font-semibold" style={{ color: '#ff9500' }}>
+                    {mealPlan.week_start} — {mealPlan.week_end}
+                  </span>
+                  <span className="text-xs opacity-60">
+                    Medie: {mealPlan.weekly_summary.avg_calories} kcal/zi
+                  </span>
+                </div>
+                <p className="text-xs opacity-70">{mealPlan.weekly_summary.notes}</p>
+                {mealPlan.weekly_summary.protein_focus && (
+                  <p className="text-xs opacity-50">Proteine: {mealPlan.weekly_summary.protein_focus}</p>
+                )}
+              </div>
+
+              {/* Day cards */}
+              {mealPlan.days.map(day => {
+                const pct = mealPlan.daily_calorie_target > 0
+                  ? Math.min(100, (day.total_calories / mealPlan.daily_calorie_target) * 100)
+                  : 0
+                const mealIcons: Record<string, string> = {
+                  breakfast: '🥐',
+                  lunch: '🍽️',
+                  dinner: '🍛',
+                  snack: '🍎',
+                }
+                return (
+                  <div key={day.date} className="rounded-xl overflow-hidden"
+                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {/* Day header */}
+                    <div className="px-4 py-2.5 flex items-center justify-between"
+                      style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{day.day}</span>
+                        <span className="text-xs opacity-40">{day.date.slice(5)}</span>
+                      </div>
+                      <span className="text-xs font-semibold" style={{ color: pct > 105 ? '#f59e0b' : pct > 95 ? '#22c55e' : 'hsl(var(--muted-foreground))' }}>
+                        {day.total_calories} kcal
+                      </span>
+                    </div>
+
+                    {/* Calorie progress bar */}
+                    <div className="h-1" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: `${pct}%`,
+                          background: pct > 105 ? '#f59e0b' : 'linear-gradient(90deg,#ff4d6d,#ff9500)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Meals list */}
+                    <div className="px-4 py-2 flex flex-col gap-2">
+                      {day.meals.map((meal, idx) => (
+                        <div key={idx} className="flex items-start gap-3 py-1.5"
+                          style={{ borderBottom: idx < day.meals.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                          <span className="text-base flex-shrink-0 mt-0.5">{mealIcons[meal.type] ?? '🍴'}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs opacity-40 flex-shrink-0">{meal.label}</span>
+                              {meal.recipe_id && meal.recipe_slug ? (
+                                <Link
+                                  href={`/recipes/${meal.recipe_slug}`}
+                                  className="text-sm font-medium hover:underline truncate"
+                                  style={{ color: '#ff9500' }}
+                                >
+                                  {meal.recipe_title}
+                                </Link>
+                              ) : (
+                                <span className="text-sm font-medium truncate">{meal.recipe_title}</span>
+                              )}
+                            </div>
+                            {meal.notes && (
+                              <p className="text-xs opacity-40 mt-0.5 leading-relaxed">{meal.notes}</p>
+                            )}
+                          </div>
+                          <span className="text-xs opacity-50 flex-shrink-0 mt-0.5 font-mono">{meal.calories} kcal</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Disclaimer */}
+              <div className="flex items-start gap-2 rounded-xl px-4 py-3"
+                style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                <span className="text-sm flex-shrink-0">⚠️</span>
+                <p className="text-xs opacity-60 leading-relaxed">{mealPlan.disclaimer}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Section G: Obiceiuri ─────────────────────────────────────── */}
         <Card title="Obiceiuri — 28 de zile" icon="📅">
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-3 text-center">
