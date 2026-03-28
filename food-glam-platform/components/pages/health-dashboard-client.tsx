@@ -333,6 +333,8 @@ export default function HealthDashboardClient() {
   const [planError, setPlanError] = useState<string | null>(null)
   const [planWeek, setPlanWeek] = useState<'current' | 'next'>('current')
   const [includeHydration, setIncludeHydration] = useState(false)
+  const [applyingPlan, setApplyingPlan] = useState(false)
+  const [planApplied, setPlanApplied] = useState(false)
 
   // Quick-add states
   const [addingWater, setAddingWater] = useState(false)
@@ -576,6 +578,57 @@ export default function HealthDashboardClient() {
     URL.revokeObjectURL(url)
   }
 
+  // ─── Apply AI plan to Meal Planner ──────────────────────────────────────────
+
+  async function applyToMealPlan(plan: MealPlan) {
+    if (applyingPlan) return
+    setApplyingPlan(true)
+    setPlanApplied(false)
+    try {
+      const headers = await getAuthHeaders()
+
+      // 1. Create a new meal plan
+      const createRes = await fetch('/api/meal-plans', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          title: `Plan AI ${plan.week_start} — ${plan.week_end}`,
+          start_date: plan.week_start,
+          end_date: plan.week_end,
+        }),
+      })
+      const planData = await createRes.json()
+      if (!createRes.ok || !planData?.id) throw new Error('Nu s-a putut crea planul')
+
+      // 2. Add entries for each meal
+      const entries = plan.days.flatMap(day =>
+        day.meals.map(meal => ({
+          meal_plan_id: planData.id,
+          date: day.date,
+          meal_slot: meal.type as 'breakfast' | 'lunch' | 'dinner' | 'snack',
+          post_id: meal.recipe_id || undefined,
+          recipe_title: meal.recipe_title,
+          servings: 1,
+        }))
+      )
+
+      // Add entries in batch
+      for (const entry of entries) {
+        await fetch('/api/meal-plan-entries', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(entry),
+        })
+      }
+
+      setPlanApplied(true)
+    } catch {
+      setPlanApplied(false)
+    } finally {
+      setApplyingPlan(false)
+    }
+  }
+
   // ─── Derived values ─────────────────────────────────────────────────────────
 
   const today = todayStr()
@@ -727,6 +780,8 @@ export default function HealthDashboardClient() {
 
   return (
     <main className="min-h-screen pb-24" style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}>
+      {/* Print styles */}
+      <style>{`@media print { nav, header, footer, button, .no-print { display: none !important; } main { background: #fff !important; color: #000 !important; } }`}</style>
       <div className="container mx-auto px-4 py-6 max-w-4xl flex flex-col gap-6">
 
         {/* Page header */}
@@ -1344,6 +1399,36 @@ export default function HealthDashboardClient() {
               >
                 📅 Exportă în Calendar (.ics)
               </button>
+
+              {/* Set as meal plan + Print */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => applyToMealPlan(mealPlan)}
+                  disabled={applyingPlan}
+                  className="py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}
+                >
+                  {applyingPlan ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Se setează...
+                    </span>
+                  ) : '🍽️ Setează ca Plan de masă'}
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.25)', color: '#a855f7' }}
+                >
+                  🖨️ Printează planul
+                </button>
+              </div>
+              {planApplied && (
+                <div className="rounded-xl px-4 py-2.5 text-sm font-semibold flex items-center gap-2"
+                  style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e' }}>
+                  ✓ Planul a fost setat! Mergi la <Link href="/plan" className="underline">Planul de masă</Link> pentru a-l vedea.
+                </div>
+              )}
 
               {/* Disclaimer */}
               <div className="flex items-start gap-2 rounded-xl px-4 py-3"
