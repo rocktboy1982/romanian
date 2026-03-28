@@ -46,7 +46,6 @@ const MOBILE_TABS = [
   { href: '/',                 icon: '🏠', label: 'Acasă'     },
   { href: '/search',           icon: '🔍', label: 'Explorează'  },
   { href: '/me/scan',          icon: '📷', label: 'Scanează'     },
-  { href: '/me/grocery',       icon: '🛒', label: 'Cumpărături'     },
   { href: '/me',               icon: '👤', label: 'Profil'  },
 ]
 
@@ -416,7 +415,6 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
           {[
             { href: '/me/pantry',     label: 'Cămara' },
             { href: '/me/bar',        label: 'Bar' },
-            { href: '/me/grocery',    label: '🛒 Cumpărături' },
           ].map(item => {
             const active = isActive(item.href)
             return (
