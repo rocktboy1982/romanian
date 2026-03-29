@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import { isLocalSupabase } from '@/lib/supabase-utils'
 
 // ── In-memory fallback store (dev only, resets on restart) ───────────────────
@@ -9,7 +10,7 @@ const DEV_COOKBOOK_ID = 'dev-cookbook-001'
 
 // ── GET /api/collection-items ────────────────────────────────────────────────
 // Returns all saved items for the current user's cookbook, joined with post data.
-export async function GET() {
+export async function GET(req: Request) {
   try {
     if (isLocalSupabase()) {
       // Dev fallback: return in-memory items with stub post data
@@ -20,9 +21,11 @@ export async function GET() {
       return NextResponse.json(items)
     }
 
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json([], { status: 200 }) // unauthenticated → empty
+
+    const supabase = createServiceSupabaseClient()
 
     // Find or lazily create the user's cookbook collection
     let { data: cookbook } = await supabase
@@ -96,9 +99,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }, { status: 201 })
     }
 
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const supabase = createServiceSupabaseClient()
 
     // Find or create cookbook collection
     let cookbookId = collection_id
@@ -159,9 +164,11 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ ok: true })
     }
 
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const supabase = createServiceSupabaseClient()
 
     const { error } = await supabase
       .from('collection_items')

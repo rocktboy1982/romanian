@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 /** GET /api/collections?type=cookbook|watchlist|series&owner_id=xxx */
 export async function GET(req: Request) {
   try {
-    const supabase = createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
     const { searchParams } = new URL(req.url)
     const type = searchParams.get('type')
     const ownerId = searchParams.get('owner_id')
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getRequestUser(req, authClient)
+
+    const supabase = createServiceSupabaseClient()
 
     let query = supabase
       .from('collections')
@@ -46,8 +49,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { title, type, visibility, slug } = body
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -62,6 +65,7 @@ export async function POST(req: Request) {
     if (slug) metadata.slug = slug
     if (type) metadata.type = type
 
+    const supabase = createServiceSupabaseClient()
     const { data, error } = await supabase
       .from('collections')
       .insert({
@@ -84,8 +88,8 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const { id, title, items } = await req.json()
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     if (!id) return NextResponse.json({ error: 'Collection id is required' }, { status: 400 })
@@ -94,6 +98,7 @@ export async function PATCH(req: Request) {
     if (title !== undefined) update.title = title
     if (items !== undefined) update.items = items
 
+    const supabase = createServiceSupabaseClient()
     const { data, error } = await supabase
       .from('collections')
       .update(update)
@@ -114,11 +119,12 @@ export async function PATCH(req: Request) {
 export async function PUT(req: Request) {
   try {
     const { id, title, items } = await req.json()
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
+    const supabase = createServiceSupabaseClient()
     const { data, error } = await supabase
       .from('collections')
       .update({ title, items })
@@ -138,11 +144,12 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const { id } = await req.json()
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
+    const supabase = createServiceSupabaseClient()
     const { error } = await supabase
       .from('collections')
       .delete()

@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const supabase = createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
 
     // Auth + moderator check
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+
+    const supabase = createServiceSupabaseClient()
     const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)
     if (!roles || roles.length === 0) return NextResponse.json({ error: 'Moderator access required' }, { status: 403 })
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import { getVotesByPostIds } from '@/lib/data-access/votes'
 
 // Deterministic daily shuffle — same results for everyone on the same day
@@ -20,7 +21,7 @@ export async function GET(req: Request) {
   // Check if Supabase is available
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const isLocalSupabase = supabaseUrl?.includes('127.0.0.1') || supabaseUrl?.includes('localhost')
-  
+
   // If local Supabase is configured, check if it's actually running
   if (isLocalSupabase) {
     try {
@@ -46,9 +47,10 @@ export async function GET(req: Request) {
   }
 
   try {
-    const supabase = await createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const supabase = createServiceSupabaseClient()
 
     // Fetch a large pool of recipes, then daily-shuffle to rotate content every 24h
     const { data: allPosts, error: postsError } = await supabase
@@ -147,7 +149,7 @@ export async function GET(req: Request) {
   } catch (err: any) {
     console.error('Homepage API error:', err)
     console.log('Falling back to mock data (Supabase not available)')
-    
+
     // Always return mock data if Supabase fails
     try {
       const { MOCK_RECIPES } = await import('@/lib/mock-data')

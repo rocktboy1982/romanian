@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,6 +18,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id: postId } = await params
+
+    const supabase = createServiceSupabaseClient()
 
     const { data: existingVote, error: existingError } = await supabase
       .from('votes')

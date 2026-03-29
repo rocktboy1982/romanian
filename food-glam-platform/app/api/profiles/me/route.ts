@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import { checkProfanity } from '@/lib/profanity-filter'
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) {
       return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
     }
 
+    const supabase = createServiceSupabaseClient()
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('id, email, display_name, handle, bio, avatar_url, banner_url, created_at, is_certified_creator')
@@ -31,12 +33,14 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
     if (!user) {
       return NextResponse.json({ error: 'Autentificare necesară' }, { status: 401 })
     }
+
+    const supabase = createServiceSupabaseClient()
 
      const body = await req.json()
      const { display_name, handle, bio, avatar_url, banner_url } = body
@@ -122,9 +126,7 @@ export async function PATCH(req: Request) {
       if (avatar_url !== undefined) updateData.avatar_url = avatar_url
       if (banner_url !== undefined) updateData.banner_url = banner_url
 
-    // Use service client to bypass RLS
-    const serviceSupabase = createServiceSupabaseClient()
-    const { data: updated, error: updateError } = await serviceSupabase
+    const { data: updated, error: updateError } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', user.id)

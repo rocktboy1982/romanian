@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 interface ReviewBody {
   id: string
@@ -13,9 +14,11 @@ export async function POST(req: Request) {
     const { id, action } = body
     if (!id || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
-    const supabase = createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const supabase = createServiceSupabaseClient()
 
     // moderator role check — verify actual role value
     const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1)

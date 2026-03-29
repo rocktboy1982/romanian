@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server';
+import { getRequestUser } from '@/lib/get-user';
 import { SubmissionResponse } from '@/types/submission';
 
 interface ModerationPayload {
@@ -11,11 +12,13 @@ interface ModerationPayload {
 export async function POST(req: NextRequest): Promise<NextResponse<SubmissionResponse>> {
   try {
     // Auth + moderator check
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const authClient = createServerSupabaseClient();
+    const user = await getRequestUser(req, authClient);
     if (!user) {
       return NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 });
     }
+
+    const supabase = createServiceSupabaseClient();
     const { data: roles } = await supabase.from('app_roles').select('role').eq('user_id', user.id).in('role', ['moderator', 'admin']).limit(1);
     if (!roles || roles.length === 0) {
       return NextResponse.json({ success: false, message: 'Moderator access required' }, { status: 403 });
@@ -37,7 +40,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<SubmissionRes
       );
     }
 
-    // Verify the post exists (reuse supabase client from auth check above)
+    // Verify the post exists
     const { data: post, error: fetchError } = await supabase
       .from('posts')
       .select('id, status')

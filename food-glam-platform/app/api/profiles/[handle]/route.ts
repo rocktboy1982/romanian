@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import { rateLimit } from '@/lib/rate-limit'
 
 export async function GET(
@@ -15,10 +16,12 @@ export async function GET(
     }
 
     const { handle } = await params
-    const supabase = await createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
 
     // Get current user for follow status
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getRequestUser(req, authClient)
+
+    const supabase = createServiceSupabaseClient()
 
     // Fetch profile by handle
     const { data: profile, error: profileError } = await supabase

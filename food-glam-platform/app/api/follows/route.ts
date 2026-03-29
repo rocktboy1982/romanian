@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
@@ -20,6 +21,8 @@ export async function POST(req: Request) {
     if (followed_id === user.id) {
       return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 })
     }
+
+    const supabase = createServiceSupabaseClient()
 
     // Check if already following
     const { data: existing } = await supabase
@@ -61,10 +64,10 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerSupabaseClient()
+    const user = await getRequestUser(req, authClient)
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
@@ -74,6 +77,8 @@ export async function DELETE(req: Request) {
     if (!followed_id) {
       return NextResponse.json({ error: 'followed_id is required' }, { status: 400 })
     }
+
+    const supabase = createServiceSupabaseClient()
 
     const { error: deleteError } = await supabase
       .from('follows')

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 
 export async function GET(
   req: Request,
@@ -7,12 +8,14 @@ export async function GET(
 ) {
   try {
     const { handle } = await params
-    const supabase = await createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
 
     const url = new URL(req.url)
     const type = url.searchParams.get('type') || 'recipe'
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 50)
     const offset = parseInt(url.searchParams.get('offset') || '0', 10)
+
+    const supabase = createServiceSupabaseClient()
 
     // Resolve handle → profile id
     const { data: profile, error: profileError } = await supabase
@@ -26,7 +29,7 @@ export async function GET(
     }
 
     // Get current user for saved state
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getRequestUser(req, authClient)
 
     // Fetch posts by this creator
     const { data: posts, error: postsError, count } = await supabase

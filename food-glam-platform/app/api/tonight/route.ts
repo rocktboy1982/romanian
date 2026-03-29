@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
+import { getRequestUser } from '@/lib/get-user'
 import {
   rankRecommendations,
   fallbackTrending,
@@ -7,11 +8,11 @@ import {
 } from '@/lib/recommendations'
 import { getVotesByPostIds, getRecentVotes } from '@/lib/data-access/votes'
 
-export async function GET() {
+export async function GET(req: Request) {
   // Check if local Supabase is running
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const isLocalSupabase = supabaseUrl?.includes('127.0.0.1') || supabaseUrl?.includes('localhost')
-  
+
   if (isLocalSupabase) {
     try {
       const healthCheck = await fetch(`${supabaseUrl}/rest/v1/`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }, signal: AbortSignal.timeout(2000) })
@@ -49,12 +50,12 @@ export async function GET() {
   }
 
   try {
-    const supabase = await createServerSupabaseClient()
+    const authClient = createServerSupabaseClient()
 
     // 1. Get current user (optional — unauthenticated users get trending-only)
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getRequestUser(req, authClient)
+
+    const supabase = createServiceSupabaseClient()
 
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -97,7 +98,7 @@ export async function GET() {
 
     // 4. Fetch recent votes (last 7 days) for trending (single aggregation query)
     const recentVoteStatsMap = await getRecentVotes(supabase, postIds, 7)
-    
+
     // Extract trending votes
     const recentVoteMap: Record<string, number> = {}
     Object.entries(recentVoteStatsMap).forEach(([postId, stats]) => {
