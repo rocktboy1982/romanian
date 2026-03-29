@@ -966,6 +966,9 @@ const supabase = createClient(
 // ── Ollama translate ─────────────────────────────────────────────────────────
 const OLLAMA_MODEL = 'aya-expanse:8b';
 const OLLAMA_HARD_TIMEOUT = 180000;
+// Local Ollama server — HTTP is intentional for loopback connections
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+const { hostname: OLLAMA_HOST, port: OLLAMA_PORT } = new URL(OLLAMA_URL);
 
 function ollamaRequest(prompt) {
   return new Promise((resolve, reject) => {
@@ -976,7 +979,7 @@ function ollamaRequest(prompt) {
     });
     const hardTimer = setTimeout(() => { req.destroy(); reject(new Error('Ollama timeout')); }, OLLAMA_HARD_TIMEOUT);
     const req = http.request({
-      hostname: '127.0.0.1', port: 11434, path: '/api/generate', method: 'POST',
+      hostname: OLLAMA_HOST, port: parseInt(OLLAMA_PORT) || 11434, path: '/api/generate', method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }, (res) => {
       let data = '';

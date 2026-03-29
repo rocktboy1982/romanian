@@ -395,7 +395,7 @@ export default function RegionCookbookClient({ region }: { region: string }) {
                           onClick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            if (recipe.source_url) {
+                            if (recipe.source_url && recipe.source_url.startsWith('https://')) {
                               window.open(recipe.source_url, '_blank', 'noopener,noreferrer')
                             }
                           }}

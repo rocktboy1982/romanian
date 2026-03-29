@@ -19,8 +19,11 @@ const https = require('https')
 const http = require('http')
 
 const pool = new Pool({
-  host: '127.0.0.1', port: 54322,
-  user: 'postgres', password: process.env.DB_PASSWORD || 'postgres', database: 'postgres',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: parseInt(process.env.DB_PORT || '54322'),
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'postgres',
 })
 
 const SYSTEM_USER = 'c0000000-0000-0000-0000-000000000001'

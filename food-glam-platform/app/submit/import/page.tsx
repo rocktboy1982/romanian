@@ -111,6 +111,16 @@ function normaliseExtracted(raw: Record<string, unknown>, sourceUrl: string): Im
 
 type Phase = 'loading' | 'not-logged-in' | 'not-certified' | 'idle' | 'extracted' | 'saving' | 'saved'
 
+function sanitizeImgSrc(url: string): string {
+  if (url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/')) return url
+  return ''
+}
+
+function sanitizeHref(url: string): string {
+  if (url.startsWith('https://') || url.startsWith('http://') || url.startsWith('/')) return url
+  return '#'
+}
+
 export default function ImportRecipePage() {
   const router = useRouter()
 
@@ -405,7 +415,7 @@ export default function ImportRecipePage() {
               <div className="mb-4 rounded-xl overflow-hidden" style={{ aspectRatio: '16/7' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={heroImageUrl}
+                  src={sanitizeImgSrc(heroImageUrl)}
                   alt={title}
                   className="w-full h-full object-cover"
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
@@ -493,7 +503,7 @@ export default function ImportRecipePage() {
               </svg>
               <span className="text-xs" style={{ color: '#666' }}>
                 Sursa:{' '}
-                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#aaa' }}>
+                <a href={sanitizeHref(sourceUrl)} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#aaa' }}>
                   {sourceUrl ? (() => { try { return new URL(sourceUrl).hostname.replace('www.', '') } catch { return sourceUrl } })() : '—'}
                 </a>
               </span>

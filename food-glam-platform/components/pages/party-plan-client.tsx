@@ -4,6 +4,15 @@ import FallbackImage from '@/components/FallbackImage'
 import React, { useState, useMemo, useCallback, useEffect } from "react"
 import { isAlcoholicIngredient } from '@/lib/normalize-for-search'
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CocktailData {
@@ -333,10 +342,14 @@ function aggregateIngredients(cocktails: PartyItem[]): AggregatedIngredient[] {
 
     ingredients.forEach((ingredientStr) => {
       const { amount, unit, name } = parseIngredient(ingredientStr)
-      const key = `${name.toLowerCase()}__${unit}`
+      const rawKey = `${name.toLowerCase()}__${unit}`
+      // Guard against prototype pollution via crafted ingredient names
+      const UNSAFE_KEYS = ['__proto__', 'constructor', 'prototype']
+      if (UNSAFE_KEYS.includes(rawKey.split('__')[0])) return
+      const key = rawKey
       const category = categorizeIngredient(name)
 
-      if (accumulator[key]) {
+      if (Object.prototype.hasOwnProperty.call(accumulator, key)) {
         accumulator[key].amount += amount * multiplier
         if (!accumulator[key].sources.includes(item.cocktail.title)) {
           accumulator[key].sources.push(item.cocktail.title)
@@ -657,7 +670,7 @@ export default function PartyPlanClient() {
 
   // Print shopping list
   const printShoppingList = useCallback(() => {
-    let html = `<!DOCTYPE html><html><head><title>${state.partyName} - Listă de cumpărături</title><style>
+    let html = `<!DOCTYPE html><html><head><title>${escapeHtml(state.partyName)} - Listă de cumpărături</title><style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 780px; margin: 0 auto; padding: 32px 40px; color: #111; font-size: 16px; line-height: 1.5; }
       h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
@@ -683,7 +696,7 @@ export default function PartyPlanClient() {
       }
     </style></head><body>`
 
-    html += `<h1>🎉 ${state.partyName}</h1>`
+    html += `<h1>🎉 ${escapeHtml(state.partyName)}</h1>`
     const modeLabel = shopGrouping === 'foodgroups' 
       ? 'Grupe de alimente' 
       : shopGrouping === 'product' 
@@ -698,7 +711,7 @@ export default function PartyPlanClient() {
         items.forEach((ing) => {
           const raw = ing.amount * state.guestCount
           const norm = normalizeToShoppingUnit(raw, ing.unit)
-          html += `<li class="item"><div class="check"></div><div class="name">${ing.name}</div><div class="qty">${formatAmount(norm.amount)} ${norm.unit}</div></li>`
+          html += `<li class="item"><div class="check"></div><div class="name">${escapeHtml(ing.name)}</div><div class="qty">${escapeHtml(formatAmount(norm.amount))} ${escapeHtml(norm.unit)}</div></li>`
         })
         html += `</ul>`
       })
@@ -711,7 +724,7 @@ export default function PartyPlanClient() {
         .forEach((ing) => {
           const raw = ing.amount * state.guestCount
           const norm = normalizeToShoppingUnit(raw, ing.unit)
-          html += `<li class="item"><div class="check"></div><div class="name">${ing.name} <span style="color:#999;font-size:12px">(${getCategoryLabel(ing.category)})</span></div><div class="qty">${formatAmount(norm.amount)} ${norm.unit}</div></li>`
+          html += `<li class="item"><div class="check"></div><div class="name">${escapeHtml(ing.name)} <span style="color:#999;font-size:12px">(${escapeHtml(getCategoryLabel(ing.category))})</span></div><div class="qty">${escapeHtml(formatAmount(norm.amount))} ${escapeHtml(norm.unit)}</div></li>`
         })
       html += `</ul>`
     } else {
@@ -720,13 +733,13 @@ export default function PartyPlanClient() {
         const serves = getServes(item.cocktail)
         const multiplier = (item.rounds * state.guestCount) / serves
         const totalServings = Math.ceil(item.rounds * state.guestCount / serves)
-        html += `<h2>🍹 ${item.cocktail.title} <span style="font-weight:400;font-size:10px;text-transform:none;letter-spacing:0">${item.rounds} runde · ~${totalServings} porții</span></h2><ul>`
+        html += `<h2>🍹 ${escapeHtml(item.cocktail.title)} <span style="font-weight:400;font-size:10px;text-transform:none;letter-spacing:0">${item.rounds} runde · ~${totalServings} porții</span></h2><ul>`
         const ingredients = getIngredients(item.cocktail)
         ingredients.forEach((ingStr) => {
           const parsed = parseIngredient(ingStr)
           const scaledAmount = parsed.amount * multiplier
           const norm = normalizeToShoppingUnit(scaledAmount, parsed.unit)
-          html += `<li class="item"><div class="check"></div><div class="name">${parsed.name}</div><div class="qty">${formatAmount(norm.amount)} ${norm.unit}</div></li>`
+          html += `<li class="item"><div class="check"></div><div class="name">${escapeHtml(parsed.name)}</div><div class="qty">${escapeHtml(formatAmount(norm.amount))} ${escapeHtml(norm.unit)}</div></li>`
         })
         html += `</ul>`
       })

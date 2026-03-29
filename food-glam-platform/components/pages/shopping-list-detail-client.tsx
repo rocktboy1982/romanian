@@ -281,16 +281,7 @@ export default function ShoppingListDetailClient({ listId }: { listId: string })
 
   const handleCopyShareLink = async () => {
     if (!shareUrl) return
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-    } catch {
-      const ta = document.createElement('textarea')
-      ta.value = shareUrl
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-    }
+    await navigator.clipboard.writeText(shareUrl).catch(() => { /* copy not available */ })
   }
 
   const handlePrint = () => {

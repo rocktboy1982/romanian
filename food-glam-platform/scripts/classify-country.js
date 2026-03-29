@@ -41,7 +41,8 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const BATCH_IDX = process.argv.indexOf('--batch');
 const BATCH_SIZE = BATCH_IDX !== -1 ? parseInt(process.argv[BATCH_IDX + 1]) || 100 : 9999;
 const MODEL = 'qwen2.5:7b'; // fast, good at classification
-const OLLAMA_URL = 'http://127.0.0.1:11434';
+// Local Ollama server — HTTP is intentional for loopback connections
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
 const TIMEOUT = 30000;
 
 // Valid countries for normalization

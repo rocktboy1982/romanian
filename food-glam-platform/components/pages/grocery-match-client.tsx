@@ -157,7 +157,7 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
         }),
       }).catch(() => { /* order save is best-effort */ })
 
-      if (data.checkoutUrl) {
+      if (data.checkoutUrl && data.checkoutUrl.startsWith('https://')) {
         window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer')
       }
      } catch (e) {
@@ -374,7 +374,7 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
                 Estimated total: <strong>{cartResult.estimatedTotal.toFixed(2)} RON</strong>
               </div>
             )}
-            {cartResult.checkoutUrl && (
+            {cartResult.checkoutUrl && cartResult.checkoutUrl.startsWith('https://') && (
               <a
                 href={cartResult.checkoutUrl}
                 target="_blank"

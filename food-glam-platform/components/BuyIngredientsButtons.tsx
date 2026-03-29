@@ -58,7 +58,7 @@ export default function BuyIngredientsButtons({ ingredients, type = 'recipe' }: 
     // Open each ingredient in its own tab
     urls.forEach((url, i) => {
       setTimeout(() => {
-        window.open(url, '_blank')
+        if (url.startsWith('https://')) window.open(url, '_blank', 'noopener,noreferrer')
       }, i * 300)
     })
   }
@@ -66,7 +66,8 @@ export default function BuyIngredientsButtons({ ingredients, type = 'recipe' }: 
   const openBauturiTabs = () => {
     alcoholItems.forEach((item, i) => {
       setTimeout(() => {
-        window.open(`https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(item.name)}`, '_blank')
+        const url = `https://www.bauturialcoolice.ro/index.php?route=product/search&search=${encodeURIComponent(item.name)}`
+        window.open(url, '_blank', 'noopener,noreferrer')
       }, i * 300)
     })
   }

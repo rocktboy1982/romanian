@@ -26,9 +26,9 @@ const { createImageSearchClient } = require('../lib/image-search')
 const DB = {
   host: process.env.DB_HOST || '127.0.0.1',
   port: parseInt(process.env.DB_PORT || '54322'),
-  user: 'postgres',
-  password: 'postgres',
-  database: 'postgres',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'postgres',
 }
 
 const NUM_WORKERS = Math.min(6, Math.max(1, parseInt(process.argv[2] || '4', 10)))
@@ -180,7 +180,9 @@ async function main() {
   // Mode: 'missing' = only posts without any image, 'mismatch' = re-upgrade existing bad images
   // Type filter: defaults to 'recipe', pass 'cocktail' or 'all' via argv[4]
   const mode = process.argv[3] || 'missing'
-  const typeFilter = process.argv[4] || 'recipe'
+  const rawTypeFilter = process.argv[4] || 'recipe'
+  const ALLOWED_TYPES = ['recipe', 'cocktail', 'all']
+  const typeFilter = ALLOWED_TYPES.includes(rawTypeFilter) ? rawTypeFilter : 'recipe'
   const typeClause = typeFilter === 'all' ? "type IN ('recipe','cocktail')" : `type = '${typeFilter}'`
   let query
   if (mode === 'mismatch') {

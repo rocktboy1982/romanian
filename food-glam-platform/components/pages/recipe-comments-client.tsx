@@ -5,6 +5,11 @@ import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { sanitizeText } from '@/lib/sanitize'
 
+function sanitizeImgSrc(url: string): string {
+  if (url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/')) return url
+  return ''
+}
+
 interface AuthUser {
   id: string
   display_name: string
@@ -238,7 +243,7 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
           <div key={comment.id} className="flex gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={comment.author.avatar}
+              src={sanitizeImgSrc(comment.author.avatar)}
               alt={comment.author.name}
               width={40}
               height={40}
@@ -263,7 +268,7 @@ export default function RecipeCommentsClient({ recipeId, slug }: RecipeCommentsC
         <div className="flex gap-3 mb-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={authUser.avatar_url || `https://i.pravatar.cc/150?img=5`}
+            src={sanitizeImgSrc(authUser.avatar_url || `https://i.pravatar.cc/150?img=5`)}
             alt={authUser.display_name}
             width={40}
             height={40}

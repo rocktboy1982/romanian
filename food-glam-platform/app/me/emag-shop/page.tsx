@@ -164,8 +164,12 @@ export default function ShopPage() {
     return vendor.searchUrl(normalizeIngredientForSearch(item.name))
   }
 
+  const safeOpen = (url: string) => {
+    if (url.startsWith('https://')) window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
   const openItem = (item: ShopItem, vendor: Vendor) => {
-    window.open(getItemUrl(item, vendor), '_blank', 'noopener')
+    safeOpen(getItemUrl(item, vendor))
   }
 
   const openAllSelected = () => {
@@ -175,7 +179,7 @@ export default function ShopPage() {
     batch.forEach((item, i) => {
       const vendor = isAlcoholic(item) ? BAUTURI : EMAG
       setTimeout(() => {
-        window.open(getItemUrl(item, vendor), '_blank', 'noopener')
+        safeOpen(getItemUrl(item, vendor))
       }, i * 300)
     })
     if (selected.length > 10) {

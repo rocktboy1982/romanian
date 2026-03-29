@@ -29,6 +29,9 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const OLLAMA_MODEL = 'aya-expanse:8b';
+// Local Ollama server — HTTP is intentional for loopback connections
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+const { hostname: OLLAMA_HOST, port: OLLAMA_PORT } = new URL(OLLAMA_URL);
 
 function ollamaRequest(prompt) {
   return new Promise((resolve, reject) => {
@@ -39,7 +42,7 @@ function ollamaRequest(prompt) {
     });
     const timer = setTimeout(() => { req.destroy(); reject(new Error('timeout')); }, 120000);
     const req = http.request({
-      hostname: '127.0.0.1', port: 11434, path: '/api/generate', method: 'POST',
+      hostname: OLLAMA_HOST, port: parseInt(OLLAMA_PORT) || 11434, path: '/api/generate', method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }, (res) => {
       let data = '';
