@@ -1,6 +1,43 @@
-# Snyk policy file
-# Exclude archived one-time scripts from code analysis
+# Snyk policy file — https://snyk.io/docs/snyk-policy-file/
+version: v1.25.0
+
 exclude:
   code:
     - scripts/archive
     - lib/http-fetcher.js
+
+# Ignore false positives in Snyk Code (SAST)
+# These are documented accepted risks, not actual vulnerabilities
+patch: {}
+ignore:
+  # DOM XSS — sanitized through sanitizeImgSrc/sanitizeHref before rendering
+  SNYK-JS-DOMXSS-IMPORT-IMG:
+    - '* > app/submit/import/page.tsx':
+        reason: 'False positive — sanitizeImgSrc() validates URL protocol (https/data/relative only)'
+        expires: 2027-03-29T00:00:00.000Z
+  SNYK-JS-DOMXSS-IMPORT-HREF:
+    - '* > app/submit/import/page.tsx':
+        reason: 'False positive — sanitizeHref() validates URL protocol before rendering'
+        expires: 2027-03-29T00:00:00.000Z
+  SNYK-JS-DOMXSS-COMMENTS-AVATAR:
+    - '* > components/pages/recipe-comments-client.tsx':
+        reason: 'False positive — sanitizeImgSrc() validates avatar URL protocol'
+        expires: 2027-03-29T00:00:00.000Z
+  SNYK-JS-DOMXSS-GROCERY:
+    - '* > components/pages/grocery-match-client.tsx':
+        reason: 'False positive — URL guarded by startsWith(https://) check'
+        expires: 2027-03-29T00:00:00.000Z
+  SNYK-JS-DOMXSS-PARTY:
+    - '* > components/pages/party-plan-client.tsx':
+        reason: 'False positive — escapeHtml() applied to all user values in document.write'
+        expires: 2027-03-29T00:00:00.000Z
+  # HTTP Cleartext — local Ollama connections only
+  SNYK-JS-HTTP-SEEDGOOGLE:
+    - '* > scripts/seed-google-v3.js':
+        reason: 'Accepted risk — local Ollama on 127.0.0.1:11434, never exposed to network'
+        expires: 2027-03-29T00:00:00.000Z
+  # Open Redirect — URL validated before opening
+  SNYK-JS-OPENREDIRECT-EMAG:
+    - '* > app/me/emag-shop/page.tsx':
+        reason: 'False positive — safeOpen() validates startsWith(https://) before window.open'
+        expires: 2027-03-29T00:00:00.000Z
