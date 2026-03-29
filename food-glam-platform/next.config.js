@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   productionBrowserSourceMaps: false,
+  poweredByHeader: false,
   images: {
     // Disable Vercel Image Optimization to stay within free tier (5000 transformations/month)
     // Images served directly from source (Pexels, Unsplash, food blogs)
@@ -34,6 +35,10 @@ const nextConfig = {
       "base-uri 'self'",
       // Form actions: self + Supabase OAuth + Google OAuth
       "form-action 'self' https://*.supabase.co https://accounts.google.com",
+      // Frame ancestors: same as X-Frame-Options DENY
+      "frame-ancestors 'none'",
+      // Upgrade insecure requests
+      "upgrade-insecure-requests",
     ]
     const csp = cspDirectives.join('; ')
 
@@ -47,7 +52,9 @@ const nextConfig = {
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           { key: 'Content-Security-Policy', value: csp },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
         ],
       },
     ]
