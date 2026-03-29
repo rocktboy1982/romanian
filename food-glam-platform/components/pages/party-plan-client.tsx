@@ -747,12 +747,13 @@ export default function PartyPlanClient() {
 
     html += `</body></html>`
 
-    const printWin = window.open('', '_blank', 'width=700,height=900')
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const blobUrl = URL.createObjectURL(blob)
+    const printWin = window.open(blobUrl, '_blank', 'width=700,height=900')
     if (printWin) {
-      printWin.document.write(html)
-      printWin.document.close()
-      printWin.focus()
-      printWin.print()
+      printWin.addEventListener('load', () => { printWin.focus(); printWin.print(); URL.revokeObjectURL(blobUrl) })
+    } else {
+      URL.revokeObjectURL(blobUrl)
     }
   }, [state, ingredientsByCategory, aggregatedIngredients, shopGrouping])
 

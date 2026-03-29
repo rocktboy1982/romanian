@@ -165,7 +165,7 @@ export default function ShopPage() {
   }
 
   const safeOpen = (url: string) => {
-    if (url.startsWith('https://')) window.open(url, '_blank', 'noopener,noreferrer')
+    try { const u = new URL(url); if (u.protocol === 'https:') window.open(u.href, '_blank', 'noopener,noreferrer') } catch { /* invalid */ }
   }
 
   const openItem = (item: ShopItem, vendor: Vendor) => {

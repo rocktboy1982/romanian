@@ -112,12 +112,16 @@ function normaliseExtracted(raw: Record<string, unknown>, sourceUrl: string): Im
 type Phase = 'loading' | 'not-logged-in' | 'not-certified' | 'idle' | 'extracted' | 'saving' | 'saved'
 
 function sanitizeImgSrc(url: string): string {
-  if (url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/')) return url
+  if (!url) return ''
+  if (url.startsWith('data:image/') || url.startsWith('/')) return url
+  try { const u = new URL(url); if (u.protocol === 'https:') return u.href } catch { /* invalid */ }
   return ''
 }
 
 function sanitizeHref(url: string): string {
-  if (url.startsWith('https://') || url.startsWith('http://') || url.startsWith('/')) return url
+  if (!url) return '#'
+  if (url.startsWith('/')) return url
+  try { const u = new URL(url); if (u.protocol === 'https:' || u.protocol === 'http:') return u.href } catch { /* invalid */ }
   return '#'
 }
 

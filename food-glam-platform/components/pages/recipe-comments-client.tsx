@@ -6,7 +6,9 @@ import { useState, useEffect, useRef } from 'react'
 import { sanitizeText } from '@/lib/sanitize'
 
 function sanitizeImgSrc(url: string): string {
-  if (url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/')) return url
+  if (!url) return ''
+  if (url.startsWith('data:image/') || url.startsWith('/')) return url
+  try { const u = new URL(url); if (u.protocol === 'https:') return u.href } catch { /* invalid */ }
   return ''
 }
 

@@ -157,8 +157,8 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
         }),
       }).catch(() => { /* order save is best-effort */ })
 
-      if (data.checkoutUrl && data.checkoutUrl.startsWith('https://')) {
-        window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer')
+      if (data.checkoutUrl) {
+        try { const u = new URL(data.checkoutUrl); if (u.protocol === 'https:') window.open(u.href, '_blank', 'noopener,noreferrer') } catch { /* invalid URL */ }
       }
      } catch (e) {
        setError(e instanceof Error ? e.message : 'Ceva a mers greșit')
@@ -374,9 +374,9 @@ export default function GroceryMatchClient({ listId }: { listId: string }) {
                 Estimated total: <strong>{cartResult.estimatedTotal.toFixed(2)} RON</strong>
               </div>
             )}
-            {cartResult.checkoutUrl && cartResult.checkoutUrl.startsWith('https://') && (
+            {cartResult.checkoutUrl && (() => { try { return new URL(cartResult.checkoutUrl).protocol === 'https:' } catch { return false } })() && (
               <a
-                href={cartResult.checkoutUrl}
+                href={(() => { try { return new URL(cartResult.checkoutUrl).href } catch { return '#' } })()}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#111', color: '#fff', borderRadius: 10, padding: '12px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', minHeight: 44 }}

@@ -58,7 +58,7 @@ export default function BuyIngredientsButtons({ ingredients, type = 'recipe' }: 
     // Open each ingredient in its own tab
     urls.forEach((url, i) => {
       setTimeout(() => {
-        if (url.startsWith('https://')) window.open(url, '_blank', 'noopener,noreferrer')
+        try { const u = new URL(url); if (u.protocol === 'https:') window.open(u.href, '_blank', 'noopener,noreferrer') } catch { /* invalid */ }
       }, i * 300)
     })
   }
