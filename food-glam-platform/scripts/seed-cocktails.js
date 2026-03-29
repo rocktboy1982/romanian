@@ -7,7 +7,7 @@ const { Pool } = require('pg')
 
 const pool = new Pool({
   host: '127.0.0.1', port: 54322,
-  user: 'postgres', password: 'postgres', database: 'postgres',
+  user: 'postgres', password: process.env.DB_PASSWORD || 'postgres', database: 'postgres',
 })
 
 const cocktails = [

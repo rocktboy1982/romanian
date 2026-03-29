@@ -12,8 +12,8 @@ const pool = new Pool({
 })
 
 const client = createImageSearchClient({
-  pexels: { apiKey: process.env.PEXELS_API_KEY || 'w5BWKtwPXSEiI5mpERpQgmRQjCrGwjnfls1fhLbxl38BVve7jQVbtisq' },
-  unsplash: { accessKey: process.env.UNSPLASH_ACCESS_KEY || 'YhYMVL4KtEoFJZqsnPNujIrg_XBArEMq4M6vvRVbAF8' },
+  pexels: { apiKey: process.env.PEXELS_API_KEY },
+  unsplash: { accessKey: process.env.UNSPLASH_ACCESS_KEY },
   pixabay: { apiKey: process.env.PIXABAY_API_KEY || '54937602-4ed5967a8ec70101779291c1a' },
 })
 

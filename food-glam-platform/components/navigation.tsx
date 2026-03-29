@@ -147,7 +147,7 @@ function useRealUser() {
     document.cookie.split(';').forEach(c => {
       const name = c.split('=')[0].trim()
       if (name.startsWith('sb-') || name.includes('supabase')) {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`
       }
     })
     // Revoke session on server (don't block on failure)

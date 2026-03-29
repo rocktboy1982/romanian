@@ -24,7 +24,7 @@ const DB = {
   host: process.env.DB_HOST || '127.0.0.1',
   port: parseInt(process.env.DB_PORT || '54322'),
   user: 'postgres',
-  password: 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
   database: 'postgres',
 }
 

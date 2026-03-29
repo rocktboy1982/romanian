@@ -36,7 +36,7 @@ const DB_CONFIG = {
   host: '127.0.0.1',
   port: 54322,
   user: 'postgres',
-  password: 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
   database: 'postgres',
 };
 
