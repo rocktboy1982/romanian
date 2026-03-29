@@ -1,0 +1,6 @@
+# Snyk policy file
+# Exclude archived one-time scripts from code analysis
+exclude:
+  code:
+    - scripts/archive
+    - lib/http-fetcher.js
