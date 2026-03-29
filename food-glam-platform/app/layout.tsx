@@ -182,14 +182,18 @@ gtag('config', 'G-4X6TFY53BY');`}
                 <div className="max-w-7xl mx-auto flex flex-col items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                   <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
                     <p>© {new Date().getFullYear()} MareChef.ro — Platformă Culinară</p>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                      <a href="/about" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Despre noi</a>
+                      <a href="/contact" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Contact</a>
+                      <a href="/terms" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Termeni și Condiții</a>
+                      <a href="/privacy" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Confidențialitate</a>
                       <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                        Fotografii furnizate de Pexels
+                        Fotografii: Pexels
                       </a>
                     </div>
                   </div>
                   <p className="text-center text-[10px] text-gray-400 dark:text-gray-500 max-w-2xl">
-                    MareChef.ro este o platformă culinară independentă. Funcționalitățile platformei sunt proprietatea MareChef.ro. 
+                    MareChef.ro este o platformă culinară independentă. Funcționalitățile platformei sunt proprietatea MareChef.ro.
                     Rețetele și fotografiile aparțin autorilor respectivi și sunt utilizate conform licențelor aplicabile. Toate drepturile rezervate.
                   </p>
                 </div>
