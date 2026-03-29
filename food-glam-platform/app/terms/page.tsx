@@ -262,15 +262,15 @@ export default function TermsPage() {
             </p>
             <ul className="mt-3 space-y-2 text-muted-foreground">
               <li>
-                <strong className="text-foreground">Email:</strong>{' '}
-                <a href="mailto:contact@marechef.ro" className="text-primary underline underline-offset-2 hover:text-primary/80">
-                  contact@marechef.ro
-                </a>
+                <strong className="text-foreground">Pagina de contact:</strong>{' '}
+                <Link href="/contact" className="text-primary underline underline-offset-2 hover:text-primary/80">
+                  marechef.ro/contact
+                </Link>
               </li>
               <li>
                 <strong className="text-foreground">Mesagerie internă:</strong>{' '}
                 <Link href="/me/messages" className="text-primary underline underline-offset-2 hover:text-primary/80">
-                  /me/messages
+                  Trimite un mesaj
                 </Link>
               </li>
               <li>

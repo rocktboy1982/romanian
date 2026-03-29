@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, MapPin, MessageSquare } from 'lucide-react'
+import { MapPin, MessageSquare } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Contact | MareChef.ro',
@@ -43,25 +43,6 @@ export default function ContactPage() {
 
         {/* Contact cards */}
         <div className="grid sm:grid-cols-2 gap-4">
-          {/* Email */}
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Mail className="h-5 w-5 text-primary" />
-              </div>
-              <h2 className="font-bold text-lg">Email</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              Trimite-ne un email și îți răspundem în cel mai scurt timp posibil.
-            </p>
-            <a
-              href="mailto:contact@marechef.ro"
-              className="text-primary font-semibold hover:underline underline-offset-2 break-all"
-            >
-              contact@marechef.ro
-            </a>
-          </div>
-
           {/* Location */}
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="flex items-center gap-3 mb-3">
@@ -128,7 +109,7 @@ export default function ContactPage() {
 
         {/* Response time note */}
         <p className="text-center text-sm text-muted-foreground">
-          Ne angajăm să răspundem la toate mesajele în termen de <strong>2–3 zile lucrătoare</strong>.
+          Ne angajăm să răspundem la toate mesajele în termen de <strong>1 săptămână</strong>.
         </p>
 
       </div>
