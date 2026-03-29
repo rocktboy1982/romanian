@@ -143,7 +143,8 @@ food-glam-platform/
 ├── scripts/                 # Import & maintenance scripts
 │   ├── seed-google-v3.js    # Main recipe importer (Ollama translation)
 │   ├── fix-grammar.sql      # Recipe title grammar corrections (99 fixes)
-│   └── fix-cocktail-grammar.sql  # Cocktail title corrections (49 fixes)
+│   ├── fix-cocktail-grammar.sql  # Cocktail title corrections (49 fixes)
+│   └── archive/             # 38 one-time migration/seed scripts (moved from root)
 ├── supabase/                # Supabase config + migrations
 └── backups/                 # DB backups (.gitignore'd)
 ```
