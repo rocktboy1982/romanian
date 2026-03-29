@@ -5,7 +5,7 @@ import { MapPin, MessageSquare } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Contact | MareChef.ro',
   description:
-    'Contactează echipa MareChef.ro pentru întrebări, sugestii sau colaborări. Scrie-ne la contact@marechef.ro.',
+    'Contactează echipa MareChef.ro pentru întrebări, sugestii sau colaborări.',
   alternates: { canonical: 'https://marechef.ro/contact' },
   openGraph: {
     title: 'Contact | MareChef.ro',

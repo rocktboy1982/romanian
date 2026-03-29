@@ -199,12 +199,6 @@ export default function AboutPage() {
             >
               Pagina de contact
             </Link>
-            <a
-              href="mailto:contact@marechef.ro"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border border-border hover:bg-muted transition-colors"
-            >
-              contact@marechef.ro
-            </a>
           </div>
         </section>
 
