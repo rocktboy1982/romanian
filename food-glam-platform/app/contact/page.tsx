@@ -29,7 +29,7 @@ export default function ContactPage() {
       >
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Mail className="h-9 w-9 text-white opacity-90" />
+            <MessageSquare className="h-9 w-9 text-white opacity-90" />
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-3 tracking-tight">Contact</h1>
           <p className="text-white/80 text-lg max-w-lg mx-auto">
