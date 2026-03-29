@@ -43,3 +43,6 @@ scripts/translate-error.log
 backups/
 
 .vercel
+
+# Archived one-time scripts (not needed in repo, contain Snyk false positives)
+scripts/archive/
