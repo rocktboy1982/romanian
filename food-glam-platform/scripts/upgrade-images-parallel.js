@@ -234,7 +234,7 @@ async function main() {
     const client = createImageSearchClient({
       pexels:   { apiKey: process.env.PEXELS_API_KEY },
       unsplash: { accessKey: process.env.UNSPLASH_ACCESS_KEY },
-      pixabay:  { apiKey: process.env.PIXABAY_API_KEY || '54937602-4ed5967a8ec70101779291c1a' },
+      pixabay:  { apiKey: process.env.PIXABAY_API_KEY },
     })
     return { batch, client, workerId: i + 1 }
   })
