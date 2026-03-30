@@ -45,43 +45,47 @@ export async function GET(req: Request) {
   const uniqueChefs = new Set(activeChefs?.map(p => p.created_by) || [])
 
   // 4. Banned chefs (users with active ban sanctions)
-  const { count: bannedChefs } = await supabase
-    .from('user_sanctions')
-    .select('*', { count: 'exact', head: true })
-    .eq('type', 'ban')
-    .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+  let bannedChefs = 0
+  try {
+    const { count } = await supabase
+      .from('user_sanctions')
+      .select('*', { count: 'exact', head: true })
+      .eq('type', 'ban')
+      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+    bannedChefs = count ?? 0
+  } catch { /* table may not exist */ }
 
   // 5. Total votes
   const { count: totalVotes } = await supabase
     .from('votes')
     .select('*', { count: 'exact', head: true })
 
-  // 6. Total comments/replies (using posts with type='comment' or similar)
-  // For now, count all non-recipe posts as comments
+  // 6. Total comments/replies
   const { count: totalComments } = await supabase
     .from('posts')
     .select('*', { count: 'exact', head: true })
     .neq('type', 'recipe')
 
-  // 7. Reported content (open reports)
-  const { count: reportedContent } = await supabase
-    .from('reports')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'open')
+  // 7. Reported content (table may not exist)
+  let reportedContent = 0
+  try {
+    const { count } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'open')
+    reportedContent = count ?? 0
+  } catch { /* table may not exist */ }
 
-  // 8. Approved today
-  const { count: approvedToday } = await supabase
-    .from('moderation_actions')
-    .select('*', { count: 'exact', head: true })
-    .eq('action', 'approve')
-    .gte('created_at', todayISO)
+  // 8. Approved today (table may not exist)
+  let approvedToday = 0
+  try {
+    const { count } = await supabase.from('moderation_actions').select('*', { count: 'exact', head: true }).eq('action', 'approve').gte('created_at', todayISO)
+    approvedToday = count ?? 0
+  } catch { /* table may not exist */ }
 
-  // 9. Rejected today
-  const { count: rejectedToday } = await supabase
-    .from('moderation_actions')
-    .select('*', { count: 'exact', head: true })
-    .eq('action', 'reject')
-    .gte('created_at', todayISO)
+  // 9. Rejected today (table may not exist)
+  let rejectedToday = 0
+  try {
+    const { count } = await supabase.from('moderation_actions').select('*', { count: 'exact', head: true }).eq('action', 'reject').gte('created_at', todayISO)
+    rejectedToday = count ?? 0
+  } catch { /* table may not exist */ }
 
   // 10. New users today
   const { count: newUsersToday } = await supabase

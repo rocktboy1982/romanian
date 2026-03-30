@@ -88,13 +88,14 @@ export async function GET(req: Request) {
       .eq('type', 'recipe')
       .eq('status', 'active')
 
-    // Get user sanctions to determine status
-    const { data: sanctions } = await supabase
-      .from('user_sanctions')
-      .select('type, expires_at')
-      .eq('user_id', profileId)
+    // Get user sanctions to determine status (table may not exist yet)
+    let sanctions: { type: string; expires_at: string | null }[] = []
+    try {
+      const { data } = await supabase.from('user_sanctions').select('type, expires_at').eq('user_id', profileId)
+      sanctions = data ?? []
+    } catch { /* table may not exist */ }
 
-    const userStatus = mapSanctionToStatus(sanctions || [])
+    const userStatus = mapSanctionToStatus(sanctions)
 
     // Filter by status if requested
     if (status && status !== 'all' && userStatus !== status) {
