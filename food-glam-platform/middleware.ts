@@ -46,14 +46,9 @@ export async function middleware(request: NextRequest) {
   // It refreshes the auth token and sets updated cookies.
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Note: /me/* auth protection is handled client-side by each page.
-  // The session lives in localStorage (implicit OAuth flow), not cookies,
-  // so middleware can't reliably check auth state.
-
-  // Protect /api/admin/* routes
-  if (pathname.startsWith('/api/admin') && !user) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-  }
+  // Note: Auth protection is handled by each API route via getRequestUser()
+  // which supports both cookies AND Bearer token from localStorage.
+  // Middleware should NOT block API routes — it only refreshes cookies.
 
   return supabaseResponse
 }

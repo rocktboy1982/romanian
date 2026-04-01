@@ -167,8 +167,10 @@ function useMockUser() {
   const [user, setUser] = useState<MockUser | null>(null)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => {
-    // Only use mock user in development — never auto-create on production
+    // Only use mock user in development — never on production
     if (process.env.NODE_ENV !== 'development') {
+      // Clean up stale mock_user from previous sessions
+      try { localStorage.removeItem('mock_user') } catch {}
       setHydrated(true)
       return
     }
