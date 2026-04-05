@@ -386,7 +386,6 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             { href: '/cookbooks',     label: 'Cărți de bucate' },
             { href: '/cocktailbooks', label: 'Cocktailuri' },
             { href: '/blog',          label: 'Blog' },
-            { href: '/health',        label: '🏥 Sănătate' },
           ].map(item => {
             const active = isActive(item.href)
             return (
@@ -443,18 +442,21 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             )
           })}
 
-          {/* Health recipes — only for logged-in users */}
-          {user && (
-            <Link
-              href="/me/health-recipes"
-              className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-              style={isActive('/me/health-recipes')
-                ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
-                : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
-            >
-              🥗 Rețete Sănătate
-            </Link>
-          )}
+          {/* separator — Sănătate group */}
+          <div className="w-px h-4 self-center ml-3" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
+
+          {/* Group 5: Sănătate */}
+          {[
+            { href: '/health',             label: '🏥 Sănătate' },
+            ...(user ? [{ href: '/me/health-recipes', label: '🥗 Rețete Sănătate' }] : []),
+          ].map(item => {
+            const active = isActive(item.href)
+            return (
+              <Link key={item.href} href={item.href} className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={active ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' }) : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+              >{item.label}</Link>
+            )
+          })}
 
           {/* spacer */}
           <div className="flex-1" />

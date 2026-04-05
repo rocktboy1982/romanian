@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import HealthDashboardClient from '@/components/pages/health-dashboard-client'
+import HealthCTA from './health-cta'
 
 export const metadata: Metadata = {
   title: 'Modul Sănătate — Hidratare, Post, Nutriție | MareChef.ro',
@@ -133,27 +134,8 @@ export default function HealthPage() {
           </div>
         </div>
 
-        {/* CTA + disclaimer */}
-        <div className="text-center mb-8">
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-6">
-            Autentifică-te pentru a accesa tabloul de bord complet. Datele tale de sănătate sunt
-            private și protejate — niciodată partajate cu terți.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/auth/signin"
-              className="px-6 py-3 rounded-xl font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors"
-            >
-              Intră în cont
-            </Link>
-            <Link
-              href="/blog/fasting-intermitent"
-              className="px-6 py-3 rounded-xl font-semibold text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
-            >
-              Citește despre fasting
-            </Link>
-          </div>
-        </div>
+        {/* CTA — hidden client-side when authenticated */}
+        <HealthCTA />
 
         <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-2xl mx-auto">
           Informațiile din Modulul Sănătate au caracter informativ și nu reprezintă sfat medical.
