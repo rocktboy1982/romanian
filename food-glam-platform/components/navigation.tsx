@@ -385,6 +385,8 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             { href: '/',              label: 'Acasă' },
             { href: '/cookbooks',     label: 'Cărți de bucate' },
             { href: '/cocktailbooks', label: 'Cocktailuri' },
+            { href: '/blog',          label: 'Blog' },
+            { href: '/health',        label: '🏥 Sănătate' },
           ].map(item => {
             const active = isActive(item.href)
             return (
@@ -441,29 +443,17 @@ style={{ background: theme === 'dark' ? '#111' : 'rgba(255,255,255,0.2)', border
             )
           })}
 
-          {/* Health links — controlled by healthMode toggle */}
-          {user && healthMode && (
-            <>
-              <div className="w-px h-4 self-center" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)' }} />
-              <Link
-                href="/health"
-                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                style={isActive('/health')
-                  ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
-                  : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
-              >
-                🏥 Sănătate
-              </Link>
-              <Link
-                href="/me/health-recipes"
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap${isActive('/me/health-recipes') ? '' : ' nav-link-animated'}`}
-                style={isActive('/me/health-recipes')
-                  ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
-                  : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
-              >
-                🥗 Rețete Sănătate
-              </Link>
-            </>
+          {/* Health recipes — only for logged-in users */}
+          {user && (
+            <Link
+              href="/me/health-recipes"
+              className="px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+              style={isActive('/me/health-recipes')
+                ? (theme === 'dark' ? { background: 'linear-gradient(135deg,#ff4d6d,#ff9500)', color: '#fff' } : { background: '#fff', color: '#8B1A2B' })
+                : { color: theme === 'dark' ? '#999' : 'rgba(255,255,255,0.75)', background: 'transparent' }}
+            >
+              🥗 Rețete Sănătate
+            </Link>
           )}
 
           {/* spacer */}
@@ -566,23 +556,34 @@ style={{ background: theme === 'dark' ? '#000' : '#8B1A2B', borderBottom: theme 
             </Link>
             )
           })}
-          {/* Health link in mobile menu — controlled by healthMode */}
-          {user && healthMode && (
-            <Link
-              href="/health"
-              className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
-              style={isActive('/health')
-                ? (theme === 'dark'
-                    ? { color: '#ff9500', background: 'rgba(255,149,0,0.06)' }
-                    : { color: '#fff', background: 'rgba(255,255,255,0.15)' })
-                : { color: theme === 'dark' ? '#ccc' : 'rgba(255,255,255,0.8)' }
-              }
-            >
-              <span className="text-base">🏥</span>
-              Sănătate
-            </Link>
-          )}
-          {user && healthMode && (
+          {/* Blog + Health — always visible */}
+          <Link
+            href="/blog"
+            className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
+            style={isActive('/blog')
+              ? (theme === 'dark'
+                  ? { color: '#ff9500', background: 'rgba(255,149,0,0.06)' }
+                  : { color: '#fff', background: 'rgba(255,255,255,0.15)' })
+              : { color: theme === 'dark' ? '#ccc' : 'rgba(255,255,255,0.8)' }
+            }
+          >
+            <span className="text-base">📝</span>
+            Blog
+          </Link>
+          <Link
+            href="/health"
+            className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
+            style={isActive('/health')
+              ? (theme === 'dark'
+                  ? { color: '#ff9500', background: 'rgba(255,149,0,0.06)' }
+                  : { color: '#fff', background: 'rgba(255,255,255,0.15)' })
+              : { color: theme === 'dark' ? '#ccc' : 'rgba(255,255,255,0.8)' }
+            }
+          >
+            <span className="text-base">🏥</span>
+            Sănătate
+          </Link>
+          {user && (
             <Link
               href="/me/health-recipes"
               className="flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors"
