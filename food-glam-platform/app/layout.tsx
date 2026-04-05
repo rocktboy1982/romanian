@@ -184,6 +184,7 @@ gtag('config', 'G-4X6TFY53BY');`}
                     <p>© {new Date().getFullYear()} MareChef.ro — Platformă Culinară</p>
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                       <a href="/about" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Despre noi</a>
+                      <a href="/blog" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Blog</a>
                       <a href="/contact" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Contact</a>
                       <a href="/terms" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Termeni și Condiții</a>
                       <a href="/privacy" className="hover:underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Confidențialitate</a>
